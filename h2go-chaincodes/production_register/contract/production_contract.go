@@ -2,6 +2,7 @@ package contract
 
 import (
 	"encoding/json"
+	"errors"
 	"production_register/models"
 	"time"
 
@@ -18,24 +19,42 @@ type ProductionContract struct {
 func (pc *ProductionContract) RegisterProduction(
 	ctx contractapi.TransactionContextInterface,
 	producerID string,
-	assetType models.AssetType,
+	assetType string,
 	amountAvailable int64,
-	unit models.Unit,
-	productionDate time.Time) error {
+	unit string,
+	productionDate string) error {
+
+	// Validate and parse assetType
+	assetTypeEnum, err := models.ParseAssetType(assetType)
+	if err != nil {
+		return err
+	}
+
+	// Validate and parse unit
+	unitEnum, err := models.ParseUnit(unit)
+	if err != nil {
+		return err
+	}
+
+	// Parse production date
+	prodDate, err := time.Parse(time.RFC3339, productionDate)
+	if err != nil {
+		return errors.New("invalid production date format, use RFC3339")
+	}
 
 	// Calculate expiry date (12 months from production)
-	expiryDate := productionDate.AddDate(0, 12, 0)
+	expiryDate := prodDate.AddDate(0, 12, 0)
 
 	// Implementation for registering production
 	batch := models.ProductionRecord{
 		TransactionType: models.RegisterProductionBatch,
 		BatchId:         ctx.GetStub().GetTxID(),
 		ProducerId:      producerID,
-		AssetType:       assetType,
+		AssetType:       assetTypeEnum,
 		AmountUsed:      0,
 		AmountAvailable: amountAvailable,
-		Unit:            unit,
-		ProductionDate:  productionDate,
+		Unit:            unitEnum,
+		ProductionDate:  prodDate,
 		ExpiryDate:      expiryDate,
 		Status:          models.Available,
 	}

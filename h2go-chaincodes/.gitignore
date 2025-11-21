@@ -1,0 +1,83 @@
+# Generic
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs and runtime files
+*.log
+*.pid
+*.seed
+*.out
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+dist/
+build/
+coverage/
+
+# Go
+/bin/
+/pkg/
+/vendor/
+/*.exe
+*.test
+*.prof
+
+# Java
+*.class
+*.jar
+target/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Fabric / Chaincode specific
+wallet/
+msp/
+crypto-config/
+crypto/
+channel-artifacts/
+*.block
+*.tx
+*.log
+fabric-client-kv-store/
+chaincode-packages/
+connection-profiles/
+network-config.yaml
+
+# Docker
+docker-compose.override.yml
+docker-compose.*.yml
+.env
+docker-compose*.log
+
+# IDEs and editors
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+*.sublime-workspace
+*.sublime-project
+*.swp
+
+# Keys, certs and secrets
+*.pem
+*.key
+*.crt
+*.p12
+.keystore
+secrets/
+*.env
+
+# OS files
+ehthumbs.db
+Thumbs.db
+
+# Misc
+*.tgz
+*.zip

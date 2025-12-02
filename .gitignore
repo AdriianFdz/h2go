@@ -1,2 +1,8 @@
-/istio-1.16.1
-/resources
+/istio-1.16.1/
+/resources/
+/blockchain/
+/chaincode.tgz
+/code.tar.gz
+/connection.json
+/metadata.json
+h2go-chaincodes/h2go-chaincodes

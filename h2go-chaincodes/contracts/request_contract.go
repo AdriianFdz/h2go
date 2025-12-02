@@ -14,9 +14,10 @@ type RequestContract struct {
 	contractapi.Contract
 }
 
-func (rc *RequestContract) GrantGdo(
+func (rc *RequestContract) ApproveRequest(
 	ctx contractapi.TransactionContextInterface,
-	requestID string) error {
+	requestID string,
+	reason string) error {
 
 	approverID, err := ctx.GetClientIdentity().GetID()
 	if err != nil {
@@ -143,6 +144,7 @@ func (rc *RequestContract) GrantGdo(
 	request.GDOs = gdos
 	request.Status = models.RequestApproved
 	request.ApproverID = approverID
+	request.Reason = reason
 	request.ProcessedAt = time.Now().Format(time.RFC3339)
 
 	updatedRequestJSON, err := json.Marshal(request)

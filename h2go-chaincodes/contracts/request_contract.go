@@ -37,6 +37,11 @@ func (rc *RequestContract) GrantGdo(
 		return err
 	}
 
+	// Validate that it's a GDO request
+	if request.DocType != "REQUEST_TO_TRANSFORM_GDOS" {
+		return errors.New("document is not a GDO request, found docType: " + request.DocType)
+	}
+
 	if request.Status != models.RequestPending {
 		return errors.New("request is not in PENDING status, current status: " + string(request.Status))
 	}
@@ -174,7 +179,7 @@ func (rc *RequestContract) CreateRequest(
 
 	// Create the request
 	request := models.Request{
-		DocType:     "request",
+		DocType:     "REQUEST_TO_TRANSFORM_GDOS",
 		RequestID:   requestID,
 		ProducerID:  producerID,
 		AssetType:   assetTypeEnum,
@@ -197,4 +202,101 @@ func (rc *RequestContract) CreateRequest(
 	}
 
 	return requestID, nil
+}
+func (rc *RequestContract) GetRequest(
+	ctx contractapi.TransactionContextInterface,
+	requestID string) (*models.Request, error) {
+
+	requestJSON, err := ctx.GetStub().GetState(requestID)
+	if err != nil {
+		return nil, errors.New("failed to read request: " + err.Error())
+	}
+	if requestJSON == nil {
+		return nil, errors.New("request " + requestID + " does not exist")
+	}
+
+	var request models.Request
+	err = json.Unmarshal(requestJSON, &request)
+	if err != nil {
+		return nil, err
+	}
+
+	if request.DocType != "REQUEST_TO_TRANSFORM_GDOS" {
+		return nil, errors.New("document is not a GDO request, found docType: " + request.DocType)
+	}
+
+	return &request, nil
+}
+
+func (rc *RequestContract) GetAllRequests(
+	ctx contractapi.TransactionContextInterface) ([]*models.Request, error) {
+
+	resultsIterator, err := ctx.GetStub().GetStateByRange("", "")
+	if err != nil {
+		return nil, err
+	}
+	defer resultsIterator.Close()
+
+	var requests []*models.Request
+	for resultsIterator.HasNext() {
+		queryResponse, err := resultsIterator.Next()
+		if err != nil {
+			return nil, err
+		}
+
+		var request models.Request
+		err = json.Unmarshal(queryResponse.Value, &request)
+		if err != nil {
+			continue
+		}
+
+		if request.DocType == "REQUEST_TO_TRANSFORM_GDOS" {
+			requests = append(requests, &request)
+		}
+	}
+
+	return requests, nil
+}
+
+func (rc *RequestContract) GetRequestsByStatus(
+	ctx contractapi.TransactionContextInterface,
+	status string) ([]*models.Request, error) {
+
+	statusEnum, err := models.ParseRequestStatus(status)
+	if err != nil {
+		return nil, err
+	}
+
+	allRequests, err := rc.GetAllRequests(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var filteredRequests []*models.Request
+	for _, request := range allRequests {
+		if request.Status == statusEnum {
+			filteredRequests = append(filteredRequests, request)
+		}
+	}
+
+	return filteredRequests, nil
+}
+
+func (rc *RequestContract) GetRequestsByProducer(
+	ctx contractapi.TransactionContextInterface,
+	producerID string) ([]*models.Request, error) {
+
+	allRequests, err := rc.GetAllRequests(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var producerRequests []*models.Request
+	for _, request := range allRequests {
+		if request.ProducerID == producerID {
+			producerRequests = append(producerRequests, request)
+		}
+	}
+
+	return producerRequests, nil
 }

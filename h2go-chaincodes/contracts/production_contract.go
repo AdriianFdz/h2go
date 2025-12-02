@@ -60,7 +60,6 @@ func (pc *ProductionContract) RegisterProduction(
 	return ctx.GetStub().PutState(batch.BatchId, batchJSON)
 }
 
-// Recuperar todos los production batches
 func (pc *ProductionContract) GetAllProductionBatches(ctx contractapi.TransactionContextInterface) ([]*models.ProductionRecord, error) {
 	resultsIterator, err := ctx.GetStub().GetStateByRange("", "")
 	if err != nil {
@@ -86,7 +85,6 @@ func (pc *ProductionContract) GetAllProductionBatches(ctx contractapi.Transactio
 	return batches, nil
 }
 
-// Recuperar production batch por ID
 func (pc *ProductionContract) GetProductionBatch(ctx contractapi.TransactionContextInterface, batchId string) (*models.ProductionRecord, error) {
 	batchJSON, err := ctx.GetStub().GetState(batchId)
 	if err != nil {

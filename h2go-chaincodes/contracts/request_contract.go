@@ -300,3 +300,54 @@ func (rc *RequestContract) GetRequestsByProducer(
 
 	return producerRequests, nil
 }
+
+func (rc *RequestContract) RejectRequest(
+	ctx contractapi.TransactionContextInterface,
+	requestID string,
+	reason string) error {
+
+	approverID, err := ctx.GetClientIdentity().GetID()
+	if err != nil {
+		return errors.New("failed to get client identity: " + err.Error())
+	}
+
+	// Get the request
+	requestJSON, err := ctx.GetStub().GetState(requestID)
+	if err != nil {
+		return errors.New("failed to read request: " + err.Error())
+	}
+	if requestJSON == nil {
+		return errors.New("request " + requestID + " does not exist")
+	}
+
+	var request models.Request
+	err = json.Unmarshal(requestJSON, &request)
+	if err != nil {
+		return err
+	}
+
+	if request.DocType != "REQUEST_TO_TRANSFORM_GDOS" {
+		return errors.New("document is not a GDO request, found docType: " + request.DocType)
+	}
+
+	if request.Status != models.RequestPending {
+		return errors.New("request is not in PENDING status, current status: " + string(request.Status))
+	}
+
+	request.Status = models.RequestRejected
+	request.ApproverID = approverID
+	request.Reason = reason
+	request.ProcessedAt = time.Now().Format(time.RFC3339)
+
+	updatedRequestJSON, err := json.Marshal(request)
+	if err != nil {
+		return err
+	}
+
+	err = ctx.GetStub().PutState(requestID, updatedRequestJSON)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

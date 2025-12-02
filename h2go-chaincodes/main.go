@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -61,7 +60,7 @@ func runChaincodeService(contract *contractapi.ContractChaincode) error {
 		TLSProps: tlsProps,
 	}
 
-	log.Println(fmt.Sprintf("Running chaincode %s on %s", packageID, address))
+	log.Printf("Running chaincode %s on %s", packageID, address)
 	err := server.Start()
 	if err != nil {
 		return err
@@ -71,8 +70,9 @@ func runChaincodeService(contract *contractapi.ContractChaincode) error {
 
 func main() {
 	productionContract := new(contracts.ProductionContract)
+	requestContract := new(contracts.RequestContract)
 
-	chaincode, err := contractapi.NewChaincode(productionContract)
+	chaincode, err := contractapi.NewChaincode(productionContract, requestContract)
 	if err != nil {
 		log.Panicf("Error creating h2go chaincode: %v", err)
 	}

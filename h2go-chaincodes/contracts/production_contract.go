@@ -168,3 +168,59 @@ func (pc *ProductionContract) SetBatchAsExpired(
 	}
 	return ctx.GetStub().PutState(batch.BatchId, batchJSON)
 }
+
+func (pc *ProductionContract) UseProduction(
+	ctx contractapi.TransactionContextInterface,
+	producerID string,
+	assetType string,
+	amountToUse int64) error {
+
+	if assetType != string(models.H2) && assetType != string(models.Electricity) {
+		return errors.New("invalid asset type: " + assetType)
+	}
+
+	batches, err := pc.GetProductionBatchesByProducerAndAssetType(ctx, producerID, assetType)
+	if err != nil {
+		return err
+	}
+	if batches == nil {
+		return errors.New("producer " + producerID + " batches not found")
+	}
+
+	availableBatches := make([]*models.ProductionRecord, 0)
+	var totalAvailable int64 = 0
+	for _, batch := range batches {
+		if totalAvailable >= amountToUse {
+			break
+		}
+		if batch.Status == models.Available {
+			totalAvailable += batch.AmountAvailable - batch.AmountUsed
+			availableBatches = append(availableBatches, batch)
+		}
+	}
+	if totalAvailable < amountToUse {
+		return errors.New("not enough available production to use")
+	}
+
+	for _, batch := range availableBatches {
+		availableInBatch := batch.AmountAvailable - batch.AmountUsed
+		if availableInBatch > amountToUse {
+			batch.AmountUsed += amountToUse
+			amountToUse = 0
+		} else {
+			batch.AmountUsed += availableInBatch
+			amountToUse -= availableInBatch
+			batch.Status = models.Used
+		}
+		batchJSON, err := json.Marshal(batch)
+		if err != nil {
+			return err
+		}
+		err = ctx.GetStub().PutState(batch.BatchId, batchJSON)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

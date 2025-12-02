@@ -151,3 +151,50 @@ func (rc *RequestContract) GrantGdo(
 
 	return nil
 }
+
+func (rc *RequestContract) CreateRequest(
+	ctx contractapi.TransactionContextInterface,
+	producerID string,
+	assetType string,
+	amount int64) (string, error) {
+
+	// Validate asset type
+	assetTypeEnum, err := models.ParseAssetType(assetType)
+	if err != nil {
+		return "", err
+	}
+
+	// Validate amount
+	if amount <= 0 {
+		return "", errors.New("amount must be greater than 0")
+	}
+
+	// Generate request ID using transaction ID
+	requestID := ctx.GetStub().GetTxID()
+
+	// Create the request
+	request := models.Request{
+		DocType:     "request",
+		RequestID:   requestID,
+		ProducerID:  producerID,
+		AssetType:   assetTypeEnum,
+		Amount:      amount,
+		Status:      models.RequestPending,
+		Reason:      "",
+		GDOs:        []models.GDO{},
+		CreatedAt:   time.Now().Format(time.RFC3339),
+		ProcessedAt: "",
+	}
+
+	requestJSON, err := json.Marshal(request)
+	if err != nil {
+		return "", err
+	}
+
+	err = ctx.GetStub().PutState(requestID, requestJSON)
+	if err != nil {
+		return "", err
+	}
+
+	return requestID, nil
+}

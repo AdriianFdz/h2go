@@ -1,0 +1,27 @@
+package main
+
+import (
+	"log"
+
+	"h2go-chaincodes/contracts"
+
+        "github.com/hyperledger/fabric-chaincode-go/shim"
+        pb "github.com/hyperledger/fabric-protos-go/peer")
+
+func main() {
+       //The ccid is assigned to the chaincode on install (using the “peer lifecycle chaincode install <package>” command) for instance
+        ccid := "mycc:fcbf8724572d42e859a7dd9a7cd8e2efb84058292017df6e3d89178b64e6c831"
+
+        server := &shim.ChaincodeServer{
+                        CCID: ccid,
+                        Address: "localhost:7052"
+                        CC: new(SimpleChaincode),
+                        TLSProps: shim.TLSProperties{
+                                Disabled: true,
+                        },
+                }
+        err := server.Start()
+        if err != nil {
+                fmt.Printf("Error starting Simple chaincode: %s", err)
+        }
+}

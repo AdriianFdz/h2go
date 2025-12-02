@@ -107,13 +107,11 @@ func (pc *ProductionContract) GetProductionBatch(ctx contractapi.TransactionCont
 
 // Recuperar production batch por productor
 func (pc *ProductionContract) GetProductionBatchesByProducer(ctx contractapi.TransactionContextInterface, producerID string) ([]*models.ProductionRecord, error) {
-	// Get all batches first
 	allBatches, err := pc.GetAllProductionBatches(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	// Filter by producer
 	var producerBatches []*models.ProductionRecord
 	for _, batch := range allBatches {
 		if batch.ProducerId == producerID {
@@ -122,4 +120,32 @@ func (pc *ProductionContract) GetProductionBatchesByProducer(ctx contractapi.Tra
 	}
 
 	return producerBatches, nil
+}
+
+func (pc *ProductionContract) SetBatchAsExpired(
+	ctx contractapi.TransactionContextInterface,
+	batchId string) error {
+	batch, err := pc.GetProductionBatch(ctx, batchId)
+	if err != nil {
+		return err
+	}
+	if batch == nil {
+		return errors.New("batch " + batchId + " not found")
+	}
+
+	if batch.ExpiryDate.After(time.Now()) {
+		return errors.New("batch " + batchId + " has not yet expired")
+	}
+
+	if batch.Status != models.Available {
+		return errors.New("batch " + batchId + " is not available to be marked as expired")
+	}
+
+	batch.Status = models.Expired
+
+	batchJSON, err := json.Marshal(batch)
+	if err != nil {
+		return err
+	}
+	return ctx.GetStub().PutState(batch.BatchId, batchJSON)
 }

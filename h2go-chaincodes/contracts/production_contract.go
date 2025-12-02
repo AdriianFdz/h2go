@@ -105,7 +105,6 @@ func (pc *ProductionContract) GetProductionBatch(ctx contractapi.TransactionCont
 	return &batch, nil
 }
 
-// Recuperar production batch por productor
 func (pc *ProductionContract) GetProductionBatchesByProducer(ctx contractapi.TransactionContextInterface, producerID string) ([]*models.ProductionRecord, error) {
 	allBatches, err := pc.GetAllProductionBatches(ctx)
 	if err != nil {
@@ -120,6 +119,26 @@ func (pc *ProductionContract) GetProductionBatchesByProducer(ctx contractapi.Tra
 	}
 
 	return producerBatches, nil
+}
+
+func (pc *ProductionContract) GetProductionBatchesByProducerAndAssetType(
+	ctx contractapi.TransactionContextInterface,
+	producerID string,
+	assetType string) ([]*models.ProductionRecord, error) {
+
+	productorBatches, err := pc.GetProductionBatchesByProducer(ctx, producerID)
+	if err != nil {
+		return nil, err
+	}
+
+	var filteredBatches []*models.ProductionRecord
+	for _, batch := range productorBatches {
+		if string(batch.AssetType) == assetType {
+			filteredBatches = append(filteredBatches, batch)
+		}
+	}
+
+	return filteredBatches, nil
 }
 
 func (pc *ProductionContract) SetBatchAsExpired(

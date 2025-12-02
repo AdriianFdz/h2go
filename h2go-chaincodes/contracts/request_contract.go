@@ -16,11 +16,36 @@ type RequestContract struct {
 
 func (rc *RequestContract) GrantGdo(
 	ctx contractapi.TransactionContextInterface,
-	producerID string,
-	assetType string,
-	gdoToGrant int64) error {
+	requestID string) error {
 
-	_, err := models.ParseAssetType(assetType)
+	approverID, err := ctx.GetClientIdentity().GetID()
+	if err != nil {
+		return errors.New("failed to get client identity: " + err.Error())
+	}
+
+	requestJSON, err := ctx.GetStub().GetState(requestID)
+	if err != nil {
+		return errors.New("failed to read request: " + err.Error())
+	}
+	if requestJSON == nil {
+		return errors.New("request " + requestID + " does not exist")
+	}
+
+	var request models.Request
+	err = json.Unmarshal(requestJSON, &request)
+	if err != nil {
+		return err
+	}
+
+	if request.Status != models.RequestPending {
+		return errors.New("request is not in PENDING status, current status: " + string(request.Status))
+	}
+
+	producerID := request.ProducerID
+	assetType := string(request.AssetType)
+	gdoToGrant := request.Amount
+
+	_, err = models.ParseAssetType(assetType)
 	if err != nil {
 		return err
 	}
@@ -105,6 +130,21 @@ func (rc *RequestContract) GrantGdo(
 		return err
 	}
 	err = ctx.GetStub().PutState(producerID, updatedBalanceJSON)
+	if err != nil {
+		return err
+	}
+
+	// Update the related request
+	request.GDOs = gdos
+	request.Status = models.RequestApproved
+	request.ApproverID = approverID
+	request.ProcessedAt = time.Now().Format(time.RFC3339)
+
+	updatedRequestJSON, err := json.Marshal(request)
+	if err != nil {
+		return err
+	}
+	err = ctx.GetStub().PutState(requestID, updatedRequestJSON)
 	if err != nil {
 		return err
 	}

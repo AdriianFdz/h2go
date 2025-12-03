@@ -7,9 +7,9 @@ type Request struct {
 	AssetType   AssetType     `json:"assetType"`
 	Amount      int64         `json:"amount"`
 	Status      RequestStatus `json:"status"`
-	ApproverID  string        `json:"approverId,omitempty"`
-	Reason      string        `json:"reason,omitempty"`
-	GDOs        []GDO         `json:"gdos,omitempty"`
+	ApproverID  string        `json:"approverId"`
+	Reason      string        `json:"reason"`
+	GDOs        []GDO         `json:"gdos"`
 	CreatedAt   string        `json:"createdAt"`
-	ProcessedAt string        `json:"processedAt,omitempty"`
+	ProcessedAt string        `json:"processedAt"`
 }

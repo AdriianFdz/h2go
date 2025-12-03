@@ -31,6 +31,8 @@ func (rc *RequestContract) CreateRequest(
 
 	requestID := ctx.GetStub().GetTxID()
 
+	gdos := make([]models.GDO, 0)
+
 	request := models.Request{
 		DocType:     "REQUEST_TO_TRANSFORM_GDOS",
 		RequestID:   requestID,
@@ -38,8 +40,9 @@ func (rc *RequestContract) CreateRequest(
 		AssetType:   assetTypeEnum,
 		Amount:      amount,
 		Status:      models.RequestPending,
+		ApproverID:  "",
 		Reason:      "",
-		GDOs:        []models.GDO{},
+		GDOs:        gdos,
 		CreatedAt:   time.Now().Format(time.RFC3339),
 		ProcessedAt: "",
 	}
@@ -124,7 +127,7 @@ func (rc *RequestContract) ApproveRequest(
 		return errors.New("not enough available production to exchange for GDOs")
 	}
 
-	gdos := []models.GDO{}
+	gdos := make([]models.GDO, 0)
 
 	for _, batch := range availableBatches {
 		availableInBatch := batch.AmountAvailable - batch.AmountUsed
@@ -169,7 +172,7 @@ func (rc *RequestContract) ApproveRequest(
 		productorBalanceRecord = models.ProductorBalance{
 			TransactionType: "gdoBalance",
 			ProducerID:      producerID,
-			GDOS:            []models.GDO{},
+			GDOS:            make([]models.GDO, 0),
 		}
 	}
 	productorBalanceRecord.GDOS = append(productorBalanceRecord.GDOS, gdos...)
@@ -273,6 +276,11 @@ func (rc *RequestContract) GetRequest(
 		return nil, errors.New("document is not a GDO request, found docType: " + request.DocType)
 	}
 
+	// Normalize GDOs: if nil, initialize as empty array
+	if request.GDOs == nil {
+		request.GDOs = make([]models.GDO, 0)
+	}
+
 	return &request, nil
 }
 
@@ -299,6 +307,11 @@ func (rc *RequestContract) GetAllRequests(
 		}
 
 		if request.DocType == "REQUEST_TO_TRANSFORM_GDOS" {
+			// Si es null, inicializarlo a vacio
+			// debido a que se creo uno null antes de arreglar el error
+			if request.GDOs == nil {
+				request.GDOs = make([]models.GDO, 0)
+			}
 			requests = append(requests, &request)
 		}
 	}

@@ -31,8 +31,6 @@ func (rc *RequestContract) CreateRequest(
 
 	requestID := ctx.GetStub().GetTxID()
 
-	gdos := make([]models.GDO, 0)
-
 	request := models.Request{
 		DocType:     "REQUEST_TO_TRANSFORM_GDOS",
 		RequestID:   requestID,
@@ -42,7 +40,7 @@ func (rc *RequestContract) CreateRequest(
 		Status:      models.RequestPending,
 		ApproverID:  "",
 		Reason:      "",
-		GDOs:        gdos,
+		GDOs:        make([]models.GDO, 0),
 		CreatedAt:   time.Now().Format(time.RFC3339),
 		ProcessedAt: "",
 	}
@@ -276,11 +274,6 @@ func (rc *RequestContract) GetRequest(
 		return nil, errors.New("document is not a GDO request, found docType: " + request.DocType)
 	}
 
-	// Normalize GDOs: if nil, initialize as empty array
-	if request.GDOs == nil {
-		request.GDOs = make([]models.GDO, 0)
-	}
-
 	return &request, nil
 }
 
@@ -307,11 +300,6 @@ func (rc *RequestContract) GetAllRequests(
 		}
 
 		if request.DocType == "REQUEST_TO_TRANSFORM_GDOS" {
-			// Si es null, inicializarlo a vacio
-			// debido a que se creo uno null antes de arreglar el error
-			if request.GDOs == nil {
-				request.GDOs = make([]models.GDO, 0)
-			}
 			requests = append(requests, &request)
 		}
 	}
@@ -360,4 +348,46 @@ func (rc *RequestContract) GetRequestsByProducer(
 	}
 
 	return producerRequests, nil
+}
+
+func (rc *RequestContract) MigrateRequestsAddGDOs(
+	ctx contractapi.TransactionContextInterface) (int, error) {
+
+	resultsIterator, err := ctx.GetStub().GetStateByRange("", "")
+	if err != nil {
+		return 0, err
+	}
+	defer resultsIterator.Close()
+
+	migratedCount := 0
+	for resultsIterator.HasNext() {
+		queryResponse, err := resultsIterator.Next()
+		if err != nil {
+			return migratedCount, err
+		}
+
+		var request models.Request
+		err = json.Unmarshal(queryResponse.Value, &request)
+		if err != nil {
+			continue
+		}
+
+		if request.DocType == "REQUEST_TO_TRANSFORM_GDOS" {
+			// El UnmarshalJSON ya inicializó GDOs a []
+			// Ahora guardamos el registro actualizado
+			requestJSON, err := json.Marshal(request)
+			if err != nil {
+				continue
+			}
+
+			err = ctx.GetStub().PutState(queryResponse.Key, requestJSON)
+			if err != nil {
+				continue
+			}
+
+			migratedCount++
+		}
+	}
+
+	return migratedCount, nil
 }

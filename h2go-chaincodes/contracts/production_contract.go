@@ -77,9 +77,12 @@ func (pc *ProductionContract) GetAllProductionBatches(ctx contractapi.Transactio
 		var batch models.ProductionRecord
 		err = json.Unmarshal(queryResponse.Value, &batch)
 		if err != nil {
-			return nil, err
+			continue
 		}
-		batches = append(batches, &batch)
+
+		if batch.TransactionType == models.RegisterProductionBatch {
+			batches = append(batches, &batch)
+		}
 	}
 
 	return batches, nil

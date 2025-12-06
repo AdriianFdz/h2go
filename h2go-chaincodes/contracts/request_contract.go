@@ -6,7 +6,6 @@ import (
 	"h2go-chaincodes/models"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
@@ -31,6 +30,13 @@ func (rc *RequestContract) CreateRequest(
 
 	requestID := ctx.GetStub().GetTxID()
 
+	// Get deterministic timestamp from transaction
+	txTimestamp, err := ctx.GetStub().GetTxTimestamp()
+	if err != nil {
+		return "", err
+	}
+	createdAt := time.Unix(txTimestamp.Seconds, int64(txTimestamp.Nanos)).Format(time.RFC3339)
+
 	request := models.Request{
 		DocType:     "REQUEST_TO_TRANSFORM_GDOS",
 		RequestID:   requestID,
@@ -41,7 +47,7 @@ func (rc *RequestContract) CreateRequest(
 		ApproverID:  "",
 		Reason:      "",
 		GDOs:        make([]models.GDO, 0),
-		CreatedAt:   time.Now().Format(time.RFC3339),
+		CreatedAt:   createdAt,
 		ProcessedAt: "",
 	}
 
@@ -125,7 +131,16 @@ func (rc *RequestContract) ApproveRequest(
 		return errors.New("not enough available production to exchange for GDOs")
 	}
 
+	// Get deterministic timestamp from transaction
+	txTimestamp, err := ctx.GetStub().GetTxTimestamp()
+	if err != nil {
+		return err
+	}
+	issueTime := time.Unix(txTimestamp.Seconds, int64(txTimestamp.Nanos))
+	issueDate := issueTime.Format(time.RFC3339)
+
 	gdos := make([]models.GDO, 0)
+	gdoCounter := 0
 
 	for _, batch := range availableBatches {
 		availableInBatch := batch.AmountAvailable - batch.AmountUsed
@@ -137,10 +152,15 @@ func (rc *RequestContract) ApproveRequest(
 			remainingGdoToGrant -= availableInBatch
 			batch.Status = models.ProductionUsed
 		}
+
+		// Generate deterministic GDO ID: requestID + batch ID + counter
+		gdoID := requestID + "-gdo-" + batch.BatchId
+		gdoCounter++
+
 		gdo := models.GDO{
-			GdoID:      uuid.New().String(),
+			GdoID:      gdoID,
 			AssetType:  assetType,
-			IssueDate:  time.Now().Format(time.RFC3339),
+			IssueDate:  issueDate,
 			ExpiryDate: batch.ProductionDate.AddDate(0, 18, 0).Format(time.RFC3339),
 			OwnerID:    producerID,
 			Status:     models.GdoActive,
@@ -153,6 +173,10 @@ func (rc *RequestContract) ApproveRequest(
 		err = ctx.GetStub().PutState(batch.BatchId, batchJSON)
 		if err != nil {
 			return err
+		}
+
+		if remainingGdoToGrant <= 0 {
+			break
 		}
 	}
 
@@ -170,10 +194,20 @@ func (rc *RequestContract) ApproveRequest(
 		productorBalanceRecord = models.ProductorBalance{
 			TransactionType: "gdoBalance",
 			ProducerID:      producerID,
-			GDOS:            make([]models.GDO, 0),
+			GDOS: models.GDOsByAssetType{
+				Electricity: make([]models.GDO, 0),
+				H2:          make([]models.GDO, 0),
+			},
 		}
 	}
-	productorBalanceRecord.GDOS = append(productorBalanceRecord.GDOS, gdos...)
+
+	// Add GDOs to the correct list based on asset type
+	switch request.AssetType {
+	case models.Electricity:
+		productorBalanceRecord.GDOS.Electricity = append(productorBalanceRecord.GDOS.Electricity, gdos...)
+	case models.H2:
+		productorBalanceRecord.GDOS.H2 = append(productorBalanceRecord.GDOS.H2, gdos...)
+	}
 
 	updatedBalanceJSON, err := json.Marshal(productorBalanceRecord)
 	if err != nil {
@@ -189,7 +223,7 @@ func (rc *RequestContract) ApproveRequest(
 	request.Status = models.RequestApproved
 	request.ApproverID = approverID
 	request.Reason = reason
-	request.ProcessedAt = time.Now().Format(time.RFC3339)
+	request.ProcessedAt = issueDate
 
 	updatedRequestJSON, err := json.Marshal(request)
 	if err != nil {
@@ -235,10 +269,17 @@ func (rc *RequestContract) RejectRequest(
 		return errors.New("request is not in PENDING status, current status: " + string(request.Status))
 	}
 
+	// Get deterministic timestamp from transaction
+	txTimestamp, err := ctx.GetStub().GetTxTimestamp()
+	if err != nil {
+		return err
+	}
+	processedAt := time.Unix(txTimestamp.Seconds, int64(txTimestamp.Nanos)).Format(time.RFC3339)
+
 	request.Status = models.RequestRejected
 	request.ApproverID = approverID
 	request.Reason = reason
-	request.ProcessedAt = time.Now().Format(time.RFC3339)
+	request.ProcessedAt = processedAt
 
 	updatedRequestJSON, err := json.Marshal(request)
 	if err != nil {

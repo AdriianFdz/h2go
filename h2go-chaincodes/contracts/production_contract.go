@@ -150,7 +150,14 @@ func (pc *ProductionContract) SetBatchAsExpired(
 		return errors.New("batch " + batchId + " not found")
 	}
 
-	if batch.ExpiryDate.After(time.Now()) {
+	// Get deterministic timestamp from transaction
+	txTimestamp, err := ctx.GetStub().GetTxTimestamp()
+	if err != nil {
+		return err
+	}
+	currentTime := time.Unix(txTimestamp.Seconds, int64(txTimestamp.Nanos))
+
+	if batch.ExpiryDate.After(currentTime) {
 		return errors.New("batch " + batchId + " has not yet expired")
 	}
 

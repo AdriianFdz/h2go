@@ -1,8 +1,13 @@
 package models
 
+type GDOsByStatus struct {
+	Available   []GDO `json:"available"`
+	Unavailable []GDO `json:"unavailable"`
+}
+
 type GDOsByAssetType struct {
-	Electricity []GDO `json:"ELECTRICITY"`
-	H2          []GDO `json:"H2"`
+	Electricity GDOsByStatus `json:"ELECTRICITY"`
+	H2          GDOsByStatus `json:"H2"`
 }
 
 type ProductorBalance struct {

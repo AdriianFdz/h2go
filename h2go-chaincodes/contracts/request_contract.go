@@ -195,18 +195,25 @@ func (rc *RequestContract) ApproveRequest(
 			TransactionType: "gdoBalance",
 			ProducerID:      producerID,
 			GDOS: models.GDOsByAssetType{
-				Electricity: make([]models.GDO, 0),
-				H2:          make([]models.GDO, 0),
+				Electricity: models.GDOsByStatus{
+					Available:   make([]models.GDO, 0),
+					Unavailable: make([]models.GDO, 0),
+				},
+				H2: models.GDOsByStatus{
+					Available:   make([]models.GDO, 0),
+					Unavailable: make([]models.GDO, 0),
+				},
 			},
 		}
 	}
 
-	// Add GDOs to the correct list based on asset type
+	// Add GDOs to the correct list based on asset type and status
+	// New GDOs are always ACTIVE (available)
 	switch request.AssetType {
 	case models.Electricity:
-		productorBalanceRecord.GDOS.Electricity = append(productorBalanceRecord.GDOS.Electricity, gdos...)
+		productorBalanceRecord.GDOS.Electricity.Available = append(productorBalanceRecord.GDOS.Electricity.Available, gdos...)
 	case models.H2:
-		productorBalanceRecord.GDOS.H2 = append(productorBalanceRecord.GDOS.H2, gdos...)
+		productorBalanceRecord.GDOS.H2.Available = append(productorBalanceRecord.GDOS.H2.Available, gdos...)
 	}
 
 	updatedBalanceJSON, err := json.Marshal(productorBalanceRecord)

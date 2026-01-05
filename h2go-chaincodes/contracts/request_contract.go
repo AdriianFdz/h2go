@@ -63,6 +63,7 @@ func (rc *RequestContract) CreateRequest(
 
 	return requestID, nil
 }
+
 func (rc *RequestContract) ApproveRequest(
 	ctx contractapi.TransactionContextInterface,
 	requestID string,
@@ -105,6 +106,26 @@ func (rc *RequestContract) ApproveRequest(
 		return err
 	}
 
+	// if asset type is H2, check if producer has enough electricity balance to transform
+
+	var productorBalanceRecord models.ProductorBalance
+	if assetType == string(models.H2) {
+		actualProductorBalance, err := ctx.GetStub().GetState(producerID)
+		if err != nil {
+			return err
+		}
+		if actualProductorBalance == nil {
+			return errors.New("producer " + producerID + " electricity balance is empty to transform GDOs")
+		}
+		err = json.Unmarshal(actualProductorBalance, &productorBalanceRecord)
+		if err != nil {
+			return err
+		}
+		if int64(len(productorBalanceRecord.GDOS.Electricity.Available)) < gdoToGrant {
+			return errors.New("producer " + producerID + " does not have enough electricity GDOs to transform")
+		}
+	}
+
 	pc := ProductionContract{}
 	batches, err := pc.GetProductionBatchesByProducerAndAssetType(ctx, producerID, assetType)
 
@@ -144,13 +165,40 @@ func (rc *RequestContract) ApproveRequest(
 
 	for _, batch := range availableBatches {
 		availableInBatch := batch.AmountAvailable - batch.AmountUsed
+		amountUsed := int64(0)
 		if availableInBatch > remainingGdoToGrant {
 			batch.AmountUsed += remainingGdoToGrant
+			amountUsed = remainingGdoToGrant
 			remainingGdoToGrant = 0
 		} else {
 			batch.AmountUsed += availableInBatch
 			remainingGdoToGrant -= availableInBatch
 			batch.Status = models.ProductionUsed
+			amountUsed = availableInBatch
+		}
+		// if asset type is H2, also redeem electricity GDOs ordered by expiry date
+		if assetType == string(models.H2) {
+			electricityGDOs := productorBalanceRecord.GDOS.Electricity.Available
+
+			rdpContract := RedemptionContract{}
+			err = rdpContract.RedeemGDOs(ctx, producerID, string(models.Electricity), func() []string {
+				gdoIDs := make([]string, 0)
+				counter := 0
+				for _, gdo := range electricityGDOs {
+					// Check status (not needed but just in case)
+					if gdo.Status == models.GdoActive {
+						gdoIDs = append(gdoIDs, gdo.GdoID)
+						counter++
+						if int64(counter) >= amountUsed {
+							break
+						}
+					}
+				}
+				return gdoIDs
+			}())
+			if err != nil {
+				return err
+			}
 		}
 
 		// Generate deterministic GDO ID: requestID + batch ID + counter
@@ -159,6 +207,7 @@ func (rc *RequestContract) ApproveRequest(
 
 		gdo := models.GDO{
 			GdoID:      gdoID,
+			RequestID:  requestID,
 			AssetType:  assetType,
 			IssueDate:  issueDate,
 			ExpiryDate: batch.ProductionDate.AddDate(0, 18, 0).Format(time.RFC3339),
@@ -184,7 +233,7 @@ func (rc *RequestContract) ApproveRequest(
 	if err != nil {
 		return err
 	}
-	productorBalanceRecord := models.ProductorBalance{}
+	productorBalanceRecord = models.ProductorBalance{}
 	if productorBalance != nil {
 		err = json.Unmarshal(productorBalance, &productorBalanceRecord)
 		if err != nil {
@@ -240,7 +289,6 @@ func (rc *RequestContract) ApproveRequest(
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 func (rc *RequestContract) RejectRequest(

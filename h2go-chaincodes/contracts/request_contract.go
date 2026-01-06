@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"h2go-chaincodes/models"
+	"strconv"
 	"time"
 
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
@@ -161,7 +162,6 @@ func (rc *RequestContract) ApproveRequest(
 	issueDate := issueTime.Format(time.RFC3339)
 
 	gdos := make([]models.GDO, 0)
-	gdoCounter := 0
 
 	for _, batch := range availableBatches {
 		availableInBatch := batch.AmountAvailable - batch.AmountUsed
@@ -202,19 +202,20 @@ func (rc *RequestContract) ApproveRequest(
 		}
 
 		// Generate deterministic GDO ID: requestID + batch ID + counter
-		gdoID := requestID + "-gdo-" + batch.BatchId
-		gdoCounter++
-
-		gdo := models.GDO{
-			GdoID:      gdoID,
-			RequestID:  requestID,
-			AssetType:  assetType,
-			IssueDate:  issueDate,
-			ExpiryDate: batch.ProductionDate.AddDate(0, 18, 0).Format(time.RFC3339),
-			OwnerID:    producerID,
-			Status:     models.GdoActive,
+		for i := int64(0); i < amountUsed; i++ {
+			gdoID := requestID + "-gdo-" + batch.BatchId + "-" + strconv.FormatInt(i, 10)
+			gdo := models.GDO{
+				GdoID:      gdoID,
+				RequestID:  requestID,
+				AssetType:  assetType,
+				IssueDate:  issueDate,
+				ExpiryDate: batch.ProductionDate.AddDate(0, 18, 0).Format(time.RFC3339),
+				OwnerID:    producerID,
+				Status:     models.GdoActive,
+			}
+			gdos = append(gdos, gdo)
 		}
-		gdos = append(gdos, gdo)
+
 		batchJSON, err := json.Marshal(batch)
 		if err != nil {
 			return err

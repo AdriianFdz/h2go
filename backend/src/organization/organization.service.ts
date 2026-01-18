@@ -15,6 +15,7 @@ export class OrganizationService {
         if (user.role !== 'Dev') {
             throw new Error('Solo un desarrollador puede crear una organización');
         }
+
         const organization = this.organizationRepository.create(createOrgDto);
         await this.organizationRepository.save(organization);
 

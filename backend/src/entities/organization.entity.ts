@@ -15,7 +15,7 @@ export class Organization {
     })
     type: string;
 
-    @Column()
+    @Column({ default: () => 'CURRENT_TIMESTAMP' })
     createdAt: Date;
 
     // Many orgs authorize many orgs

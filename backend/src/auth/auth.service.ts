@@ -1,0 +1,75 @@
+import { Injectable, ConflictException } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { User } from "../entities/user.entity";
+import { JwtService } from "@nestjs/jwt";
+import * as bcrypt from 'bcrypt';
+import { RegisterDto } from "./dto/register.dto";
+
+@Injectable()
+export class AuthService {
+    constructor(
+        @InjectRepository(User)
+        private usersRepository: Repository<User>,
+        private jwtService: JwtService
+    ) { }
+
+    async validateUser(email: string, password: string): Promise<any> {
+        const user = await this.usersRepository.findOne({ where: { email } });
+        if (user && await bcrypt.compare(password, user.password)) {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { password: _, ...result } = user;
+            return result;
+        }
+        return null;
+    }
+
+    login(user: any) {
+        const payload = { email: user.email, sub: user.id };
+        return {
+            access_token: this.jwtService.sign(payload),
+        };
+    }
+
+    async register(registerDto: RegisterDto, requester: User) {
+        if (!requester.organization) {
+            throw new ConflictException('El usuario debe pertenecer a una organización');
+        }
+
+        if (requester.role !== 'Admin') {
+            throw new ConflictException('Solo un administrador puede registrar nuevos usuarios');
+        }
+
+        const existingUser = await this.usersRepository.findOne({
+            where: { email: registerDto.email }
+        });
+
+        if (existingUser) {
+            throw new ConflictException('El email ya está registrado');
+        }
+
+        const hashedPassword = await bcrypt.hash(registerDto.password, 10);
+
+        const newUser = this.usersRepository.create({
+            name: registerDto.name,
+            email: registerDto.email,
+            password: hashedPassword,
+            createdAt: new Date().toISOString(),
+            role: 'User',
+            organization: requester.organization,
+        });
+
+        const savedUser = await this.usersRepository.save(newUser);
+
+        return {
+            user: {
+                id: savedUser.id,
+                name: savedUser.name,
+                email: savedUser.email,
+                createdAt: savedUser.createdAt,
+                role: savedUser.role,
+                organization: savedUser.organization,
+            }
+        };
+    }
+}

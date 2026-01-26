@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
-import { OrganizationModule } from './organization/organization.module';
+import { OrganizationsModule } from './organizations/organizations.module';
 
 @Module({
   imports: [
@@ -23,7 +23,7 @@ import { OrganizationModule } from './organization/organization.module';
       }),
     }),
     AuthModule,
-    OrganizationModule,
+    OrganizationsModule,
   ],
 })
 export class AppModule { }

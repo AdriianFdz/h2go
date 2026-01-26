@@ -2,14 +2,14 @@ import { Controller, Post, UseGuards, Body, Req } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { CreateOrgDto } from './dto/createOrg.dto';
-import { OrganizationService } from './organization.service';
+import { OrganizationsService } from './organizations.service';
 import { User } from 'src/entities/user.entity';
 
 @ApiTags('organization')
 @Controller('organization')
-export class OrganizationController {
+export class OrganizationsController {
     constructor(
-        private organizationService: OrganizationService,
+        private organizationsService: OrganizationsService,
     ) { }
 
     @Post()
@@ -21,6 +21,6 @@ export class OrganizationController {
     @ApiResponse({ status: 401, description: 'No autorizado' })
     createOrganization(@Body() createOrgDto: CreateOrgDto, @Req() req) {
         const user = req.user as User;
-        return this.organizationService.createOrganization(createOrgDto, user);
+        return this.organizationsService.createOrganization(createOrgDto, user);
     }
 }

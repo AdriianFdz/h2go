@@ -6,7 +6,7 @@ import { CreateOrgDto } from "./dto/createOrg.dto";
 import { User } from "src/entities/user.entity";
 
 @Injectable()
-export class OrganizationService {
+export class OrganizationsService {
     constructor(
         @InjectRepository(Organization)
         private organizationRepository: Repository<Organization>,

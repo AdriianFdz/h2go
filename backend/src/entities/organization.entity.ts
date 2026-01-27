@@ -9,6 +9,14 @@ export class Organization {
     @Column({ unique: true })
     name: string;
 
+    @Column({ unique: true })
+    mspId: string;
+
+    // must be the one defined in the network.yaml
+    // e.g., peer0-ree.localho.st:443
+    @Column({ unique: true })
+    peerEndpoint: string;
+
     @Column({
         type: 'enum',
         enum: ['trader', 'productor', 'consumer']

@@ -10,6 +10,15 @@ export class CreateOrgDto {
     @ApiProperty()
     @IsString()
     @IsNotEmpty()
-    type: string;
+    mspId: string;
 
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    peerEndpoint: string;
+
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    type: string;
 }

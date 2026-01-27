@@ -1,6 +1,12 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { Organization } from './organization.entity';
 
+export enum Role {
+    DEV = 'Dev',
+    ADMIN = 'Admin',
+    USER = 'User'
+}
+
 @Entity('users')
 export class User {
     @PrimaryGeneratedColumn('uuid')
@@ -18,8 +24,8 @@ export class User {
     @Column()
     createdAt: Date;
 
-    @Column({ type: 'enum', enum: ['Dev', 'Admin', 'User'], default: 'User' })
-    role: 'Dev' | 'Admin' | 'User';
+    @Column({ type: 'enum', enum: Role, default: Role.USER })
+    role: Role;
 
     @ManyToOne(() => Organization, organization => organization.users)
     @JoinColumn({ name: 'organization_id' })

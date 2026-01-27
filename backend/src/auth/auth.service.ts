@@ -1,7 +1,7 @@
 import { Injectable, ConflictException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { User } from "../entities/user.entity";
+import { Role, User } from "../entities/user.entity";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from 'bcrypt';
 import { RegisterDto } from "./dto/register.dto";
@@ -43,7 +43,7 @@ export class AuthService {
             throw new ConflictException('El usuario debe pertenecer a una organización');
         }
 
-        if (requester.role !== 'Admin') {
+        if (requester.role !== Role.ADMIN) {
             throw new ConflictException('Solo un administrador puede registrar nuevos usuarios');
         }
 
@@ -62,7 +62,7 @@ export class AuthService {
             email: registerDto.email,
             password: hashedPassword,
             createdAt: new Date().toISOString(),
-            role: 'User',
+            role: Role.USER,
             organization: requester.organization,
         });
 

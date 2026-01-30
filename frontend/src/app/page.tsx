@@ -1,12 +1,24 @@
 "use client";
 
-import { Form, TextField, Label, InputGroup, Input, FieldError } from '@heroui/react';
+import {
+  Form,
+  TextField,
+  Label,
+  InputGroup,
+  Input,
+  FieldError,
+  InputGroupPrefix,
+  InputGroupInput,
+} from "@heroui/react";
+import { EnvelopeIcon, LockIcon } from "./components/icons";
 
 export default function Home() {
   return (
     <div>
       <h1>H2GO</h1>
-      <h2>The triple <span color="">&apos;T&apos;</span> solution</h2>
+      <h2>
+        The triple <span color="">&apos;T&apos;</span> solution
+      </h2>
       <Form>
         <TextField
           isRequired
@@ -21,22 +33,26 @@ export default function Home() {
         >
           <Label>Email</Label>
           <InputGroup>
-            <InputGroup.Prefix>
-            </InputGroup.Prefix>
-            <Input
-              placeholder="john@example.com"
-
-            />
+            <InputGroupPrefix>
+              <EnvelopeIcon className="size-4 text-muted" />
+            </InputGroupPrefix>
+            <InputGroupInput placeholder="name@email.com" />
           </InputGroup>
           <FieldError />
         </TextField>
+
         <TextField
           isRequired
           name="password"
           type="password"
         >
           <Label>Password</Label>
-          <Input placeholder="Enter your password" />
+          <InputGroup>
+            <InputGroupPrefix>
+              <LockIcon className="size-4 text-muted" />
+            </InputGroupPrefix>
+            <InputGroupInput placeholder="Enter your password" />
+          </InputGroup>
           <FieldError />
         </TextField>
       </Form>

@@ -1,4 +1,4 @@
-import { Controller, Post, UseGuards, Body, Req, Res } from '@nestjs/common';
+import { Controller, Post, Get, UseGuards, Body, Req, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
@@ -30,6 +30,18 @@ export class AuthController {
         
         return { message: 'Login exitoso' };
     }
+    
+    @Get('verify')
+    @UseGuards(AuthGuard('jwt'))
+    @ApiOperation({ summary: 'Verificar autenticación' })
+    @ApiResponse({ status: 200, description: 'Usuario autenticado' })
+    @ApiResponse({ status: 401, description: 'No autenticado' })
+    verify() {
+        return {
+            authenticated: true,
+        };
+    }
+
     @Post('register')
     @ApiOperation({ summary: 'Registro de usuario' })
     @ApiResponse({ status: 201, description: 'Usuario registrado exitosamente' })

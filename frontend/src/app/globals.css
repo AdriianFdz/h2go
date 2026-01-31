@@ -35,7 +35,7 @@
   --warning-foreground: oklch(21.03% 0.0059 63.29);
 
   /* Border Radius */
-  --radius: 0.125rem;
+  --radius: 0.25rem;
   --field-radius: 0.75rem;
 
   /* Font Family */
@@ -58,7 +58,7 @@
   --field-background: oklch(21.03% 0.0000 178.49);
   --field-foreground: oklch(99.11% 0.0000 0.00);
   --field-placeholder: oklch(70.50% 0.0000 178.49);
-  --focus: oklch(72.86% 0.1336 178.49);
+  --focus: oklch(72.86% 0.1336 178.523);
   --foreground: oklch(99.11% 0.0000 0.00);
   --muted: oklch(70.50% 0.0000 178.49);
   --overlay: oklch(21.03% 0.0000 178.49);
@@ -76,8 +76,6 @@
 }
 
 body {
-  background-color: var(--background);
-  color: var(--foreground);
   font-family: var(--font-space-grotesk);
   transition: background-color 0.3s, color 0.3s;
 }

@@ -10,7 +10,7 @@ export const NavLogo = () => (
     />
     <div>
       <h1 className="text-5xl font-black">H2GO</h1>
-      <p className="text-xs text-muted">
+      <p className="text-s text-muted">
         The triple <span className="font-bold">&apos;T&apos;</span> solution
       </p>
     </div>

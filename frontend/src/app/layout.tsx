@@ -13,6 +13,12 @@ const space_grotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
 });
 
+export const metadata: Metadata = {
+  title: "H2GO - Green Hydrogen Blockchain Solution",
+  description:
+    "Trust, Transparency, and Traceability for green hydrogen guarantees of origin.",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -24,7 +30,7 @@ export default function RootLayout({
       className="dark"
     >
       <body
-        className={`${inter.variable} ${space_grotesk.variable} antialiased`}
+        className={`${inter.variable} ${space_grotesk.variable} antialiased bg-linear-to-br from-accent/25 via-accent/5 to-accent-foreground overflow-hidden`}
       >
         <header>
           <NavLogo />

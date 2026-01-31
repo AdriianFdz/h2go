@@ -15,10 +15,10 @@ export class OrganizationsController {
     @Post()
     @UseGuards(AuthGuard('jwt'))
     @ApiBearerAuth()
-    @ApiOperation({ summary: 'Crear una nueva organización' })
-    @ApiResponse({ status: 201, description: 'Organización creada exitosamente' })
-    @ApiResponse({ status: 400, description: 'Datos inválidos' })
-    @ApiResponse({ status: 401, description: 'No autorizado' })
+    @ApiOperation({ summary: 'Create a new organization' })
+    @ApiResponse({ status: 201, description: 'Organization created successfully' })
+    @ApiResponse({ status: 400, description: 'Invalid data' })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
     createOrganization(@Body() createOrgDto: CreateOrgDto, @Req() req) {
         const user = req.user as User;
         return this.organizationsService.createOrganization(createOrgDto, user);
@@ -27,10 +27,10 @@ export class OrganizationsController {
     @Post(':mspId/users')
     @UseGuards(AuthGuard('jwt'))
     @ApiBearerAuth()
-    @ApiOperation({ summary: 'Agregar un usuario a una organización' })
-    @ApiResponse({ status: 201, description: 'Usuario agregado a la organización exitosamente' })
-    @ApiResponse({ status: 400, description: 'Datos inválidos' })
-    @ApiResponse({ status: 401, description: 'No autorizado' })
+    @ApiOperation({ summary: 'Add a user to an organization' })
+    @ApiResponse({ status: 201, description: 'User added to the organization successfully' })
+    @ApiResponse({ status: 400, description: 'Invalid data' })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
     addUserToOrganization(@Param('mspId') mspId: string, @Param('userEmail') userEmail: string, @Req() req) {
         const user = req.user as User;
         return this.organizationsService.addUserToOrganization(mspId, userEmail, user);

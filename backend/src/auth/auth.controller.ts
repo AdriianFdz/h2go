@@ -14,9 +14,9 @@ export class AuthController {
 
     @Post('login')
     @UseGuards(AuthGuard('local'))
-    @ApiOperation({ summary: 'Login de usuario' })
-    @ApiResponse({ status: 200, description: 'Login exitoso' })
-    @ApiResponse({ status: 401, description: 'Credenciales inválidas' })
+    @ApiOperation({ summary: 'User login' })
+    @ApiResponse({ status: 200, description: 'Logged in successfully' })
+    @ApiResponse({ status: 401, description: 'Invalid credentials' })
     login(@Body() loginDto: LoginDto, @Req() req, @Res({ passthrough: true }) res: Response) {
         const { access_token } = this.authService.login(req.user);
         
@@ -25,29 +25,42 @@ export class AuthController {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
-            maxAge: 24 * 60 * 60 * 1000 // 24 horas
+            maxAge: 24 * 60 * 60 * 1000 // 24 hours
         });
         
-        return { message: 'Login exitoso' };
+        return { message: 'Logged in successfully' };
     }
     
     @Get('verify')
     @UseGuards(AuthGuard('jwt'))
-    @ApiOperation({ summary: 'Verificar autenticación' })
-    @ApiResponse({ status: 200, description: 'Usuario autenticado' })
-    @ApiResponse({ status: 401, description: 'No autenticado' })
-    verify() {
+    @ApiOperation({ summary: 'Verify authentication' })
+    @ApiResponse({ status: 200, description: 'User authenticated' })
+    @ApiResponse({ status: 401, description: 'Not authenticated' })
+    verify(@Req() req) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { password, ...userWithoutPassword } = req.user;
         return {
             authenticated: true,
+            user: userWithoutPassword
         };
     }
 
     @Post('register')
-    @ApiOperation({ summary: 'Registro de usuario' })
-    @ApiResponse({ status: 201, description: 'Usuario registrado exitosamente' })
-    @ApiResponse({ status: 400, description: 'Datos inválidos' })
+    @ApiOperation({ summary: 'User registration' })
+    @ApiResponse({ status: 201, description: 'User registered successfully' })
+    @ApiResponse({ status: 400, description: 'Invalid data' })
     register(@Body() registerDto: RegisterDto, @Req() req) {
         const user = req.user as User;
         return this.authService.register(registerDto, user);
+    }
+
+    @Post('logout')
+    @UseGuards(AuthGuard('jwt'))
+    @ApiOperation({ summary: 'Logout user' })
+    @ApiResponse({ status: 200, description: 'Logged out successfully' })
+    @ApiResponse({ status: 401, description: 'Not authenticated' })
+    logout(@Res({ passthrough: true }) res: Response) {
+        this.authService.logout(res);
+        return { message: 'Logged out successfully' };
     }
 }

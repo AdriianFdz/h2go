@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Form,
@@ -12,6 +12,7 @@ import {
   InputGroupSuffix,
   InputGroupInput,
   Button,
+  Spinner,
 } from "@heroui/react";
 import { FeatureCard } from "./components/feature-card";
 import {
@@ -28,7 +29,31 @@ export default function Home() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const router = useRouter();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/auth/verify`,
+          {
+            credentials: "include",
+          }
+        );
+
+        if (response.ok) {
+          router.push("/dashboard");
+        }
+      } catch (error) {
+        // Usuario no autenticado, mostrar login
+      } finally {
+        setIsCheckingAuth(false);
+      }
+    };
+
+    checkAuth();
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -67,6 +92,14 @@ export default function Home() {
       setIsLoading(false);
     }
   };
+
+  if (isCheckingAuth) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spinner />
+      </div>
+    );
+  }
 
   return (
     <div className="flex w-full h-screen">

@@ -27,6 +27,9 @@ export class User {
     @Column({ type: 'enum', enum: Role, default: Role.USER })
     role: Role;
 
+    @Column({ nullable: true })
+    avatar?: string;
+
     @ManyToOne(() => Organization, organization => organization.users)
     @JoinColumn({ name: 'organization_id' })
     organization: Organization;

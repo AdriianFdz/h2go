@@ -30,11 +30,8 @@ export default function RootLayout({
       className="dark"
     >
       <body
-        className={`${inter.variable} ${space_grotesk.variable} antialiased bg-linear-to-br from-accent/25 via-accent/5 to-accent-foreground overflow-hidden`}
+        className={`${inter.variable} ${space_grotesk.variable} antialiased bg-linear-to-br from-accent/25 via-accent/5 to-accent-foreground h-screen overflow-hidden`}
       >
-        <header>
-          <NavLogo />
-        </header>
         {children}
       </body>
     </html>

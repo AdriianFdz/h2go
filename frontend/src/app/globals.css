@@ -19,7 +19,7 @@
   --field-foreground: oklch(21.03% 0.0059 178.49);
   --field-placeholder: oklch(55.17% 0.0000 178.49);
   --focus: oklch(72.86% 0.1336 178.49);
-  --foreground: oklch(21.03% 0.0059 178.49);
+  --foreground: oklab(14.89% -0.00824 -0.00911);
   --muted: oklch(55.17% 0.0000 178.49);
   --overlay: oklch(100.00% 0.0000 178.49);
   --overlay-foreground: oklch(21.03% 0.0059 178.49);
@@ -49,7 +49,7 @@
   /* Theme Colors (Dark Mode) */
   --accent: oklch(72.86% 0.1336 178.49);
   --accent-foreground: oklch(15% 0.0267 178.49);
-  --background: oklch(12.00% 0.0000 178.49);
+  --background: oklab(12.79% -0.00983 -0.00776);
   --border: oklch(28.00% 0.0000 178.49);
   --danger: oklch(59.40% 0.1967 15.59);
   --danger-foreground: oklch(99.11% 0 0);
@@ -69,7 +69,7 @@
   --separator: oklch(25.00% 0.0000 178.49);
   --success: oklch(73.29% 0.1935 141.77);
   --success-foreground: oklch(21.03% 0.0059 141.77);
-  --surface: oklch(21.03% 0.0000 178.49);
+  --surface: oklab(14.89% -0.00824 -0.00911);
   --surface-foreground: oklch(99.11% 0.0000 0.00);
   --warning: oklch(82.03% 0.1388 67.30);
   --warning-foreground: oklch(21.03% 0.0059 67.30);

@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { User } from "../types/user";
 
 export function useAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -23,6 +25,8 @@ export function useAuth() {
           return;
         }
 
+        const data = await response.json();
+        setUser(data.user);
         setIsAuthenticated(true);
       } catch (error) {
         console.error("Auth verification error:", error);
@@ -35,5 +39,5 @@ export function useAuth() {
     verifyAuth();
   }, [router]);
 
-  return { isAuthenticated, isLoading };
+  return { isAuthenticated, isLoading, user };
 }

@@ -1,7 +1,6 @@
 export const EnvelopeIcon = ({ className }: { className?: string }) => (
   <svg
     className={className}
-    xmlns="http://www.w3.org/2000/svg"
     width="128"
     height="128"
     viewBox="0 0 24 24"
@@ -20,7 +19,6 @@ export const EnvelopeIcon = ({ className }: { className?: string }) => (
 export const LockIcon = ({ className }: { className?: string }) => (
   <svg
     className={className}
-    xmlns="http://www.w3.org/2000/svg"
     width="128"
     height="128"
     viewBox="0 0 24 24"
@@ -40,7 +38,6 @@ export const VerifyIcon = ({ className }: { className?: string }) => {
   return (
     <svg
       className={className}
-      xmlns="http://www.w3.org/2000/svg"
       width="128"
       height="128"
       viewBox="0 0 24 24"
@@ -63,7 +60,6 @@ export const EyeIcon = ({ className }: { className?: string }) => {
   return (
     <svg
       className={className}
-      xmlns="http://www.w3.org/2000/svg"
       width="1em"
       height="1em"
       viewBox="0 0 24 24"
@@ -86,7 +82,6 @@ export const TraceabilityIcon = ({ className }: { className?: string }) => {
   return (
     <svg
       className={className}
-      xmlns="http://www.w3.org/2000/svg"
       width="1em"
       height="1em"
       viewBox="0 0 24 24"
@@ -107,7 +102,6 @@ export const EyeSlashIcon = ({ className }: { className?: string }) => {
   return (
     <svg
       className={className}
-      xmlns="http://www.w3.org/2000/svg"
       width="1em"
       height="1em"
       viewBox="0 0 24 24"
@@ -130,7 +124,6 @@ export const SubmitArrowIcon = ({ className }: { className?: string }) => {
   return (
     <svg
       className={className}
-      xmlns="http://www.w3.org/2000/svg"
       width="1em"
       height="1em"
       viewBox="0 0 24 24"
@@ -143,6 +136,96 @@ export const SubmitArrowIcon = ({ className }: { className?: string }) => {
         strokeWidth="1.5"
         d="M4.5 12h15m0 0l-5.625-6m5.625 6l-5.625 6"
       />
+    </svg>
+  );
+};
+
+export const DownArrowIcon = ({ className }: { className?: string }) => {
+  return (
+    <svg
+      className={className}
+      width="24"
+      height="24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      viewBox="0 0 24 24"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+  );
+};
+
+export const LogoutIcon = ({ className }: { className?: string }) => {
+  return (
+    <svg
+      className={className}
+      width="24"
+      height="24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      viewBox="0 0 24 24"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M13.496 21H6.5c-1.105 0-2-1.151-2-2.571V5.57c0-1.419.895-2.57 2-2.57h7M16 15.5l3.5-3.5L16 8.5m-6.5 3.496h10" />
+    </svg>
+  );
+};
+
+export const DashboardIcon = ({ className }: { className?: string }) => {
+  return (
+    <svg
+      className={className}
+      width="24"
+      height="24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      viewBox="0 0 24 24"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M3 6.75c0-1.768 0-2.652.55-3.2C4.097 3 4.981 3 6.75 3s2.652 0 3.2.55c.55.548.55 1.432.55 3.2s0 2.652-.55 3.2c-.548.55-1.432.55-3.2.55s-2.652 0-3.2-.55C3 9.403 3 8.519 3 6.75m0 10.507c0-1.768 0-2.652.55-3.2.548-.55 1.432-.55 3.2-.55s2.652 0 3.2.55c.55.548.55 1.432.55 3.2s0 2.652-.55 3.2c-.548.55-1.432.55-3.2.55s-2.652 0-3.2-.55C3 19.91 3 19.026 3 17.258M13.5 6.75c0-1.768 0-2.652.55-3.2.548-.55 1.432-.55 3.2-.55s2.652 0 3.2.55c.55.548.55 1.432.55 3.2s0 2.652-.55 3.2c-.548.55-1.432.55-3.2.55s-2.652 0-3.2-.55c-.55-.548-.55-1.432-.55-3.2m0 10.507c0-1.768 0-2.652.55-3.2.548-.55 1.432-.55 3.2-.55s2.652 0 3.2.55c.55.548.55 1.432.55 3.2s0 2.652-.55 3.2c-.548.55-1.432.55-3.2.55s-2.652 0-3.2-.55c-.55-.548-.55-1.432-.55-3.2" />
+    </svg>
+  );
+};
+
+export const TransactionIcon = ({ className }: { className?: string }) => {
+  return (
+    <svg
+      className={className}
+      width="24"
+      height="24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      viewBox="0 0 24 24"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="m14 10-3 3m9.288-9.969a.535.535 0 0 1 .68.681l-5.924 16.93a.535.535 0 0 1-.994.04l-3.219-7.242a.54.54 0 0 0-.271-.271l-7.242-3.22a.535.535 0 0 1 .04-.993z" />
+    </svg>
+  );
+};
+
+export const OrganizationIcon = ({ className }: { className?: string }) => {
+  return (
+    <svg
+      className={className}
+      width="24"
+      height="24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      viewBox="0 0 24 24"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M15 6.6V4c0-.545-.456-.998-1-1h-4c-.545 0-1.002.456-1 1v2.6m.52 8.4c-2.3-.251-4.223-.705-6.241-2m11.33 2c2.302-.251 4.094-.705 6.112-2M8.308 21h7.384c3.71 0 4.375-1.449 4.569-3.213l.692-7.2c.25-2.196-.397-3.987-4.338-3.987h-9.23c-3.941 0-4.587 1.791-4.338 3.987l.692 7.2C3.933 19.551 4.598 21 8.308 21m5.003-7.501h-2.5c-1.653.002-1.789 3 0 3h2.5c1.784 0 1.68-3 0-3" />
     </svg>
   );
 };

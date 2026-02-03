@@ -19,7 +19,10 @@ export class AuthService {
   ) {}
 
   async validateUser(email: string, password: string): Promise<any> {
-    const user = await this.usersRepository.findOne({ where: { email } });
+    const user = await this.usersRepository.findOne({
+      where: { email },
+      relations: ['organization'],
+    });
     if (user && (await bcrypt.compare(password, user.password))) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password: _, ...result } = user;
@@ -35,8 +38,16 @@ export class AuthService {
       name: user.name,
       role: user.role,
       createdAt: user.createdAt,
-      organizationId: user.organization?.id || null,
       avatar: user.avatar || null,
+      organization: user.organization
+        ? {
+            id: user.organization.id,
+            name: user.organization.name,
+            mspId: user.organization.mspId,
+            peerEndpoint: user.organization.peerEndpoint,
+            type: user.organization.type,
+          }
+        : null,
     };
     return {
       access_token: this.jwtService.sign(payload),

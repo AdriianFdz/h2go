@@ -49,11 +49,9 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'User authenticated' })
   @ApiResponse({ status: 401, description: 'Not authenticated' })
   verify(@Req() req) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...userWithoutPassword } = req.user;
     return {
       authenticated: true,
-      user: userWithoutPassword,
+      user: req.user,
     };
   }
 

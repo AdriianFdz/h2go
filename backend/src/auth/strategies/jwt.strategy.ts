@@ -2,39 +2,39 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { User } from 'src/entities/user.entity';
+import { IAuthenticatedUser } from '../interfaces/authenticatedUser';
 import { Request } from 'express';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-    constructor(
-        private configService: ConfigService,
-        @InjectRepository(User)
-        private userRepository: Repository<User>,
-    ) {
-        super({
-            jwtFromRequest: ExtractJwt.fromExtractors([
-                (request: Request) => {
-                    return request?.cookies?.token;
-                },
-            ]),
-            ignoreExpiration: false,
-            secretOrKey: configService.get<string>('JWT_SECRET')!,
-        });
+  constructor(private configService: ConfigService) {
+    super({
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (request: Request) => {
+          return request?.cookies?.token as string | null;
+        },
+      ]),
+      ignoreExpiration: false,
+      secretOrKey: configService.get<string>('JWT_SECRET')!,
+    });
+  }
+
+  validate(payload: any): IAuthenticatedUser {
+    if (!payload.sub || !payload.email) {
+      throw new UnauthorizedException('Invalid token payload');
     }
 
-    async validate(payload: any) {
-        const user = await this.userRepository.findOne({
-            where: { id: payload.sub },
-            relations: ['organization']
-        });
+    // Construir el usuario autenticado desde el payload del JWT
+    const user: IAuthenticatedUser = {
+      id: payload.sub,
+      email: payload.email,
+      name: payload.name,
+      role: payload.role,
+      createdAt: payload.createdAt,
+      avatar: payload.avatar,
+      organization: payload.organization,
+    };
 
-        if (!user) {
-            throw new UnauthorizedException();
-        }
-
-        return user;
-    }
+    return user;
+  }
 }

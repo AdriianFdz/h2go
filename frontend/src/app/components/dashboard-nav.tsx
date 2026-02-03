@@ -1,15 +1,19 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { DashboardIcon, TransactionIcon, OrganizationIcon } from "./icons";
+import { DashboardIcon, OrganizationIcon, RequestIcon } from "./icons";
 
 export const DashboardNav = ({ className }: { className?: string }) => {
   const pathname = usePathname();
   const links = [
-    { href: "/dashboard", icon: <DashboardIcon />, label: "Dashboard" },
     {
-      href: "/dashboard/transactions",
-      icon: <TransactionIcon />,
-      label: "Transactions",
+      href: "/dashboard",
+      icon: <DashboardIcon />,
+      label: "Dashboard",
+    },
+    {
+      href: "/dashboard/requests",
+      icon: <RequestIcon />,
+      label: "Requests",
     },
     {
       href: "/dashboard/organization",

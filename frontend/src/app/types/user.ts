@@ -1,3 +1,5 @@
+import { Organization } from './organization';
+
 export enum Role {
   DEV = 'Dev',
   ADMIN = 'Admin',
@@ -11,9 +13,5 @@ export interface User {
   role: Role;
   createdAt: string;
   avatar?: string | null;
-  organizationId?: string | null;
-  organization?: {
-    id: string;
-    name?: string;
-  };
+  organization?: Organization;
 }

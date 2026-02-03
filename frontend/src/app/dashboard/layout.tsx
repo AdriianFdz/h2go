@@ -63,7 +63,9 @@ export default function DashboardLayout({
                   <p className="text-white text-xl font-semibold">
                     {user.name}
                   </p>
-                  <p className="text-muted text-md">{user.role}</p>
+                  <p className="text-muted text-md">
+                    {user.organization?.name}
+                  </p>
                 </div>
                 <DownArrowIcon className="w-7 h-7" />
               </div>
@@ -86,8 +88,8 @@ export default function DashboardLayout({
         )}
       </header>
       <div className="flex h-screen bg-background">
-        <DashboardNav className="mr-10" />
-        <main className="flex-1 overflow-auto mt-5">{children}</main>
+        <DashboardNav className="" />
+        <main className="flex-1 overflow-auto mt-5 ml-10 pr-0">{children}</main>
       </div>
     </>
   ) : null;

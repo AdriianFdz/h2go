@@ -194,7 +194,7 @@ export const DashboardIcon = ({ className }: { className?: string }) => {
   );
 };
 
-export const TransactionIcon = ({ className }: { className?: string }) => {
+export const RequestIcon = ({ className }: { className?: string }) => {
   return (
     <svg
       className={className}
@@ -226,6 +226,50 @@ export const OrganizationIcon = ({ className }: { className?: string }) => {
       strokeLinejoin="round"
     >
       <path d="M15 6.6V4c0-.545-.456-.998-1-1h-4c-.545 0-1.002.456-1 1v2.6m.52 8.4c-2.3-.251-4.223-.705-6.241-2m11.33 2c2.302-.251 4.094-.705 6.112-2M8.308 21h7.384c3.71 0 4.375-1.449 4.569-3.213l.692-7.2c.25-2.196-.397-3.987-4.338-3.987h-9.23c-3.941 0-4.587 1.791-4.338 3.987l.692 7.2C3.933 19.551 4.598 21 8.308 21m5.003-7.501h-2.5c-1.653.002-1.789 3 0 3h2.5c1.784 0 1.68-3 0-3" />
+    </svg>
+  );
+};
+
+export const ElectricityIcon = ({ className }: { className?: string }) => {
+  return (
+    <svg
+      className={className}
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+    >
+      <path
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.5"
+        d="M10.564 13.708a.504.504 0 0 0-.496-.565H7a.506.506 0 0 1-.461-.702l3.907-9.128a.5.5 0 0 1 .46-.313h4.518c.353 0 .594.36.465.694l-2.225 5.712a.506.506 0 0 0 .464.694H17c.412 0 .647.479.398.813l-7.47 10.046c-.062.083-.191.03-.18-.072z"
+      />
+    </svg>
+  );
+};
+
+export const HidrogenIcon = ({ className }: { className?: string }) => {
+  return (
+    <svg
+      className={className}
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+    >
+      <g
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.5"
+      >
+        <path d="M7 7v5m0 0v5m0-5h6.25m0-5v5m0 0v5" />
+        <g transform="translate(14, 10) scale(0.5)">
+          <path d="M8.75 9.92c0-3.894 5.77-3.894 5.77 0c0 2.94-3.77 5.476-5.77 7.08c0 0 3.75-.625 6.25 0" />
+        </g>
+      </g>
     </svg>
   );
 };

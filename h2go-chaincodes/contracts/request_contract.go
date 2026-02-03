@@ -471,3 +471,33 @@ func (rc *RequestContract) GetRequestsByProducerAndStatus(
 
 	return filteredRequests, nil
 }
+
+func (rc *RequestContract) GetRequestsByStatusAndAssetType(
+	ctx contractapi.TransactionContextInterface,
+	status string,
+	assetType string) ([]*models.Request, error) {
+		
+	statusEnum, err := models.ParseRequestStatus(status)
+	if err != nil {
+		return nil, err
+	}
+	
+	assetTypeEnum, err := models.ParseAssetType(assetType)
+	if err != nil {
+		return nil, err
+	}
+	
+	allRequests, err := rc.GetAllRequests(ctx)
+	if err != nil {
+		return nil, err
+	}
+	
+	var filteredRequests []*models.Request
+	for _, request := range allRequests {
+		if request.Status == statusEnum && request.AssetType == assetTypeEnum {
+			filteredRequests = append(filteredRequests, request)
+		}
+	}
+	
+	return filteredRequests, nil
+}

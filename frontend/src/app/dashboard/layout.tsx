@@ -89,7 +89,9 @@ export default function DashboardLayout({
       </header>
       <div className="flex h-screen bg-background">
         <DashboardNav className="" />
-        <main className="flex-1 overflow-auto mt-5 ml-10 pr-0">{children}</main>
+        <main className="flex-1 overflow-auto mt-10 ml-10 pr-0">
+          {children}
+        </main>
       </div>
     </>
   ) : null;

@@ -45,10 +45,9 @@ export default function RequestsPage() {
       }
     };
 
-    // Comentado temporalmente para usar datos de ejemplo
     fetchRequests();
 
-    // Actualizar cada 5 minutos para reactividad
+    // Actualizar cada 5 minutos
     const interval = setInterval(fetchRequests, 300000);
 
     return () => clearInterval(interval);
@@ -56,7 +55,7 @@ export default function RequestsPage() {
 
   if (isLoading || loadingRequests) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center mt-20">
         <Spinner size="xl" />
       </div>
     );
@@ -93,7 +92,7 @@ export default function RequestsPage() {
           <Accordion.Item key={request.requestId}>
             <Accordion.Heading>
               <Accordion.Trigger className="group flex items-center gap-4 bg-linear-to-r from-surface to-background border border-muted/30 hover:border-muted/50 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 px-5 py-4 rounded-xl w-full shadow-md">
-                <div className="flex items-center justify-center px-3 py-2 bg-background/50 rounded-lg border border-muted/20">
+                <div className="flex items-center justify-center px-2 py-2 bg-background/50 rounded-lg border border-muted/20">
                   {request.assetType === AssetType.H2 ? (
                     <HidrogenIcon className="w-11 h-11" />
                   ) : (

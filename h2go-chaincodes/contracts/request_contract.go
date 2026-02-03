@@ -446,3 +446,28 @@ func (rc *RequestContract) GetRequestsByProducer(
 
 	return producerRequests, nil
 }
+
+func (rc *RequestContract) GetRequestsByProducerAndStatus(
+	ctx contractapi.TransactionContextInterface,
+	producerID string,
+	status string) ([]*models.Request, error) {
+		
+	statusEnum, err := models.ParseRequestStatus(status)
+	if err != nil {
+		return nil, err
+	}
+	
+	allRequests, err := rc.GetAllRequests(ctx)
+	if err != nil {
+		return nil, err
+	}
+	
+	var filteredRequests []*models.Request
+	for _, request := range allRequests {
+		if request.ProducerID == producerID && request.Status == statusEnum {
+			filteredRequests = append(filteredRequests, request)
+		}
+	}
+
+	return filteredRequests, nil
+}

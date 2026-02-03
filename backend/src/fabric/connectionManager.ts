@@ -104,4 +104,11 @@ export class ConnectionManager {
         const result = contract.evaluateTransaction(functionName, ...args);
         return result;
     }
+
+    executeTransaction(gateway: Gateway, client: grpc.Client, functionName: string, ...args: string[]): Promise<Uint8Array> {
+        const network = gateway.getNetwork(process.env.FABRIC_CHANNEL_NAME!);
+        const contract = network.getContract(process.env.FABRIC_CHAINCODE_NAME!)
+        const result = contract.submitTransaction(functionName, ...args);
+        return result;
+    }
 }

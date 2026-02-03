@@ -1,7 +1,8 @@
-import { IsDate, IsInt, IsNotEmpty, IsString, Min } from "class-validator";
+import { IsDate, IsEnum, IsInt, IsNotEmpty, IsString, Min } from "class-validator";
 import { AssetType } from "./enums/AssetType";
 import { Unit } from "./enums/Unit";
 import { ApiProperty } from "@nestjs/swagger";
+import { Type } from "class-transformer";
 
 export class RegisterProductionDto {
     @ApiProperty({
@@ -17,6 +18,7 @@ export class RegisterProductionDto {
         description: 'Type of the asset being produced',
         enum: AssetType,
     })
+    @IsEnum(AssetType)
     @IsNotEmpty()
     assetType: AssetType;
 
@@ -41,6 +43,7 @@ export class RegisterProductionDto {
         description: 'Date and time when the production occurred',
     })
     @IsDate()
+    @Type(() => Date)
     @IsNotEmpty()
     productionDate: Date;
 }

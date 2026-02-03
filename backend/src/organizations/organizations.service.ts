@@ -4,6 +4,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { CreateOrgDto } from "./dto/createOrg.dto";
 import { Role, User } from "src/entities/user.entity";
+import { request } from "http";
 
 @Injectable()
 export class OrganizationsService {
@@ -24,16 +25,16 @@ export class OrganizationsService {
         return { message: 'Organización creada exitosamente', organization: createOrgDto, createdBy: user };
     }
 
-    async addUserToOrganization(mspId: string, userEmail: string, requestingUser: User) {
+    async addUserToOrganization(id: string, userEmail: string, requestingUser: User) {
         if (requestingUser.role !== Role.DEV && requestingUser.role !== Role.ADMIN) {
             throw new Error('Solo un desarrollador o administrador puede agregar usuarios a una organización');
         }
-        if (requestingUser.role === Role.ADMIN && requestingUser.organization.mspId !== mspId) {
+        if (requestingUser.role === Role.ADMIN && requestingUser.organization.id !== id) {
             throw new Error('Un administrador solo puede agregar usuarios a su propia organización');
         }
 
         const organization = await this.organizationRepository.findOne({
-            where: { mspId },
+            where: { id },
             relations: ['users']
         });
         if (!organization) {
@@ -47,4 +48,31 @@ export class OrganizationsService {
         await this.userRepository.save(user);
         return { message: 'Usuario agregado a la organización exitosamente' };
     }
+
+    async authorizeOrganization(id: string, requestingUser: User) {
+        if (requestingUser.role !== Role.ADMIN) {
+            throw new Error('Solo un administrador puede autorizar organizaciones');
+        }
+
+        if (!requestingUser.organization) {
+            throw new Error('El administrador no pertenece a ninguna organización');
+        }
+        
+        const orgToAuthorize = await this.organizationRepository.findOne({
+            where: { id }
+        });
+        if (!orgToAuthorize) {
+            throw new Error('Organización a autorizar no encontrada');
+        }
+
+        await this.organizationRepository
+            .createQueryBuilder()
+            .relation(Organization, 'authorizedOrgs')
+            .of(requestingUser.organization)
+            .add(orgToAuthorize);
+
+        return { message: 'Organización autorizada exitosamente' };
+    }
+        
+        
 }

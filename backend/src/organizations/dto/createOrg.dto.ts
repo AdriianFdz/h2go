@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional} from 'class-validator';
 
 export class CreateOrgDto {
     @ApiProperty()
@@ -9,13 +9,13 @@ export class CreateOrgDto {
 
     @ApiProperty()
     @IsString()
-    @IsNotEmpty()
-    mspId: string;
+    @IsOptional()
+    mspId?: string;
 
     @ApiProperty()
     @IsString()
-    @IsNotEmpty()
-    peerEndpoint: string;
+    @IsOptional()
+    peerEndpoint?: string;
 
     @ApiProperty()
     @IsString()

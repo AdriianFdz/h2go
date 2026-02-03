@@ -12,16 +12,17 @@ export class AssetsController {
         private assetsService: AssetsService,
     ) { }
 
-    // @Post('production')
-    // @UseGuards(AuthGuard('jwt'))
-    // @ApiBearerAuth()
-    // @ApiOperation({ summary: 'Register production of an asset' })
-    // @ApiResponse({ status: 201, description: 'Production registered successfully.' })
-    // @ApiResponse({ status: 401, description: 'Unauthorized.' })
-    // registerProduction(@Req() req, @Body() body: RegisterProductionDto) {
-    //     const user = req.user as User;
-    //     return this.assetsService.registerProduction(user, body);
-    // }
+    @Post('production')
+    @UseGuards(AuthGuard('jwt'))
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Register production of an asset' })
+    @ApiResponse({ status: 201, description: 'Production registered successfully.' })
+    @ApiResponse({ status: 403, description: 'Forbidden. User organization is not allowed to register production.' })
+    @ApiResponse({ status: 401, description: 'Unauthorized.' })
+    registerProduction(@Req() req, @Body() body: RegisterProductionDto) {
+        const user = req.user as User;
+        return this.assetsService.registerProduction(user, body);
+    }
 
     @Get('production')
     @UseGuards(AuthGuard('jwt'))

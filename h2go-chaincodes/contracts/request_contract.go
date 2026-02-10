@@ -65,37 +65,31 @@ func (rc *RequestContract) CreateRequest(
 	return requestID, nil
 }
 
-func (rc *RequestContract) ApproveRequest(
+func (rc *RequestContract) validateRequestBasics(
 	ctx contractapi.TransactionContextInterface,
-	requestID string,
-	reason string) error {
-
-	approverID, err := ctx.GetClientIdentity().GetID()
-	if err != nil {
-		return errors.New("failed to get client identity: " + err.Error())
-	}
+	requestID string) (*models.Request, models.ProductorBalance, string, string, int64, error) {
 
 	requestJSON, err := ctx.GetStub().GetState(requestID)
 	if err != nil {
-		return errors.New("failed to read request: " + err.Error())
+		return nil, models.ProductorBalance{}, "", "", 0, errors.New("failed to read request: " + err.Error())
 	}
 	if requestJSON == nil {
-		return errors.New("request " + requestID + " does not exist")
+		return nil, models.ProductorBalance{}, "", "", 0, errors.New("request " + requestID + " does not exist")
 	}
 
 	var request models.Request
 	err = json.Unmarshal(requestJSON, &request)
 	if err != nil {
-		return err
+		return nil, models.ProductorBalance{}, "", "", 0, err
 	}
 
 	// Validate that it's a GDO request
 	if request.DocType != "REQUEST_TO_TRANSFORM_GDOS" {
-		return errors.New("document is not a GDO request, found docType: " + request.DocType)
+		return nil, models.ProductorBalance{}, "", "", 0, errors.New("document is not a GDO request, found docType: " + request.DocType)
 	}
 
 	if request.Status != models.RequestPending {
-		return errors.New("request is not in PENDING status, current status: " + string(request.Status))
+		return nil, models.ProductorBalance{}, "", "", 0, errors.New("request is not in PENDING status, current status: " + string(request.Status))
 	}
 
 	producerID := request.ProducerID
@@ -104,37 +98,77 @@ func (rc *RequestContract) ApproveRequest(
 
 	_, err = models.ParseAssetType(assetType)
 	if err != nil {
-		return err
+		return nil, models.ProductorBalance{}, "", "", 0, err
 	}
 
-	// if asset type is H2, check if producer has enough electricity balance to transform
-
+	// If asset type is H2, check if producer has enough electricity GDOs
 	var productorBalanceRecord models.ProductorBalance
 	if assetType == string(models.H2) {
 		actualProductorBalance, err := ctx.GetStub().GetState(producerID)
 		if err != nil {
-			return err
+			return nil, models.ProductorBalance{}, "", "", 0, err
 		}
 		if actualProductorBalance == nil {
-			return errors.New("producer " + producerID + " electricity balance is empty to transform GDOs")
+			return nil, models.ProductorBalance{}, "", "", 0, errors.New("producer " + producerID + " electricity balance is empty to transform GDOs")
 		}
 		err = json.Unmarshal(actualProductorBalance, &productorBalanceRecord)
 		if err != nil {
-			return err
+			return nil, models.ProductorBalance{}, "", "", 0, err
 		}
 		if int64(len(productorBalanceRecord.GDOS.Electricity.Available)) < gdoToGrant {
-			return errors.New("producer " + producerID + " does not have enough electricity GDOs to transform")
+			return nil, models.ProductorBalance{}, "", "", 0, errors.New("producer " + producerID + " does not have enough electricity GDOs to transform")
 		}
+	}
+
+	return &request, productorBalanceRecord, producerID, assetType, gdoToGrant, nil
+}
+
+func (rc *RequestContract) QuickValidateRequest(
+	ctx contractapi.TransactionContextInterface,
+	requestID string) (string, error) {
+
+	_, _, producerID, assetType, gdoToGrant, err := rc.validateRequestBasics(ctx, requestID)
+	if err != nil {
+		return `{"canApprove":false}`, nil
+	}
+
+	pc := ProductionContract{}
+	batches, err := pc.GetProductionBatchesByProducerAndAssetType(ctx, producerID, assetType)
+	if err != nil || batches == nil {
+		return `{"canApprove":false}`, nil
+	}
+
+	var totalAvailable int64 = 0
+	for _, batch := range batches {
+		if batch.Status == models.ProductionAvailable {
+			totalAvailable += batch.AmountAvailable - batch.AmountUsed
+		}
+	}
+
+	if totalAvailable < gdoToGrant {
+		return `{"canApprove":false}`, nil
+	}
+
+	return `{"canApprove":true}`, nil
+}
+
+func (rc *RequestContract) validateRequestForApproval(
+	ctx contractapi.TransactionContextInterface,
+	requestID string) (*models.Request, models.ProductorBalance, []*models.ProductionRecord, error) {
+
+	request, productorBalanceRecord, producerID, assetType, gdoToGrant, err := rc.validateRequestBasics(ctx, requestID)
+	if err != nil {
+		return nil, models.ProductorBalance{}, nil, err
 	}
 
 	pc := ProductionContract{}
 	batches, err := pc.GetProductionBatchesByProducerAndAssetType(ctx, producerID, assetType)
 
 	if err != nil {
-		return err
+		return nil, models.ProductorBalance{}, nil, err
 	}
 	if batches == nil {
-		return errors.New("producer " + producerID + " batches not found")
+		return nil, models.ProductorBalance{}, nil, errors.New("producer " + producerID + " batches not found")
 	}
 
 	remainingGdoToGrant := gdoToGrant
@@ -150,8 +184,31 @@ func (rc *RequestContract) ApproveRequest(
 		}
 	}
 	if totalAvailable < remainingGdoToGrant {
-		return errors.New("not enough available production to exchange for GDOs")
+		return nil, models.ProductorBalance{}, nil, errors.New("not enough available production to exchange for GDOs")
 	}
+
+	return request, productorBalanceRecord, availableBatches, nil
+}
+
+func (rc *RequestContract) ApproveRequest(
+	ctx contractapi.TransactionContextInterface,
+	requestID string,
+	reason string) error {
+
+	approverID, err := ctx.GetClientIdentity().GetID()
+	if err != nil {
+		return errors.New("failed to get client identity: " + err.Error())
+	}
+
+	request, productorBalanceRecord, availableBatches, err := rc.validateRequestForApproval(ctx, requestID)
+	if err != nil {
+		return err
+	}
+
+	producerID := request.ProducerID
+	assetType := string(request.AssetType)
+	gdoToGrant := request.Amount
+	remainingGdoToGrant := gdoToGrant
 
 	// Get deterministic timestamp from transaction
 	txTimestamp, err := ctx.GetStub().GetTxTimestamp()
@@ -162,6 +219,8 @@ func (rc *RequestContract) ApproveRequest(
 	issueDate := issueTime.Format(time.RFC3339)
 
 	gdos := make([]models.GDO, 0)
+	electricityGDOsToRedeem := make([]string, 0)
+	electricityGDOIndex := 0
 
 	for _, batch := range availableBatches {
 		availableInBatch := batch.AmountAvailable - batch.AmountUsed
@@ -176,28 +235,20 @@ func (rc *RequestContract) ApproveRequest(
 			batch.Status = models.ProductionUsed
 			amountUsed = availableInBatch
 		}
-		// if asset type is H2, also redeem electricity GDOs ordered by expiry date
+
+		// if asset type is H2, collect electricity GDOs to redeem
 		if assetType == string(models.H2) {
 			electricityGDOs := productorBalanceRecord.GDOS.Electricity.Available
-
-			rdpContract := RedemptionContract{}
-			err = rdpContract.RedeemGDOs(ctx, producerID, string(models.Electricity), func() []string {
-				gdoIDs := make([]string, 0)
-				counter := 0
-				for _, gdo := range electricityGDOs {
-					// Check status (not needed but just in case)
-					if gdo.Status == models.GdoActive {
-						gdoIDs = append(gdoIDs, gdo.GdoID)
-						counter++
-						if int64(counter) >= amountUsed {
-							break
-						}
+			for i := int64(0); i < amountUsed; i++ {
+				// Find next available electricity GDO starting from last index
+				for electricityGDOIndex < len(electricityGDOs) {
+					if electricityGDOs[electricityGDOIndex].Status == models.GdoActive {
+						electricityGDOsToRedeem = append(electricityGDOsToRedeem, electricityGDOs[electricityGDOIndex].GdoID)
+						electricityGDOIndex++
+						break
 					}
+					electricityGDOIndex++
 				}
-				return gdoIDs
-			}())
-			if err != nil {
-				return err
 			}
 		}
 
@@ -227,6 +278,15 @@ func (rc *RequestContract) ApproveRequest(
 
 		if remainingGdoToGrant <= 0 {
 			break
+		}
+	}
+
+	// Redeem collected electricity GDOs for H2 requests
+	if assetType == string(models.H2) && len(electricityGDOsToRedeem) > 0 {
+		rdpContract := RedemptionContract{}
+		err = rdpContract.RedeemGDOs(ctx, producerID, string(models.Electricity), electricityGDOsToRedeem)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -451,17 +511,17 @@ func (rc *RequestContract) GetRequestsByProducerAndStatus(
 	ctx contractapi.TransactionContextInterface,
 	producerID string,
 	status string) ([]*models.Request, error) {
-		
+
 	statusEnum, err := models.ParseRequestStatus(status)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	allRequests, err := rc.GetAllRequests(ctx)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	var filteredRequests []*models.Request
 	for _, request := range allRequests {
 		if request.ProducerID == producerID && request.Status == statusEnum {
@@ -476,28 +536,28 @@ func (rc *RequestContract) GetRequestsByStatusAndAssetType(
 	ctx contractapi.TransactionContextInterface,
 	status string,
 	assetType string) ([]*models.Request, error) {
-		
+
 	statusEnum, err := models.ParseRequestStatus(status)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	assetTypeEnum, err := models.ParseAssetType(assetType)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	allRequests, err := rc.GetAllRequests(ctx)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	var filteredRequests []*models.Request
 	for _, request := range allRequests {
 		if request.Status == statusEnum && request.AssetType == assetTypeEnum {
 			filteredRequests = append(filteredRequests, request)
 		}
 	}
-	
+
 	return filteredRequests, nil
 }

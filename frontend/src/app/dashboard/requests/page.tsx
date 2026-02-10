@@ -1,6 +1,13 @@
 "use client";
 
-import { Accordion, Button, Spinner } from "@heroui/react";
+import {
+  Accordion,
+  Button,
+  Label,
+  Modal,
+  SearchField,
+  Spinner,
+} from "@heroui/react";
 import {
   DownArrowIcon,
   ElectricityIcon,
@@ -18,6 +25,14 @@ export default function RequestsPage() {
   const router = useRouter();
   const [requests, setRequests] = useState<Request[]>([]);
   const [loadingRequests, setLoadingRequests] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
+  const [comment, setComment] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [validationLoading, setValidationLoading] = useState(false);
+  const [validationResult, setValidationResult] = useState<{
+    canApprove: boolean;
+  } | null>(null);
+
   useEffect(() => {
     if (!user) return;
 
@@ -77,12 +92,113 @@ export default function RequestsPage() {
     );
   }
 
+  const handleApprove = async () => {
+    if (!selectedRequest) return;
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/requests/${selectedRequest.requestId}/approve`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ comment }),
+        }
+      );
+
+      if (response.ok) {
+        setRequests(
+          requests.filter((r) => r.requestId !== selectedRequest.requestId)
+        );
+        setSelectedRequest(null);
+        setComment("");
+        setValidationResult(null);
+      } else {
+        console.error("Error approving request:", await response.text());
+      }
+    } catch (error) {
+      console.error("Error approving request:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!selectedRequest) return;
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/requests/${selectedRequest.requestId}/reject`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ comment }),
+        }
+      );
+
+      if (response.ok) {
+        setRequests(
+          requests.filter((r) => r.requestId !== selectedRequest.requestId)
+        );
+        setSelectedRequest(null);
+        setComment("");
+        setValidationResult(null);
+      } else {
+        console.error("Error rejecting request:", await response.text());
+      }
+    } catch (error) {
+      console.error("Error rejecting request:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const validateRequest = async (requestId: string) => {
+    setValidationLoading(true);
+    setValidationResult(null);
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/requests/${requestId}/validation`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setValidationResult({ canApprove: data.canApprove });
+      } else {
+        setValidationResult({ canApprove: false });
+      }
+    } catch (error) {
+      console.error("Error validating request:", error);
+      setValidationResult({ canApprove: false });
+    } finally {
+      setValidationLoading(false);
+    }
+  };
+
   return (
     <div className="pb-32 pr-10">
       <h1 className="text-4xl font-bold mb-6">Requests</h1>
       <p className="text-muted text-lg mb-8">
         {isRegulator ? "All pending requests" : "Your organization requests"}
       </p>
+
+      <SearchField>
+        <Label className="text-lg">Search Requests</Label>
+        <SearchField.Group className="h-13 bg-surface/50 border border-muted/30">
+          <SearchField.Input placeholder="Insert request ID" />
+        </SearchField.Group>
+      </SearchField>
 
       <Accordion
         className="w-full rounded-2xl my-6 mb-16"
@@ -231,12 +347,121 @@ export default function RequestsPage() {
                       </div>
                     </div>
                   )}
-                  <Button
-                    fullWidth
-                    className="text-xl font-black h-13"
-                  >
-                    Take Action
-                  </Button>
+                  {isRegulator && request.status === "PENDING" && (
+                    <Modal>
+                      <Button
+                        fullWidth
+                        className="text-xl font-black h-13"
+                        onClick={() => {
+                          setSelectedRequest(request);
+                          setComment("");
+                          validateRequest(request.requestId);
+                        }}
+                      >
+                        Take Action
+                      </Button>
+                      <Modal.Backdrop variant="blur">
+                        <Modal.Container>
+                          <Modal.Dialog className="bg-surface border border-muted/30 max-w-2xl">
+                            <Modal.CloseTrigger />
+                            <Modal.Header className="border-b border-muted/20 p-6">
+                              <h2 className="text-2xl font-bold">
+                                Take Action on Request
+                              </h2>
+                              <p className="text-sm text-muted font-mono mt-1 break-all">
+                                {request.requestId}
+                              </p>
+                              {validationLoading ? (
+                                <div className="flex items-center gap-2 mt-3">
+                                  <Spinner size="sm" />
+                                  <p className="text-sm text-muted">
+                                    Validating request...
+                                  </p>
+                                </div>
+                              ) : validationResult ? (
+                                validationResult.canApprove ? (
+                                <div className="bg-success/10 border border-success/30 rounded-lg p-4">
+                                  <p
+                                    className={"text-lg font-bold text-success"}
+                                  >
+                                    ✓ Request meets approval criteria
+                                  </p>
+                                </div>
+                                ) : (
+                                  <div className="bg-danger/10 border border-danger/30 rounded-lg p-4">
+                                    <p
+                                      className={"text-lg font-bold text-danger"}
+                                    >
+                                      ✗ Request does not meet approval criteria
+                                    </p>
+                                  </div>
+                                )
+                              ) : null}
+                            </Modal.Header>
+                            <Modal.Body className="p-6 space-y-4">
+                              <div className="space-y-2">
+                                <Label className="text-base font-semibold">
+                                  Comment <span className="text-danger">*</span>
+                                </Label>
+                                <div className="bg-background/50 border border-muted/30 rounded-lg">
+                                  <textarea
+                                    value={comment}
+                                    onChange={(e) => setComment(e.target.value)}
+                                    placeholder="Add a comment about your decision... (required)"
+                                    rows={5}
+                                    className="w-full p-3 bg-transparent text-foreground resize-none focus:outline-none rounded-lg"
+                                    disabled={isSubmitting}
+                                  />
+                                </div>
+                                {comment.trim() === "" && (
+                                  <p className="text-sm text-muted">
+                                    A comment is required to proceed
+                                  </p>
+                                )}
+                              </div>
+
+                              <div className="bg-warning/10 border border-warning/30 rounded-lg p-4">
+                                <p className="text-sm text-warning font-semibold">
+                                  ⚠️ This action cannot be undone. Please review
+                                  carefully.
+                                </p>
+                              </div>
+                            </Modal.Body>
+                            <Modal.Footer className="border-t border-muted/20 p-6 flex gap-3">
+                              <Button
+                                variant="danger"
+                                onClick={() => handleReject()}
+                                isDisabled={
+                                  isSubmitting || comment.trim() === ""
+                                }
+                                className="flex-1 h-12 font-bold"
+                              >
+                                {isSubmitting ? (
+                                  <Spinner size="sm" />
+                                ) : (
+                                  "Reject"
+                                )}
+                              </Button>
+                              <Button
+                                variant="primary"
+                                onClick={() => handleApprove()}
+                                isDisabled={
+                                  isSubmitting || comment.trim() === "" || (validationResult ? !validationResult.canApprove : false)
+                                }
+                                className="flex-1 h-12 font-bold bg-success hover:bg-success/90"
+                              >
+                                {isSubmitting ? (
+                                  <Spinner size="sm" />
+                                ) : (
+                                  "Approve"
+                                )}
+                              </Button>
+                            </Modal.Footer>
+                          </Modal.Dialog>
+                        </Modal.Container>
+                      </Modal.Backdrop>
+                    </Modal>
+                  )}
                 </div>
               </Accordion.Body>
             </Accordion.Panel>

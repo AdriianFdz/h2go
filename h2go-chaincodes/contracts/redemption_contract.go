@@ -150,3 +150,21 @@ func (rdpc *RedemptionContract) RedeemGDOs(
 	}
 	return nil
 }
+
+func (rdpc *RedemptionContract) GetProducerBalance(ctx contractapi.TransactionContextInterface, ownerID string) (*models.ProductorBalance, error) {
+	ownerBalance, err := ctx.GetStub().GetState(ownerID)
+	if err != nil {
+		return nil, errors.New("failed to read owner balance from world state")
+	}
+	if ownerBalance == nil {
+		return nil, errors.New("owner balance does not exist")
+	}
+
+	var productorBalanceRecord models.ProductorBalance
+	err = json.Unmarshal(ownerBalance, &productorBalanceRecord)
+	if err != nil {
+		return nil, err
+	}
+
+	return &productorBalanceRecord, nil
+}

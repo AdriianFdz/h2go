@@ -71,8 +71,9 @@ func runChaincodeService(contract *contractapi.ContractChaincode) error {
 func main() {
 	productionContract := new(contracts.ProductionContract)
 	requestContract := new(contracts.RequestContract)
+	redemptionContract := new(contracts.RedemptionContract)
 
-	chaincode, err := contractapi.NewChaincode(productionContract, requestContract)
+	chaincode, err := contractapi.NewChaincode(productionContract, requestContract, redemptionContract)
 	if err != nil {
 		log.Panicf("Error creating h2go chaincode: %v", err)
 	}

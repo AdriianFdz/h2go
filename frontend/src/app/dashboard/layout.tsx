@@ -60,9 +60,9 @@ export default function DashboardLayout({
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="text-white text-xl font-semibold">
+                    <p className="text-white text-xl font-semibold text-left">
                     {user.name}
-                  </p>
+                    </p>
                   <p className="text-muted text-md">
                     {user.organization?.name}
                   </p>

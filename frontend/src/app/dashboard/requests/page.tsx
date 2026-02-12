@@ -11,7 +11,7 @@ import {
 import {
   DownArrowIcon,
   ElectricityIcon,
-  HidrogenIcon,
+  HydrogenIcon,
 } from "@/app/components/icons";
 import { useAuth } from "@/app/hooks/useAuth";
 import { useEffect, useState } from "react";
@@ -210,7 +210,7 @@ export default function RequestsPage() {
               <Accordion.Trigger className="group flex items-center gap-4 bg-linear-to-r from-surface to-background border border-muted/30 hover:border-muted/50 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 px-5 py-4 rounded-xl w-full shadow-md">
                 <div className="flex items-center justify-center px-2 py-2 bg-background/50 rounded-lg border border-muted/20">
                   {request.assetType === AssetType.H2 ? (
-                    <HidrogenIcon className="w-11 h-11" />
+                    <HydrogenIcon className="w-11 h-11" />
                   ) : (
                     <ElectricityIcon className="w-11 h-11" />
                   )}
@@ -380,17 +380,21 @@ export default function RequestsPage() {
                                 </div>
                               ) : validationResult ? (
                                 validationResult.canApprove ? (
-                                <div className="bg-success/10 border border-success/30 rounded-lg p-4">
-                                  <p
-                                    className={"text-lg font-bold text-success"}
-                                  >
-                                    ✓ Request meets approval criteria
-                                  </p>
-                                </div>
+                                  <div className="bg-success/10 border border-success/30 rounded-lg p-4">
+                                    <p
+                                      className={
+                                        "text-lg font-bold text-success"
+                                      }
+                                    >
+                                      ✓ Request meets approval criteria
+                                    </p>
+                                  </div>
                                 ) : (
                                   <div className="bg-danger/10 border border-danger/30 rounded-lg p-4">
                                     <p
-                                      className={"text-lg font-bold text-danger"}
+                                      className={
+                                        "text-lg font-bold text-danger"
+                                      }
                                     >
                                       ✗ Request does not meet approval criteria
                                     </p>
@@ -434,7 +438,7 @@ export default function RequestsPage() {
                                 isDisabled={
                                   isSubmitting || comment.trim() === ""
                                 }
-                                className="flex-1 h-12 font-bold"
+                                className="flex-1 h-12 font-bold bg-danger hover:bg-danger/90"
                               >
                                 {isSubmitting ? (
                                   <Spinner size="sm" />
@@ -446,7 +450,11 @@ export default function RequestsPage() {
                                 variant="primary"
                                 onClick={() => handleApprove()}
                                 isDisabled={
-                                  isSubmitting || comment.trim() === "" || (validationResult ? !validationResult.canApprove : false)
+                                  isSubmitting ||
+                                  comment.trim() === "" ||
+                                  (validationResult
+                                    ? !validationResult.canApprove
+                                    : false)
                                 }
                                 className="flex-1 h-12 font-bold bg-success hover:bg-success/90"
                               >

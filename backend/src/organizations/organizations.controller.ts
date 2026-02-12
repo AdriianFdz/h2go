@@ -1,4 +1,12 @@
-import { Controller, Post, UseGuards, Body, Req, Param } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  UseGuards,
+  Body,
+  Req,
+  Param,
+  Get,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
   ApiTags,
@@ -62,5 +70,20 @@ export class OrganizationsController {
   authorizeOrganization(@Param('id') id: string, @Req() req) {
     const user = req.user as IAuthenticatedUser;
     return this.organizationsService.authorizeOrganization(id, user);
+  }
+
+  @Get(':id/balance')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get organization balance' })
+  @ApiResponse({
+    status: 200,
+    description: 'Organization balance retrieved successfully',
+  })
+  @ApiResponse({ status: 400, description: 'Invalid data' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  getOrganizationBalance(@Param('id') id: string, @Req() req) {
+    const user = req.user as IAuthenticatedUser;
+    return this.organizationsService.getOrganizationBalance(id, user);
   }
 }

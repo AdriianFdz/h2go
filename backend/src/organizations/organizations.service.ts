@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { Organization } from '../entities/organization.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateOrgDto } from './dto/createOrg.dto';
 import { Role, User } from 'src/entities/user.entity';
 import { IAuthenticatedUser } from 'src/auth/interfaces/authenticatedUser';
+import { ConnectionManager } from '../fabric/connectionManager';
+import { GdoBalanceDto } from './dto/gdoBalance.dto';
 
 @Injectable()
 export class OrganizationsService {
@@ -13,6 +15,8 @@ export class OrganizationsService {
     private organizationRepository: Repository<Organization>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @Inject(ConnectionManager)
+    private connectionManager: ConnectionManager,
   ) {}
   async createOrganization(
     createOrgDto: CreateOrgDto,
@@ -95,5 +99,66 @@ export class OrganizationsService {
       .add(orgToAuthorize);
 
     return { message: 'Organización autorizada exitosamente' };
+  }
+
+  async getOrganizationBalance(
+    id: string,
+    requestingUser: IAuthenticatedUser,
+  ): Promise<GdoBalanceDto> {
+    const userOrg = await this.organizationRepository.findOne({
+      where: { id: requestingUser.organization.id },
+      relations: ['authorizedByOrgs'],
+    });
+
+    if (!userOrg) {
+      throw new Error('Organización del usuario no encontrada');
+    }
+
+    const isOwnOrg = userOrg.id === id;
+    const isAuthorizedByOrg =
+      userOrg.authorizedByOrgs?.some((org) => org.id === id) || false;
+
+    if (!isOwnOrg && !isAuthorizedByOrg) {
+      throw new Error(
+        'Solo los usuarios de la organización o autorizados pueden consultar su balance',
+      );
+    }
+
+    const organization = await this.organizationRepository.findOne({
+      where: { id },
+    });
+
+    if (!organization) {
+      throw new Error('Organización no encontrada');
+    }
+
+    const { gateway, client } =
+      await this.connectionManager.connectGateway(requestingUser);
+    try {
+      const result = await this.connectionManager.queryTransaction(
+        gateway,
+        client,
+        'RedemptionContract:GetProducerBalance',
+        id,
+      );
+      const resultString = Buffer.from(result).toString('utf8');
+
+      if (!resultString || resultString.trim() === '') {
+        return {
+          producerId: id,
+          organizationName: organization.name,
+          gdos: {
+            ELECTRICITY: { available: [], unavailable: [] },
+            H2: { available: [], unavailable: [] },
+          },
+        };
+      }
+
+      const balance: GdoBalanceDto = JSON.parse(resultString);
+      balance.organizationName = organization.name;
+      return balance;
+    } finally {
+      this.connectionManager.disconnectGateway(gateway, client);
+    }
   }
 }

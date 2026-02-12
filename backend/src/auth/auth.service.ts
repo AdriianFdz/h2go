@@ -107,4 +107,21 @@ export class AuthService {
       sameSite: 'strict',
     });
   }
+
+  async getAuthorizedByOrgs(user: IAuthenticatedUser): Promise<string[]> {
+    if (!user.organization?.id) {
+      return [];
+    }
+
+    const organization = await this.organizationRepository.findOne({
+      where: { id: user.organization.id },
+      relations: ['authorizedByOrgs'],
+    });
+
+    if (!organization || !organization.authorizedByOrgs) {
+      return [];
+    }
+
+    return organization.authorizedByOrgs.map(org => org.id);
+  }
 }

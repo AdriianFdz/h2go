@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { DashboardIcon, OrganizationIcon, RequestIcon } from "./icons";
+import { DashboardIcon, GDOIcon, OrganizationIcon, RequestIcon } from "./icons";
 
 export const DashboardNav = ({ className }: { className?: string }) => {
   const pathname = usePathname();
@@ -19,6 +19,11 @@ export const DashboardNav = ({ className }: { className?: string }) => {
       href: "/dashboard/organization",
       icon: <OrganizationIcon />,
       label: "Organization",
+    },
+    {
+      href: "/dashboard/gdos",
+      icon: <GDOIcon />,
+      label: "GdOs",
     },
   ];
   return (

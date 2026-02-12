@@ -8,6 +8,7 @@ export function useAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
+  const [authorizedByOrgs, setAuthorizedByOrgs] = useState<string[]>([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -27,6 +28,7 @@ export function useAuth() {
 
         const data = await response.json();
         setUser(data.user);
+        setAuthorizedByOrgs(data.authorizedByOrgs || []);
         setIsAuthenticated(true);
       } catch (error) {
         console.error("Auth verification error:", error);
@@ -39,5 +41,5 @@ export function useAuth() {
     verifyAuth();
   }, [router]);
 
-  return { isAuthenticated, isLoading, user };
+  return { isAuthenticated, isLoading, user, authorizedByOrgs };
 }

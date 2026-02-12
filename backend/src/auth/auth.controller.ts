@@ -48,10 +48,14 @@ export class AuthController {
   @ApiOperation({ summary: 'Verify authentication' })
   @ApiResponse({ status: 200, description: 'User authenticated' })
   @ApiResponse({ status: 401, description: 'Not authenticated' })
-  verify(@Req() req) {
+  async verify(@Req() req: { user: IAuthenticatedUser }) {
+    const authorizedByOrgs = await this.authService.getAuthorizedByOrgs(
+      req.user,
+    );
     return {
       authenticated: true,
       user: req.user,
+      authorizedByOrgs,
     };
   }
 
@@ -59,7 +63,10 @@ export class AuthController {
   @ApiOperation({ summary: 'User registration' })
   @ApiResponse({ status: 201, description: 'User registered successfully' })
   @ApiResponse({ status: 400, description: 'Invalid data' })
-  register(@Body() registerDto: RegisterDto, @Req() req) {
+  register(
+    @Body() registerDto: RegisterDto,
+    @Req() req: { user: IAuthenticatedUser },
+  ) {
     const user: IAuthenticatedUser = req.user;
     return this.authService.register(registerDto, user);
   }

@@ -4,11 +4,12 @@ import { OrganizationsController } from './organizations.controller';
 import { OrganizationsService } from './organizations.service';
 import { Organization } from '../entities/organization.entity';
 import { User } from '../entities/user.entity';
+import { ConnectionManager } from '../fabric/connectionManager';
 
 @Module({
     imports: [TypeOrmModule.forFeature([Organization, User])],
     controllers: [OrganizationsController],
-    providers: [OrganizationsService],
+    providers: [OrganizationsService, ConnectionManager],
     exports: [OrganizationsService],
 })
 export class OrganizationsModule { }

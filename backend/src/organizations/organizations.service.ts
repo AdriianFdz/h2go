@@ -101,6 +101,42 @@ export class OrganizationsService {
     return { message: 'Organización autorizada exitosamente' };
   }
 
+  async getOrganization(id: string, requestingUser: IAuthenticatedUser) {
+    const userOrg = await this.organizationRepository.findOne({
+      where: { id: requestingUser.organization.id },
+      relations: ['authorizedByOrgs'],
+    });
+
+    if (!userOrg) {
+      throw new Error('Organización del usuario no encontrada');
+    }
+
+    const isOwnOrg = userOrg.id === id;
+    const isAuthorizedByOrg =
+      userOrg.authorizedByOrgs?.some((org) => org.id === id) || false;
+
+    if (!isOwnOrg && !isAuthorizedByOrg) {
+      throw new Error(
+        'Solo los usuarios de la organización o autorizados pueden consultar su información',
+      );
+    }
+
+    const organization = await this.organizationRepository.findOne({
+      where: { id },
+    });
+
+    if (!organization) {
+      throw new Error('Organización no encontrada');
+    }
+
+    return {
+      id: organization.id,
+      name: organization.name,
+      type: organization.type,
+      mspId: organization.mspId,
+    };
+  }
+
   async getOrganizationBalance(
     id: string,
     requestingUser: IAuthenticatedUser,
@@ -146,7 +182,6 @@ export class OrganizationsService {
       if (!resultString || resultString.trim() === '') {
         return {
           producerId: id,
-          organizationName: organization.name,
           gdos: {
             ELECTRICITY: { available: [], unavailable: [] },
             H2: { available: [], unavailable: [] },
@@ -155,7 +190,6 @@ export class OrganizationsService {
       }
 
       const balance: GdoBalanceDto = JSON.parse(resultString);
-      balance.organizationName = organization.name;
       return balance;
     } finally {
       this.connectionManager.disconnectGateway(gateway, client);

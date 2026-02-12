@@ -72,6 +72,21 @@ export class OrganizationsController {
     return this.organizationsService.authorizeOrganization(id, user);
   }
 
+  @Get(':id')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get organization information' })
+  @ApiResponse({
+    status: 200,
+    description: 'Organization information retrieved successfully',
+  })
+  @ApiResponse({ status: 404, description: 'Organization not found' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  getOrganization(@Param('id') id: string, @Req() req) {
+    const user = req.user as IAuthenticatedUser;
+    return this.organizationsService.getOrganization(id, user);
+  }
+
   @Get(':id/balance')
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()

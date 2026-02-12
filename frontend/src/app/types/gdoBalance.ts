@@ -13,6 +13,5 @@ export interface GdosByAssetType {
 export interface GdoBalance {
   transactionType: string;
   producerId: string;
-  organizationName: string;
   gdos: GdosByAssetType;
 }

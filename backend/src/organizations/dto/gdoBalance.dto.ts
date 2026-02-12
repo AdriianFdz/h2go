@@ -20,6 +20,5 @@ export interface GdosByAssetType {
 
 export interface GdoBalanceDto {
   producerId: string;
-  organizationName: string;
   gdos: GdosByAssetType;
 }

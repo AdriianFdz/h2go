@@ -11,6 +11,7 @@ import { OrganizationType } from "@/app/types/organization";
 
 interface OrganizationBalance {
   organizationId: string;
+  organizationName: string;
   balance: GdoBalance;
 }
 
@@ -35,19 +36,30 @@ export default function GdOsPage() {
               );
 
         const balancePromises = orgsToFetch.map(async (orgId) => {
-          const response = await fetch(
-            `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/organizations/${orgId}/balance`,
-            {
-              method: "GET",
-              credentials: "include",
-            }
-          );
+          const [balanceResponse, orgResponse] = await Promise.all([
+            fetch(
+              `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/organizations/${orgId}/balance`,
+              {
+                method: "GET",
+                credentials: "include",
+              }
+            ),
+            fetch(
+              `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/organizations/${orgId}`,
+              {
+                method: "GET",
+                credentials: "include",
+              }
+            ),
+          ]);
 
-          if (response.ok) {
-            const data = await response.json();
+          if (balanceResponse.ok && orgResponse.ok) {
+            const balanceData = await balanceResponse.json();
+            const orgData = await orgResponse.json();
             return {
               organizationId: orgId,
-              balance: data,
+              organizationName: orgData.name,
+              balance: balanceData,
             };
           }
           return null;
@@ -111,7 +123,7 @@ export default function GdOsPage() {
                 <Accordion.Trigger className="group flex items-center justify-between bg-surface border border-muted/30 px-6 py-4 rounded-xl w-full">
                   <div className="flex-1 text-left">
                     <span className="text-xl font-bold">
-                      Organization: {orgBalance.balance?.organizationName}
+                      Organization: {orgBalance.organizationName}
                     </span>
                     <p className="text-sm text-muted mt-1">
                       {(orgBalance.balance?.gdos?.ELECTRICITY?.available

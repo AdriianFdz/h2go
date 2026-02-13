@@ -195,10 +195,6 @@ function OrganizationBalanceSection({
     electricityAvailable.length + electricityUnavailable.length;
   const totalH2 = h2Available.length + h2Unavailable.length;
 
-  if (totalElectricity === 0 && totalH2 === 0) {
-    return null;
-  }
-
   return (
     <div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
@@ -325,7 +321,7 @@ function OrganizationBalanceSection({
         variant="surface"
       >
         {/* Electricity Available */}
-        {electricityAvailable.length > 0 && (
+        
           <Accordion.Item key="electricity-available">
             <Accordion.Heading>
               <Accordion.Trigger className="group flex items-center gap-4 bg-linear-to-r from-surface to-background border border-muted/30 px-5 py-4 rounded-xl w-full shadow-md">
@@ -429,10 +425,9 @@ function OrganizationBalanceSection({
               </Accordion.Body>
             </Accordion.Panel>
           </Accordion.Item>
-        )}
+        
 
         {/* Electricity Unavailable */}
-        {electricityUnavailable.length > 0 && (
           <Accordion.Item key="electricity-unavailable">
             <Accordion.Heading>
               <Accordion.Trigger className="group flex items-center gap-4 bg-linear-to-r from-surface to-background border border-muted/30 px-5 py-4 rounded-xl w-full shadow-md">
@@ -536,7 +531,7 @@ function OrganizationBalanceSection({
               </Accordion.Body>
             </Accordion.Panel>
           </Accordion.Item>
-        )}
+        
 
         {/* H2 Available */}
         {h2Available.length > 0 && (

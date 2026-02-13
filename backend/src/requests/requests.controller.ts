@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Req, Body, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Req,
+  Body,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
   ApiTags,
@@ -8,6 +16,7 @@ import {
 } from '@nestjs/swagger';
 import { RequestsService } from './requests.service';
 import { IAuthenticatedUser } from '../auth/interfaces/authenticatedUser';
+import { CreateRequestDto } from './dto/CreateRequest.dto';
 
 @ApiTags('requests')
 @Controller('requests')
@@ -26,6 +35,17 @@ export class RequestsController {
   getAllPendingRequests(@Req() request) {
     const user: IAuthenticatedUser = request.user;
     return this.requestsService.getAllPendingRequests(user);
+  }
+
+  @Post()
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create a new request of GdOs' })
+  @ApiResponse({ status: 201, description: 'Request created successfully.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  createRequest(@Req() request, @Body() createRequestDto: CreateRequestDto) {
+    const user: IAuthenticatedUser = request.user;
+    return this.requestsService.createRequest(user, createRequestDto);
   }
 
   @Post(':id/approve')
@@ -58,7 +78,6 @@ export class RequestsController {
     return this.requestsService.rejectRequest(user, id, comment);
   }
 
-  // Get if a requests is valid to approve or not
   @Get(':id/validation')
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()

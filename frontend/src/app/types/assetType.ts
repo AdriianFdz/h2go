@@ -1,4 +1,4 @@
 export enum AssetType {
-  ELECTRICITY = "electricity",
+  ELECTRICITY = "ELECTRICITY",
   H2 = "H2",
 }

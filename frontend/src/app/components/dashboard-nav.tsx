@@ -1,20 +1,44 @@
+"use client";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { DashboardIcon, GDOIcon, OrganizationIcon, RequestIcon } from "./icons";
+import {
+  DashboardIcon,
+  GDOIcon,
+  OrganizationIcon,
+  TextFileIcon,
+} from "./icons";
+import { useAuth } from "../hooks/useAuth";
+import { OrganizationType } from "../types/organization";
 
 export const DashboardNav = ({ className }: { className?: string }) => {
   const pathname = usePathname();
+  const { user } = useAuth();
+
+  const isTrader = user?.organization?.type === OrganizationType.TRADER;
+  const isRegulator = user?.organization?.type === OrganizationType.REGULATOR;
+
   const links = [
     {
       href: "/dashboard",
       icon: <DashboardIcon />,
       label: "Dashboard",
     },
-    {
-      href: "/dashboard/requests",
-      icon: <RequestIcon />,
-      label: "Requests",
-    },
+    ...(isTrader
+      ? [
+          {
+            href: "/dashboard/create-request",
+            icon: <TextFileIcon />,
+            label: "GDO Operations",
+          },
+        ]
+      : [
+          {
+            href: "/dashboard/requests",
+            icon: <TextFileIcon />,
+            label: "Requests",
+          },
+        ]),
     {
       href: "/dashboard/organization",
       icon: <OrganizationIcon />,

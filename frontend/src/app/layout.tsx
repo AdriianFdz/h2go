@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
-import { NavLogo } from "./components/nav-logo";
+import { ToastProvider } from "./components/toast-provider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -32,6 +32,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${space_grotesk.variable} antialiased bg-linear-to-br from-accent/25 via-accent/5 to-accent-foreground h-screen overflow-hidden`}
       >
+        <ToastProvider />
         {children}
       </body>
     </html>

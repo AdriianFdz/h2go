@@ -123,7 +123,7 @@ func (rc *RequestContract) validateRequestBasics(
 	return &request, productorBalanceRecord, producerID, assetType, gdoToGrant, nil
 }
 
-func (rc *RequestContract) QuickValidateRequest(
+func (rc *RequestContract) QuickValidateTransformationRequest(
 	ctx contractapi.TransactionContextInterface,
 	requestID string) (string, error) {
 
@@ -255,15 +255,28 @@ func (rc *RequestContract) ApproveRequest(
 		// Generate deterministic GDO ID: requestID + batch ID + counter
 		for i := int64(0); i < amountUsed; i++ {
 			gdoID := requestID + "-gdo-" + batch.BatchId + "-" + strconv.FormatInt(i, 10)
+			assetTypeEnum, _ := models.ParseAssetType(assetType)
 			gdo := models.GDO{
+				DocType:    "GDO",
 				GdoID:      gdoID,
 				RequestID:  requestID,
-				AssetType:  assetType,
+				AssetType:  assetTypeEnum,
 				IssueDate:  issueDate,
 				ExpiryDate: batch.ProductionDate.AddDate(0, 18, 0).Format(time.RFC3339),
 				OwnerID:    producerID,
 				Status:     models.GdoActive,
 			}
+
+			// Store GDO individually in world state
+			gdoJSON, err := json.Marshal(gdo)
+			if err != nil {
+				return err
+			}
+			err = ctx.GetStub().PutState(gdoID, gdoJSON)
+			if err != nil {
+				return err
+			}
+
 			gdos = append(gdos, gdo)
 		}
 

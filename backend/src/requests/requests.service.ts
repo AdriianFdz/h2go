@@ -2,8 +2,10 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ConnectionManager } from '../fabric/connectionManager';
 import { IAuthenticatedUser } from '../auth/interfaces/authenticatedUser';
 import { AssetType } from '../common/enums/asset-type.enum';
-import { PendingRequestDto } from './dto/PendingRequest.dto';
-import { CreateRequestDto } from './dto/CreateRequest.dto';
+import { PendingTransformationRequestDto } from './dto/pendingTransformationRequest.dto';
+import { CreateTransformationRequestDto } from './dto/createTransformationRequest.dto';
+import { CreateTradeRequestDto } from './dto/createTradeRequest.dto';
+import { PendingTradeRequestDto } from './dto/pendingTradeRequest.dto';
 @Injectable()
 export class RequestsService {
   constructor(
@@ -12,52 +14,10 @@ export class RequestsService {
     @Inject('UserRepository')
     private userRepository,
   ) {}
-  async getAllPendingRequests(user: IAuthenticatedUser) {
-    if (!user.organization) {
-      throw new Error('User does not have an associated organization.');
-    }
-    let assetType: AssetType;
-    if (user.organization.id === process.env.CNMC_ORG_ID) {
-      assetType = AssetType.ELECTRICITY;
-    } else if (user.organization.id === process.env.ENAGAS_ORG_ID) {
-      assetType = AssetType.H2;
-    } else {
-      throw new Error('User organization is not authorized to view requests.');
-    }
-    const { gateway, client } =
-      await this.connectionManager.connectGateway(user);
-    try {
-      const result = await this.connectionManager.queryTransaction(
-        gateway,
-        client,
-        'RequestContract:GetRequestsByStatusAndAssetType',
-        'PENDING',
-        assetType,
-      );
-      const resultString = Buffer.from(result).toString('utf8');
 
-      if (!resultString || resultString.trim() === '') {
-        return [];
-      }
-
-      const data = JSON.parse(resultString);
-      return data.map((item: any) => ({
-        docType: item.docType,
-        requestId: item.requestId,
-        producerId: item.producerId,
-        assetType: item.assetType,
-        amount: item.amount,
-        status: item.status,
-        createdAt: item.createdAt,
-      })) as PendingRequestDto[];
-    } finally {
-      this.connectionManager.disconnectGateway(gateway, client);
-    }
-  }
-
-  async createRequest(
+  async createTransformationRequest(
     user: IAuthenticatedUser,
-    createRequestDto: CreateRequestDto,
+    createRequestDto: CreateTransformationRequestDto,
   ) {
     if (!user.organization) {
       throw new Error('User does not have an associated organization.');
@@ -95,13 +55,58 @@ export class RequestsService {
     }
   }
 
-  async approveRequest(
+  async getAllPendingTransformationRequests(user: IAuthenticatedUser) {
+    if (!user.organization) {
+      throw new Error('User does not have an associated organization.');
+    }
+    let assetType: AssetType;
+    if (user.organization.id === process.env.CNMC_ORG_ID) {
+      assetType = AssetType.ELECTRICITY;
+    } else if (user.organization.id === process.env.ENAGAS_ORG_ID) {
+      assetType = AssetType.H2;
+    } else {
+      throw new Error('User organization is not authorized to view requests.');
+    }
+    const { gateway, client } =
+      await this.connectionManager.connectGateway(user);
+    try {
+      const result = await this.connectionManager.queryTransaction(
+        gateway,
+        client,
+        'RequestContract:GetRequestsByStatusAndAssetType',
+        'PENDING',
+        assetType,
+      );
+      const resultString = Buffer.from(result).toString('utf8');
+
+      if (!resultString || resultString.trim() === '') {
+        return [];
+      }
+
+      const data = JSON.parse(resultString);
+      return data.map((item: any) => ({
+        docType: item.docType,
+        requestId: item.requestId,
+        producerId: item.producerId,
+        assetType: item.assetType,
+        amount: item.amount,
+        status: item.status,
+        createdAt: item.createdAt,
+      })) as PendingTransformationRequestDto[];
+    } finally {
+      this.connectionManager.disconnectGateway(gateway, client);
+    }
+  }
+
+  async approveTransformationRequest(
     user: IAuthenticatedUser,
     requestId: string,
     reason: string,
   ) {
     if (!reason || reason.trim().length === 0) {
-      throw new Error('Reason is required to approve a request.');
+      throw new Error(
+        'Reason is required to approve a transformation request.',
+      );
     }
     const { gateway, client } =
       await this.connectionManager.connectGateway(user);
@@ -119,7 +124,7 @@ export class RequestsService {
         throw new Error('Request not found.');
       }
       const data = JSON.parse(resultString);
-      const pendingRequest: PendingRequestDto = {
+      const pendingRequest: PendingTransformationRequestDto = {
         docType: data.docType,
         requestId: data.requestId,
         producerId: data.producerId,
@@ -154,13 +159,13 @@ export class RequestsService {
     }
   }
 
-  async rejectRequest(
+  async rejectTransformationRequest(
     user: IAuthenticatedUser,
     requestId: string,
     reason: string,
   ) {
     if (!reason || reason.trim().length === 0) {
-      throw new Error('Reason is required to reject a request.');
+      throw new Error('Reason is required to reject a transformation request.');
     }
     const { gateway, client } =
       await this.connectionManager.connectGateway(user);
@@ -178,7 +183,7 @@ export class RequestsService {
         throw new Error('Request not found.');
       }
       const data = JSON.parse(resultString);
-      const pendingRequest: PendingRequestDto = {
+      const pendingRequest: PendingTransformationRequestDto = {
         docType: data.docType,
         requestId: data.requestId,
         producerId: data.producerId,
@@ -213,14 +218,17 @@ export class RequestsService {
     }
   }
 
-  async validateRequest(user: IAuthenticatedUser, requestId: string) {
+  async validateTransformationRequest(
+    user: IAuthenticatedUser,
+    requestId: string,
+  ) {
     const { gateway, client } =
       await this.connectionManager.connectGateway(user);
     try {
       const result = await this.connectionManager.queryTransaction(
         gateway,
         client,
-        'RequestContract:QuickValidateRequest',
+        'RequestContract:QuickValidateTransformationRequest',
         requestId,
       );
       const resultString = Buffer.from(result).toString('utf8');
@@ -234,4 +242,214 @@ export class RequestsService {
       this.connectionManager.disconnectGateway(gateway, client);
     }
   }
+
+  async createTradeRequest(
+    user: IAuthenticatedUser,
+    createTradeRequestDto: CreateTradeRequestDto,
+  ) {
+    if (!user.organization) {
+      throw new Error('User does not have an associated organization.');
+    }
+
+    const organization = await this.userRepository.findOne({
+      where: { id: user.id },
+      relations: ['organization', 'organization.authorizedByOrgs'],
+    });
+
+    const isAuthorized =
+      organization?.organization?.authorizedByOrgs?.some(
+        (org: any) => org.id === createTradeRequestDto.sourceProducerID,
+      ) || false;
+
+    if (!isAuthorized) {
+      throw new Error(
+        'User is not authorized by the selected producer organization.',
+      );
+    }
+
+    const { gateway, client } =
+      await this.connectionManager.connectGateway(user);
+    try {
+      await this.connectionManager.executeTransaction(
+        gateway,
+        client,
+        'RedemptionContract:CreateTradeRequest',
+        createTradeRequestDto.sourceProducerID,
+        createTradeRequestDto.targetProducerID,
+        createTradeRequestDto.assetType,
+        createTradeRequestDto.amount.toString(),
+      );
+    } finally {
+      this.connectionManager.disconnectGateway(gateway, client);
+    }
+  }
+
+  async getAllPendingTradeRequests(
+    user: IAuthenticatedUser,
+    producerId: string,
+  ) {
+    if (!user.organization) {
+      throw new Error('User does not have an associated organization.');
+    }
+
+    const { gateway, client } =
+      await this.connectionManager.connectGateway(user);
+    try {
+      const result = await this.connectionManager.queryTransaction(
+        gateway,
+        client,
+        'RedemptionContract:GetReceivedTradeRequestsByStatus',
+        producerId,
+        'PENDING',
+      );
+      const resultString = Buffer.from(result).toString('utf8');
+
+      if (!resultString || resultString.trim() === '') {
+        return [];
+      }
+
+      const data = JSON.parse(resultString);
+      return data.map((item: any) => ({
+        docType: item.docType,
+        tradeID: item.tradeID,
+        producerID: item.producerID,
+        targetID: item.targetID,
+        assetType: item.assetType,
+        amount: item.amount,
+        status: item.status,
+        createdAt: item.createdAt,
+      })) as PendingTradeRequestDto[];
+    } finally {
+      this.connectionManager.disconnectGateway(gateway, client);
+    }
+  }
+
+  async approveTradeRequest(
+    user: IAuthenticatedUser,
+    tradeId: string,
+    gdoIds: string[],
+  ) {
+    if (!user.organization) {
+      throw new Error('User does not have an associated organization.');
+    }
+
+    const organization = await this.userRepository.findOne({
+      where: { id: user.id },
+      relations: ['organization', 'organization.authorizedByOrgs'],
+    });
+
+    const { gateway, client } =
+      await this.connectionManager.connectGateway(user);
+    try {
+      const tradeResult = await this.connectionManager.queryTransaction(
+        gateway,
+        client,
+        'RedemptionContract:GetTradeRequest',
+        tradeId,
+      );
+      const tradeString = Buffer.from(tradeResult).toString('utf8');
+      if (!tradeString || tradeString.trim() === '') {
+        throw new Error('Trade request not found.');
+      }
+      const tradeRequest = JSON.parse(tradeString) as PendingTradeRequestDto;
+
+      const isAuthorized =
+        organization?.organization?.authorizedByOrgs?.some(
+          (org: any) => org.id === tradeRequest.producerID,
+        ) || false;
+
+      if (!isAuthorized) {
+        throw new Error(
+          'User is not authorized by the requesting producer organization.',
+        );
+      }
+
+      const gdoIdsJson = JSON.stringify(gdoIds);
+      await this.connectionManager.executeTransaction(
+        gateway,
+        client,
+        'RedemptionContract:AcceptTradeRequest',
+        tradeRequest.targetID,
+        tradeId,
+        gdoIdsJson,
+      );
+    } finally {
+      this.connectionManager.disconnectGateway(gateway, client);
+    }
+  }
+
+  async rejectTradeRequest(user: IAuthenticatedUser, tradeId: string) {
+    if (!user.organization) {
+      throw new Error('User does not have an associated organization.');
+    }
+
+    const organization = await this.userRepository.findOne({
+      where: { id: user.id },
+      relations: ['organization', 'organization.authorizedByOrgs'],
+    });
+
+    const { gateway, client } =
+      await this.connectionManager.connectGateway(user);
+    try {
+      const tradeResult = await this.connectionManager.queryTransaction(
+        gateway,
+        client,
+        'RedemptionContract:GetTradeRequest',
+        tradeId,
+      );
+      const tradeString = Buffer.from(tradeResult).toString('utf8');
+      if (!tradeString || tradeString.trim() === '') {
+        throw new Error('Trade request not found.');
+      }
+      const tradeRequest = JSON.parse(tradeString) as PendingTradeRequestDto;
+
+      const isAuthorized =
+        organization?.organization?.authorizedByOrgs?.some(
+          (org: any) => org.id === tradeRequest.producerID,
+        ) || false;
+
+      if (!isAuthorized) {
+        throw new Error(
+          'User is not authorized by the requesting producer organization.',
+        );
+      }
+
+      await this.connectionManager.executeTransaction(
+        gateway,
+        client,
+        'RedemptionContract:RejectTradeRequest',
+        tradeRequest.targetID,
+        tradeId,
+      );
+    } finally {
+      this.connectionManager.disconnectGateway(gateway, client);
+    }
+  }
+
+  // async getTradeRequestById(user: IAuthenticatedUser, tradeId: string) {
+  //   if (!user.organization) {
+  //     throw new Error('User does not have an associated organization.');
+  //   }
+
+  //   const { gateway, client } =
+  //     await this.connectionManager.connectGateway(user);
+  //   try {
+  //     const result = await this.connectionManager.queryTransaction(
+  //       gateway,
+  //       client,
+  //       'RedemptionContract:GetTradeRequest',
+  //       tradeId,
+  //     );
+  //     const resultString = Buffer.from(result).toString('utf8');
+
+  //     if (!resultString || resultString.trim() === '') {
+  //       return null;
+  //     }
+
+  //     const data = JSON.parse(resultString);
+  //     return data;
+  //   } finally {
+  //     this.connectionManager.disconnectGateway(gateway, client);
+  //   }
+  // }
 }

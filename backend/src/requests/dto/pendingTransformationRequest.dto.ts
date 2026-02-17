@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { AssetType } from '../../common/enums/asset-type.enum';
 
-export class PendingRequestDto {
+export class PendingTransformationRequestDto {
   @ApiProperty({
     example: 'request',
     description: 'Tipo de documento',

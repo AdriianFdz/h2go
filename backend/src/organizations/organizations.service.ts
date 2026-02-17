@@ -191,6 +191,22 @@ export class OrganizationsService {
 
       const balance: GdoBalanceDto = JSON.parse(resultString);
       return balance;
+    } catch (error) {
+      // owner balance does not exist
+      const errorMessage = error?.message || String(error);
+      if (
+        errorMessage.includes('owner balance does not exist') ||
+        errorMessage.includes('code 2')
+      ) {
+        return {
+          producerId: id,
+          gdos: {
+            ELECTRICITY: { available: [], unavailable: [] },
+            H2: { available: [], unavailable: [] },
+          },
+        };
+      }
+      throw new Error('Error al consultar el balance: ' + errorMessage);
     } finally {
       this.connectionManager.disconnectGateway(gateway, client);
     }

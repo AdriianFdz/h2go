@@ -534,7 +534,6 @@ function OrganizationBalanceSection({
         
 
         {/* H2 Available */}
-        {h2Available.length > 0 && (
           <Accordion.Item key="h2-available">
             <Accordion.Heading>
               <Accordion.Trigger className="group flex items-center gap-4 bg-linear-to-r from-surface to-background border border-muted/30 hover:shadow-lg transition-all duration-300 px-5 py-4 rounded-xl w-full shadow-md">
@@ -634,17 +633,15 @@ function OrganizationBalanceSection({
               </Accordion.Body>
             </Accordion.Panel>
           </Accordion.Item>
-        )}
 
         {/* H2 Unavailable */}
-        {h2Unavailable.length > 0 && (
           <Accordion.Item key="h2-unavailable">
             <Accordion.Heading>
               <Accordion.Trigger className="group flex items-center gap-4 bg-linear-to-r from-surface to-background border border-muted/30 hover:shadow-lg transition-all duration-300 px-5 py-4 rounded-xl w-full shadow-md">
                 <HydrogenIcon className="w-8 h-8 opacity-50" />
                 <div className="flex-1 text-left flex items-center">
                   <span className="text-xl font-bold">H2 GDOs - Used</span>
-                  <span className="ml-3 inline-flex items-center justify-center min-w-8 h-8 rounded-full border-danger-soft text-danger font-semibold text-sm">
+                  <span className="ml-3 inline-flex items-center justify-center min-w-8 h-8 rounded-full bg-danger-soft text-danger font-semibold text-sm">
                     {h2Unavailable.length}
                   </span>
                 </div>
@@ -739,7 +736,6 @@ function OrganizationBalanceSection({
               </Accordion.Body>
             </Accordion.Panel>
           </Accordion.Item>
-        )}
       </Accordion>
     </div>
   );

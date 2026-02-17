@@ -27,7 +27,7 @@ export const DashboardNav = ({ className }: { className?: string }) => {
     ...(isTrader
       ? [
           {
-            href: "/dashboard/create-request",
+            href: "/dashboard/gdo-operations",
             icon: <TextFileIcon />,
             label: "GDO Operations",
           },

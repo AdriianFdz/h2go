@@ -503,14 +503,12 @@ func (rdpc *RedemptionContract) AcceptTradeRequest(
 		}
 	}
 
-	// Update target balance
 	if trade.AssetType == models.Electricity {
 		targetBalance.GDOS.Electricity.Available = updatedTargetAvailable
 	} else {
 		targetBalance.GDOS.H2.Available = updatedTargetAvailable
 	}
 
-	// Add to producer available
 	if trade.AssetType == models.Electricity {
 		producerBalance.GDOS.Electricity.Available = append(producerBalance.GDOS.Electricity.Available, gdosToTransfer...)
 	} else {

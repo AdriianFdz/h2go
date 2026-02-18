@@ -146,7 +146,6 @@ export class RequestsController {
     @Body() approveDto: ApproveTradeRequestDto,
   ) {
     const user: IAuthenticatedUser = request.user;
-    console.log('Approve Trade Request DTO:', approveDto);
     return this.requestsService.approveTradeRequest(
       user,
       id,

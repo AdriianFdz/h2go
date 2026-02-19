@@ -46,8 +46,7 @@ export default function Home() {
         if (response.ok) {
           router.push("/dashboard");
         }
-      } catch (error) {
-        // Usuario no autenticado, mostrar login
+      } catch {
       } finally {
         setIsCheckingAuth(false);
       }

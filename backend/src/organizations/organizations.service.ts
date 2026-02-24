@@ -7,6 +7,7 @@ import { Role, User } from 'src/entities/user.entity';
 import { IAuthenticatedUser } from 'src/auth/interfaces/authenticatedUser';
 import { ConnectionManager } from '../fabric/connectionManager';
 import { GdoBalanceDto } from './dto/gdoBalance.dto';
+import { AssetType } from 'src/common/enums/asset-type.enum';
 
 @Injectable()
 export class OrganizationsService {
@@ -207,6 +208,60 @@ export class OrganizationsService {
         };
       }
       throw new Error('Error al consultar el balance: ' + errorMessage);
+    } finally {
+      this.connectionManager.disconnectGateway(gateway, client);
+    }
+  }
+
+  async redeemGDOs(
+    id: string,
+    assetType: AssetType,
+    gdosToRedeem: string[],
+    requestingUser: IAuthenticatedUser,
+  ) {
+    const userOrg = await this.organizationRepository.findOne({
+      where: { id: requestingUser.organization.id },
+      relations: ['authorizedByOrgs'],
+    });
+
+    if (!userOrg) {
+      throw new Error('Organización del usuario no encontrada');
+    }
+
+    const isOwnOrg = userOrg.id === id;
+    const isAuthorizedByOrg =
+      userOrg.authorizedByOrgs?.some((org) => org.id === id) || false;
+
+    if (!isOwnOrg && !isAuthorizedByOrg) {
+      throw new Error(
+        'Solo los usuarios de la organización o autorizados pueden redimir GDOs',
+      );
+    }
+
+    const organization = await this.organizationRepository.findOne({
+      where: { id },
+    });
+
+    if (!organization) {
+      throw new Error('Organización no encontrada');
+    }
+
+    const { gateway, client } =
+      await this.connectionManager.connectGateway(requestingUser);
+    try {
+      const result = await this.connectionManager.executeTransaction(
+        gateway,
+        client,
+        'RedemptionContract:RedeemGDOs',
+        id,
+        assetType.toString(),
+        JSON.stringify(gdosToRedeem),
+      );
+      const resultString = Buffer.from(result).toString('utf8');
+      return { message: 'GDOs redimidos exitosamente', details: resultString };
+    } catch (error) {
+      const errorMessage = error?.message || String(error);
+      throw new Error('Error al redimir GDOs: ' + errorMessage);
     } finally {
       this.connectionManager.disconnectGateway(gateway, client);
     }

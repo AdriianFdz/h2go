@@ -15,10 +15,11 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { CreateOrgDto } from './dto/createOrg.dto';
+import { RedeemGDOsDto } from './dto/redeemGDOs.dto';
 import { OrganizationsService } from './organizations.service';
 import { IAuthenticatedUser } from '../auth/interfaces/authenticatedUser';
 
-@ApiTags('organization')
+@ApiTags('organizations')
 @Controller('organizations')
 export class OrganizationsController {
   constructor(private organizationsService: OrganizationsService) {}
@@ -100,5 +101,26 @@ export class OrganizationsController {
   getOrganizationBalance(@Param('id') id: string, @Req() req) {
     const user = req.user as IAuthenticatedUser;
     return this.organizationsService.getOrganizationBalance(id, user);
+  }
+
+  // redeem gdos
+  @Post(':id/redemption')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Redeem GDOs for an organization' })
+  @ApiResponse({
+    status: 201,
+    description: 'GDOs redeemed successfully',
+  })
+  @ApiResponse({ status: 400, description: 'Invalid data' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  redeemGDOs(@Param('id') id: string, @Body() body: RedeemGDOsDto, @Req() req) {
+    const user = req.user as IAuthenticatedUser;
+    return this.organizationsService.redeemGDOs(
+      id,
+      body.assetType,
+      body.gdosToRedeem,
+      user,
+    );
   }
 }

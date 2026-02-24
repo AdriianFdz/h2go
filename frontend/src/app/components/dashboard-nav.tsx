@@ -10,6 +10,7 @@ import {
 } from "./icons";
 import { useAuth } from "../hooks/useAuth";
 import { OrganizationType } from "../types/organization";
+import { Role } from "../types/user";
 
 export const DashboardNav = ({ className }: { className?: string }) => {
   const pathname = usePathname();
@@ -17,6 +18,7 @@ export const DashboardNav = ({ className }: { className?: string }) => {
 
   const isTrader = user?.organization?.type === OrganizationType.TRADER;
   const isRegulator = user?.organization?.type === OrganizationType.REGULATOR;
+  const isAdmin = user?.role === Role.ADMIN;
 
   const links = [
     {
@@ -24,31 +26,34 @@ export const DashboardNav = ({ className }: { className?: string }) => {
       icon: <DashboardIcon />,
       label: "Dashboard",
     },
-    ...(isTrader
+    ...(isRegulator
       ? [
-          {
-            href: "/dashboard/gdo-operations",
-            icon: <TextFileIcon />,
-            label: "GDO Operations",
-          },
-        ]
-      : [
           {
             href: "/dashboard/requests",
             icon: <TextFileIcon />,
             label: "Requests",
           },
-        ]),
-    {
-      href: "/dashboard/organization",
-      icon: <OrganizationIcon />,
-      label: "Organization",
-    },
-    {
-      href: "/dashboard/gdos",
-      icon: <GDOIcon />,
-      label: "GdOs",
-    },
+        ]
+      : []),
+
+    ...(isAdmin
+      ? [
+          {
+            href: "/dashboard/organization",
+            icon: <OrganizationIcon />,
+            label: "Organization",
+          },
+        ]
+      : []),
+    ...(isTrader
+      ? [
+          {
+            href: "/dashboard/gdos",
+            icon: <GDOIcon />,
+            label: "GdOs",
+          },
+        ]
+      : []),
   ];
   return (
     <nav

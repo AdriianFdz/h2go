@@ -24,7 +24,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('Invalid token payload');
     }
 
-    // Construir el usuario autenticado desde el payload del JWT
     const user: IAuthenticatedUser = {
       id: payload.sub,
       email: payload.email,

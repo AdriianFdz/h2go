@@ -122,6 +122,6 @@ export class AuthService {
       return [];
     }
 
-    return organization.authorizedByOrgs.map(org => org.id);
+    return organization.authorizedByOrgs.map((org) => org.id);
   }
 }

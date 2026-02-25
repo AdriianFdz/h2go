@@ -1,3 +1,5 @@
+import type { User } from './user';
+
 export enum OrganizationType {
   TRADER = "trader",
   PRODUCER = "producer",
@@ -12,4 +14,5 @@ export interface Organization {
   mspId?: string;
   peerEndpoint?: string;
   authorizedByOrgs?: string[];
+  users?: User[];
 }

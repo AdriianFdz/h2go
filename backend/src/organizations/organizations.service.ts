@@ -105,7 +105,7 @@ export class OrganizationsService {
   async getOrganization(id: string, requestingUser: IAuthenticatedUser) {
     const userOrg = await this.organizationRepository.findOne({
       where: { id: requestingUser.organization.id },
-      relations: ['authorizedByOrgs'],
+      relations: ['authorizedByOrgs', 'users'],
     });
 
     if (!userOrg) {
@@ -124,6 +124,7 @@ export class OrganizationsService {
 
     const organization = await this.organizationRepository.findOne({
       where: { id },
+      relations: ['users'],
     });
 
     if (!organization) {
@@ -135,6 +136,7 @@ export class OrganizationsService {
       name: organization.name,
       type: organization.type,
       mspId: organization.mspId,
+      users: organization.users,
     };
   }
 

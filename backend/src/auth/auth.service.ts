@@ -1,10 +1,9 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Role, User } from '../entities/user.entity';
+import { User } from '../entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { RegisterDto } from './dto/register.dto';
 import { IAuthenticatedUser } from './interfaces/authenticatedUser';
 import { Organization } from '../entities/organization.entity';
 
@@ -51,52 +50,6 @@ export class AuthService {
     };
     return {
       access_token: this.jwtService.sign(payload),
-    };
-  }
-
-  async register(registerDto: RegisterDto, requester: IAuthenticatedUser) {
-    if (!requester.organization) {
-      throw new ConflictException(
-        'El usuario debe pertenecer a una organización',
-      );
-    }
-
-    if (requester.role !== Role.ADMIN) {
-      throw new ConflictException(
-        'Solo un administrador puede registrar nuevos usuarios',
-      );
-    }
-
-    const existingUser = await this.usersRepository.findOne({
-      where: { email: registerDto.email },
-    });
-
-    if (existingUser) {
-      throw new ConflictException('El email ya está registrado');
-    }
-
-    const hashedPassword = await bcrypt.hash(registerDto.password, 10);
-
-    const newUser = this.usersRepository.create({
-      name: registerDto.name,
-      email: registerDto.email,
-      password: hashedPassword,
-      createdAt: new Date().toISOString(),
-      role: Role.USER,
-      organization: { id: requester.organization.id } as Organization,
-    });
-
-    const savedUser = await this.usersRepository.save(newUser);
-
-    return {
-      user: {
-        id: savedUser.id,
-        name: savedUser.name,
-        email: savedUser.email,
-        createdAt: savedUser.createdAt,
-        role: savedUser.role,
-        organization: savedUser.organization,
-      },
     };
   }
 

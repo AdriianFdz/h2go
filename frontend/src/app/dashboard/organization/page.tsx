@@ -1,12 +1,10 @@
 "use client";
 
 import {
-  CircleCheckIcon,
   EditIcon,
   KeyIcon,
   PlusCircleIcon,
   TrashIcon,
-  UsersIcon,
 } from "@/app/components/icons";
 import { useAuth } from "@/app/hooks/useAuth";
 import { Role, User } from "@/app/types/user";
@@ -26,13 +24,12 @@ import {
   Selection,
   Select,
   toast,
-  Alert,
 } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function OrganizationPage() {
-  const { user, isLoading, authorizedByOrgs } = useAuth();
+  const { user, isLoading } = useAuth();
   const router = useRouter();
 
   const [orgUsers, setOrgUsers] = useState<User[]>([]);
@@ -148,14 +145,16 @@ export default function OrganizationPage() {
         });
       });
   };
+
+  const organizationId = user?.organization?.id;
   useEffect(() => {
-    if (!user?.organization?.id) return;
+    if (!organizationId) return;
 
     const fetchOrgUsers = async () => {
       setIsLoadingUsers(true);
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/organizations/${user.organization!.id}`,
+          `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/organizations/${organizationId}`,
           { credentials: "include" }
         );
         if (!res.ok) throw new Error("Failed to fetch organization");
@@ -169,7 +168,7 @@ export default function OrganizationPage() {
     };
 
     fetchOrgUsers();
-  }, [user?.organization?.id]);
+  }, [organizationId]);
 
   if (isLoading) {
     return (
@@ -272,7 +271,12 @@ export default function OrganizationPage() {
           </div>
         )}
         <div className="flex space-x-4">
-          <Modal>
+          <Modal
+            isOpen={isCreateUserModalOpen}
+            onOpenChange={(open) => {
+              setIsCreateUserModalOpen(open);
+            }}
+          >
             <Button
               size="lg"
               className="w-full mt-5"
@@ -283,72 +287,67 @@ export default function OrganizationPage() {
             <Modal.Backdrop>
               <Modal.Container size="lg">
                 <Modal.Dialog>
-                  {(renderProps) => (
-                    <>
-                      <Modal.CloseTrigger />
-                      <Modal.Header>
-                        <Modal.Heading className="text-2xl font-bold mb-5">
-                          Create User
-                        </Modal.Heading>
-                      </Modal.Header>
-                      <Modal.Body>
-                        <Form
-                          onSubmit={handleCreateUser}
-                          className="mx-1 space-y-4"
-                        >
-                          <TextField
-                            isRequired
-                            name="name"
-                            type="text"
-                            minLength={1}
-                          >
-                            <Label className="text-lg">Name</Label>
-                            <Input
-                              placeholder="Enter user name"
-                              variant="secondary"
-                              className="text-lg"
-                            />
-                            <FieldError />
-                          </TextField>
-                          <TextField
-                            isRequired
-                            name="email"
-                            type="email"
-                          >
-                            <Label className="text-lg">Email</Label>
-                            <Input
-                              placeholder="Enter user email"
-                              variant="secondary"
-                              className="text-lg"
-                            />
-                            <FieldError />
-                          </TextField>
-                          <TextField
-                            isRequired
-                            name="password"
-                            type="password"
-                            minLength={6}
-                          >
-                            <Label className="text-lg">Password</Label>
-                            <Input
-                              placeholder="Enter user password"
-                              variant="secondary"
-                              className="text-lg"
-                            />
-                            <FieldError />
-                          </TextField>
-                          <Button
-                            type="submit"
-                            size="lg"
-                            className="mt-5 w-full text-xl font-bold"
-                            onPress={() => renderProps.close()}
-                          >
-                            Create user
-                          </Button>
-                        </Form>
-                      </Modal.Body>
-                    </>
-                  )}
+                  <Modal.CloseTrigger />
+                  <Modal.Header>
+                    <Modal.Heading className="text-2xl font-bold mb-5">
+                      Create User
+                    </Modal.Heading>
+                  </Modal.Header>
+                  <Modal.Body>
+                    <Form
+                      onSubmit={handleCreateUser}
+                      className="mx-1 space-y-4"
+                    >
+                      <TextField
+                        isRequired
+                        name="name"
+                        type="text"
+                        minLength={1}
+                      >
+                        <Label className="text-lg">Name</Label>
+                        <Input
+                          placeholder="Enter user name"
+                          variant="secondary"
+                          className="text-lg"
+                        />
+                        <FieldError />
+                      </TextField>
+                      <TextField
+                        isRequired
+                        name="email"
+                        type="email"
+                      >
+                        <Label className="text-lg">Email</Label>
+                        <Input
+                          placeholder="Enter user email"
+                          variant="secondary"
+                          className="text-lg"
+                        />
+                        <FieldError />
+                      </TextField>
+                      <TextField
+                        isRequired
+                        name="password"
+                        type="password"
+                        minLength={6}
+                      >
+                        <Label className="text-lg">Password</Label>
+                        <Input
+                          placeholder="Enter user password"
+                          variant="secondary"
+                          className="text-lg"
+                        />
+                        <FieldError />
+                      </TextField>
+                      <Button
+                        type="submit"
+                        size="lg"
+                        className="mt-5 w-full text-xl font-bold"
+                      >
+                        Create user
+                      </Button>
+                    </Form>
+                  </Modal.Body>
                 </Modal.Dialog>
               </Modal.Container>
             </Modal.Backdrop>
@@ -364,6 +363,7 @@ export default function OrganizationPage() {
               variant="tertiary"
               size="lg"
               className="w-full mt-5"
+              isDisabled={!selectedUserId}
               onPress={() => {
                 if (selectedUserData) {
                   setIsEditUserModalOpen(true);
@@ -376,227 +376,219 @@ export default function OrganizationPage() {
             <Modal.Backdrop>
               <Modal.Container size="lg">
                 <Modal.Dialog>
-                  {(renderProps) => (
-                    <>
-                      <Modal.CloseTrigger />
-                      <Modal.Header>
-                        <Modal.Heading className="text-2xl font-bold mb-5">
-                          Edit User
-                        </Modal.Heading>
-                      </Modal.Header>
-                      <Modal.Body>
-                        {selectedUserData && (
-                          <div className="mx-1 mb-6 flex items-center space-x-4 p-4 bg-muted/10 rounded-4xl">
-                            <Avatar
-                              size="lg"
-                              className="border border-muted/20"
-                            >
-                              {selectedUserData.avatar ? (
-                                <Avatar.Image src={selectedUserData.avatar} />
-                              ) : (
-                                <Avatar.Fallback>
-                                  {selectedUserData.name
-                                    ?.charAt(0)
-                                    .toUpperCase()}
-                                </Avatar.Fallback>
-                              )}
-                            </Avatar>
-                            <div>
-                              <p className="font-semibold text-lg">
-                                {selectedUserData.name}
-                              </p>
-                              <p className="text-muted">
-                                {selectedUserData.email}
-                              </p>
-                              <Chip
-                                color="accent"
-                                variant="soft"
-                                className="mt-1"
-                              >
-                                {selectedUserData.role}
-                              </Chip>
-                            </div>
-                            <AlertDialog>
-                              <Button
-                                variant="danger"
-                                size="lg"
-                                className="ml-auto"
-                              >
-                                <TrashIcon className="w-5 h-5" />
-                                Delete User
-                              </Button>
-
-                              <AlertDialog.Backdrop>
-                                <AlertDialog.Container>
-                                  <AlertDialog.Dialog>
-                                    <AlertDialog.CloseTrigger />
-                                    <AlertDialog.Header>
-                                      <AlertDialog.Icon status="danger" />
-                                      <AlertDialog.Heading className="text-2xl font-bold">
-                                        Confirm Deletion
-                                      </AlertDialog.Heading>
-                                    </AlertDialog.Header>
-                                    <AlertDialog.Body>
-                                      Are you sure you want to delete the user{" "}
-                                      <span className="font-semibold text-lg">
-                                        {selectedUserData.name}
-                                      </span>{" "}
-                                      with ID{" "}
-                                      <span className="text-lg font-mono bg-background/50 px-1 rounded border border-muted/20">
-                                        {selectedUserData.id}
-                                      </span>
-                                      ? This action cannot be undone.
-                                    </AlertDialog.Body>
-                                    <AlertDialog.Footer>
-                                      <Button
-                                        slot="close"
-                                        variant="tertiary"
-                                      >
-                                        Cancel
-                                      </Button>
-                                      <Button
-                                        slot="close"
-                                        variant="danger"
-                                        onPress={() => handleDeleteUser()}
-                                      >
-                                        Delete User
-                                      </Button>
-                                    </AlertDialog.Footer>
-                                  </AlertDialog.Dialog>
-                                </AlertDialog.Container>
-                              </AlertDialog.Backdrop>
-                            </AlertDialog>
-                          </div>
-                        )}
-                        <Form
-                          onSubmit={handleEditUser}
-                          className="mx-1 space-y-4"
+                  <Modal.CloseTrigger />
+                  <Modal.Header>
+                    <Modal.Heading className="text-2xl font-bold mb-5">
+                      Edit User
+                    </Modal.Heading>
+                  </Modal.Header>
+                  <Modal.Body>
+                    {selectedUserData && (
+                      <div className="mx-1 mb-6 flex items-center space-x-4 p-4 bg-muted/10 rounded-4xl">
+                        <Avatar
+                          size="lg"
+                          className="border border-muted/20"
                         >
-                          <TextField
-                            isRequired
-                            name="name"
-                            type="text"
-                            minLength={1}
-                            defaultValue={selectedUserData?.name}
+                          {selectedUserData.avatar ? (
+                            <Avatar.Image src={selectedUserData.avatar} />
+                          ) : (
+                            <Avatar.Fallback>
+                              {selectedUserData.name?.charAt(0).toUpperCase()}
+                            </Avatar.Fallback>
+                          )}
+                        </Avatar>
+                        <div>
+                          <p className="font-semibold text-lg">
+                            {selectedUserData.name}
+                          </p>
+                          <p className="text-muted">{selectedUserData.email}</p>
+                          <Chip
+                            color="accent"
+                            variant="soft"
+                            className="mt-1"
                           >
-                            <Label className="text-lg">Name</Label>
-                            <Input
-                              placeholder="Enter user name"
-                              variant="secondary"
-                              className="text-lg"
-                            />
-                            <FieldError />
-                          </TextField>
-                          <TextField
-                            isRequired
-                            name="email"
-                            type="email"
-                            defaultValue={selectedUserData?.email}
-                          >
-                            <Label className="text-lg">Email</Label>
-                            <Input
-                              placeholder="Enter user email"
-                              variant="secondary"
-                              className="text-lg"
-                            />
-                            <FieldError />
-                          </TextField>
-                          <Select
-                            name="role"
-                            isRequired
-                            defaultSelectedKey={selectedUserData?.role}
-                            variant="secondary"
-                          >
-                            <Label className="text-lg">Role</Label>
-                            <Select.Trigger>
-                              <Select.Value />
-                              <Select.Indicator />
-                            </Select.Trigger>
-                            <Select.Popover>
-                              <ListBox>
-                                <ListBox.Item
-                                  id={Role.ADMIN}
-                                  textValue="Admin"
-                                >
-                                  <div className="flex items-center justify-between w-full">
-                                    <span>Admin</span>
-                                    <Chip
-                                      color="danger"
-                                      variant="soft"
-                                      size="sm"
-                                    >
-                                      Full Access
-                                    </Chip>
-                                  </div>
-                                </ListBox.Item>
-                                <ListBox.Item
-                                  id={Role.USER}
-                                  textValue="User"
-                                >
-                                  <div className="flex items-center justify-between w-full">
-                                    <span>User</span>
-                                    <Chip
-                                      color="accent"
-                                      variant="soft"
-                                      size="sm"
-                                    >
-                                      Standard Access
-                                    </Chip>
-                                  </div>
-                                </ListBox.Item>
-                              </ListBox>
-                            </Select.Popover>
-                          </Select>
-                          <div className="space-y-3">
-                            <div className="flex items-center space-x-2">
-                              <input
-                                type="checkbox"
-                                id="changePassword"
-                                checked={changePassword}
-                                onChange={(e) =>
-                                  setChangePassword(e.target.checked)
-                                }
-                                className="w-4 h-4 accent-accent cursor-pointer"
-                              />
-                              <label
-                                htmlFor="changePassword"
-                                className="text-lg cursor-pointer flex items-center space-x-2"
-                              >
-                                <KeyIcon />
-                                <span>Change password</span>
-                              </label>
-                            </div>
-
-                            {changePassword && (
-                              <TextField
-                                isRequired
-                                name="password"
-                                type="password"
-                                minLength={6}
-                              >
-                                <Label className="text-lg">New Password</Label>
-                                <Input
-                                  placeholder="Enter new password"
-                                  variant="secondary"
-                                  className="text-lg"
-                                  minLength={6}
-                                />
-                                <FieldError />
-                              </TextField>
-                            )}
-                          </div>
-
+                            {selectedUserData.role}
+                          </Chip>
+                        </div>
+                        <AlertDialog>
                           <Button
-                            type="submit"
+                            variant="danger"
                             size="lg"
-                            className="mt-5 w-full text-xl font-bold"
+                            className="ml-auto"
                           >
-                            Save changes
+                            <TrashIcon className="w-5 h-5" />
+                            Delete User
                           </Button>
-                        </Form>
-                      </Modal.Body>
-                    </>
-                  )}
+
+                          <AlertDialog.Backdrop>
+                            <AlertDialog.Container>
+                              <AlertDialog.Dialog>
+                                <AlertDialog.CloseTrigger />
+                                <AlertDialog.Header>
+                                  <AlertDialog.Icon status="danger" />
+                                  <AlertDialog.Heading className="text-2xl font-bold">
+                                    Confirm Deletion
+                                  </AlertDialog.Heading>
+                                </AlertDialog.Header>
+                                <AlertDialog.Body>
+                                  Are you sure you want to delete the user{" "}
+                                  <span className="font-semibold text-lg">
+                                    {selectedUserData.name}
+                                  </span>{" "}
+                                  with ID{" "}
+                                  <span className="text-lg font-mono bg-background/50 px-1 rounded border border-muted/20">
+                                    {selectedUserData.id}
+                                  </span>
+                                  ? This action cannot be undone.
+                                </AlertDialog.Body>
+                                <AlertDialog.Footer>
+                                  <Button
+                                    slot="close"
+                                    variant="tertiary"
+                                  >
+                                    Cancel
+                                  </Button>
+                                  <Button
+                                    slot="close"
+                                    variant="danger"
+                                    onPress={() => handleDeleteUser()}
+                                  >
+                                    Delete User
+                                  </Button>
+                                </AlertDialog.Footer>
+                              </AlertDialog.Dialog>
+                            </AlertDialog.Container>
+                          </AlertDialog.Backdrop>
+                        </AlertDialog>
+                      </div>
+                    )}
+                    <Form
+                      onSubmit={handleEditUser}
+                      className="mx-1 space-y-4"
+                    >
+                      <TextField
+                        isRequired
+                        name="name"
+                        type="text"
+                        minLength={1}
+                        defaultValue={selectedUserData?.name}
+                      >
+                        <Label className="text-lg">Name</Label>
+                        <Input
+                          placeholder="Enter user name"
+                          variant="secondary"
+                          className="text-lg"
+                        />
+                        <FieldError />
+                      </TextField>
+                      <TextField
+                        isRequired
+                        name="email"
+                        type="email"
+                        defaultValue={selectedUserData?.email}
+                      >
+                        <Label className="text-lg">Email</Label>
+                        <Input
+                          placeholder="Enter user email"
+                          variant="secondary"
+                          className="text-lg"
+                        />
+                        <FieldError />
+                      </TextField>
+                      <Select
+                        name="role"
+                        isRequired
+                        defaultSelectedKey={selectedUserData?.role}
+                        variant="secondary"
+                      >
+                        <Label className="text-lg">Role</Label>
+                        <Select.Trigger>
+                          <Select.Value />
+                          <Select.Indicator />
+                        </Select.Trigger>
+                        <Select.Popover>
+                          <ListBox>
+                            <ListBox.Item
+                              id={Role.ADMIN}
+                              textValue="Admin"
+                            >
+                              <div className="flex items-center justify-between w-full">
+                                <span>Admin</span>
+                                <Chip
+                                  color="danger"
+                                  variant="soft"
+                                  size="sm"
+                                >
+                                  Full Access
+                                </Chip>
+                              </div>
+                            </ListBox.Item>
+                            <ListBox.Item
+                              id={Role.USER}
+                              textValue="User"
+                            >
+                              <div className="flex items-center justify-between w-full">
+                                <span>User</span>
+                                <Chip
+                                  color="accent"
+                                  variant="soft"
+                                  size="sm"
+                                >
+                                  Standard Access
+                                </Chip>
+                              </div>
+                            </ListBox.Item>
+                          </ListBox>
+                        </Select.Popover>
+                      </Select>
+                      <div className="space-y-3">
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            id="changePassword"
+                            checked={changePassword}
+                            onChange={(e) =>
+                              setChangePassword(e.target.checked)
+                            }
+                            className="w-4 h-4 accent-accent cursor-pointer"
+                          />
+                          <label
+                            htmlFor="changePassword"
+                            className="text-lg cursor-pointer flex items-center space-x-2"
+                          >
+                            <KeyIcon />
+                            <span>Change password</span>
+                          </label>
+                        </div>
+
+                        {changePassword && (
+                          <TextField
+                            isRequired
+                            name="password"
+                            type="password"
+                            minLength={6}
+                          >
+                            <Label className="text-lg">New Password</Label>
+                            <Input
+                              placeholder="Enter new password"
+                              variant="secondary"
+                              className="text-lg"
+                              minLength={6}
+                            />
+                            <FieldError />
+                          </TextField>
+                        )}
+                      </div>
+
+                      <Button
+                        type="submit"
+                        size="lg"
+                        className="mt-5 w-full text-xl font-bold"
+                      >
+                        Save changes
+                      </Button>
+                    </Form>
+                  </Modal.Body>
                 </Modal.Dialog>
               </Modal.Container>
             </Modal.Backdrop>

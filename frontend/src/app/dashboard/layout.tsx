@@ -43,7 +43,7 @@ export default function DashboardLayout({
   }
 
   return isAuthenticated ? (
-    <>
+    <div className="h-screen flex flex-col">
       <header className="flex justify-between items-center w-full h-30 bg-surface px-4 border-b border-muted">
         <NavLogo />
         {user && (
@@ -60,9 +60,9 @@ export default function DashboardLayout({
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                    <p className="text-white text-xl font-semibold text-left">
+                  <p className="text-white text-xl font-semibold text-left">
                     {user.name}
-                    </p>
+                  </p>
                   <p className="text-muted text-md">
                     {user.organization?.name}
                   </p>
@@ -87,12 +87,10 @@ export default function DashboardLayout({
           </Dropdown>
         )}
       </header>
-      <div className="flex h-screen bg-background">
+      <div className="flex flex-1 min-h-0 bg-background">
         <DashboardNav className="" />
-        <main className="flex-1 overflow-auto mt-10 ml-10 pr-0">
-          {children}
-        </main>
+        <main className="flex-1 mt-10 ml-10 pr-0">{children}</main>
       </div>
-    </>
+    </div>
   ) : null;
 }

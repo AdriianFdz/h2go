@@ -256,13 +256,19 @@ func (rc *RequestContract) ApproveRequest(
 		for i := int64(0); i < amountUsed; i++ {
 			gdoID := requestID + "-gdo-" + batch.BatchId + "-" + strconv.FormatInt(i, 10)
 			assetTypeEnum, _ := models.ParseAssetType(assetType)
+			expiryDate := null
+			if assetTypeEnum == models.H2 {
+				expiryDate = batch.ProductionDate.AddDate(0, 18, 0).Format(time.RFC3339)
+			} else if assetTypeEnum == models.Electricity {
+				expiryDate = batch.ProductionDate.AddDate(0, 12, 0).Format(time.RFC3339)
+			}
 			gdo := models.GDO{
 				DocType:    "GDO",
 				GdoID:      gdoID,
 				RequestID:  requestID,
 				AssetType:  assetTypeEnum,
 				IssueDate:  issueDate,
-				ExpiryDate: batch.ProductionDate.AddDate(0, 18, 0).Format(time.RFC3339),
+				ExpiryDate: expiryDate,
 				OwnerID:    producerID,
 				Status:     models.GdoActive,
 			}

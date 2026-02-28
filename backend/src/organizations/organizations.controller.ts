@@ -23,7 +23,7 @@ import { CreateUserDto } from './dto/createUser.dto';
 @ApiTags('organizations')
 @Controller('organizations')
 export class OrganizationsController {
-  constructor(private organizationsService: OrganizationsService) { }
+  constructor(private organizationsService: OrganizationsService) {}
 
   @Post()
   @UseGuards(AuthGuard('jwt'))
@@ -104,7 +104,6 @@ export class OrganizationsController {
     return this.organizationsService.getOrganizationBalance(id, user);
   }
 
-  // redeem gdos
   @Post(':id/redemption')
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()

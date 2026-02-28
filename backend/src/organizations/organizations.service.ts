@@ -68,6 +68,8 @@ export class OrganizationsService {
     }
     const user = this.userRepository.create(createUserDto);
     user.organization = organization;
+    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+    user.password = hashedPassword;
 
     await this.userRepository.save(user);
     return { message: 'Usuario agregado a la organización exitosamente', user };

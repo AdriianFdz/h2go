@@ -7,6 +7,7 @@ import {
   Param,
   Get,
   Patch,
+  Delete,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
@@ -147,6 +148,29 @@ export class OrganizationsController {
       id,
       userId,
       body,
+      user,
+    );
+  }
+
+  @Delete(':id/users/:userId')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete a user from an organization' })
+  @ApiResponse({
+    status: 200,
+    description: 'User deleted from the organization successfully',
+  })
+  @ApiResponse({ status: 400, description: 'Invalid data' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  deleteUserFromOrganization(
+    @Param('id') id: string,
+    @Param('userId') userId: string,
+    @Req() req,
+  ) {
+    const user = req.user as IAuthenticatedUser;
+    return this.organizationsService.deleteUserFromOrganization(
+      id,
+      userId,
       user,
     );
   }

@@ -124,7 +124,30 @@ export default function OrganizationPage() {
         });
       });
   };
-
+  const handleDeleteUser = async () => {
+    fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/organizations/${user?.organization?.id}/users/${selectedUserId}`,
+      {
+        method: "DELETE",
+        credentials: "include",
+      }
+    )
+      .then((res) => {
+        if (res.ok) {
+          setOrgUsers((prev) => prev.filter((u) => u.id !== selectedUserId));
+          setSelectedUser(new Set());
+          setIsEditUserModalOpen(false);
+          toast.success("User deleted successfully", { timeout: 4000 });
+        } else {
+          toast.danger("Failed to delete user", { timeout: 4000 });
+        }
+      })
+      .catch(() => {
+        toast.danger("An error occurred while deleting the user", {
+          timeout: 4000,
+        });
+      });
+  };
   useEffect(() => {
     if (!user?.organization?.id) return;
 
@@ -434,7 +457,7 @@ export default function OrganizationPage() {
                                       <Button
                                         slot="close"
                                         variant="danger"
-                                        onPress={() => {}}
+                                        onPress={() => handleDeleteUser()}
                                       >
                                         Delete User
                                       </Button>

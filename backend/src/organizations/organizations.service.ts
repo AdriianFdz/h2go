@@ -321,4 +321,30 @@ export class OrganizationsService {
     await this.userRepository.save(userToUpdate);
     return { message: 'Usuario actualizado exitosamente', user: userToUpdate };
   }
+
+  async deleteUserFromOrganization(
+    id: string,
+    userId: string,
+    requestingUser: IAuthenticatedUser,
+  ) {
+    if (requestingUser.role !== Role.ADMIN) {
+      throw new Error('No tienes permisos para eliminar este usuario');
+    }
+
+    const organization = await this.organizationRepository.findOne({
+      where: { id },
+      relations: ['users'],
+    });
+    if (!organization) {
+      throw new Error('Organización no encontrada');
+    }
+
+    const userToDelete = organization.users.find((user) => user.id === userId);
+    if (!userToDelete) {
+      throw new Error('Usuario no encontrado en la organización');
+    }
+
+    await this.userRepository.remove(userToDelete);
+    return { message: 'Usuario eliminado de la organización exitosamente' };
+  }
 }

@@ -11,6 +11,7 @@ import { AssetType } from 'src/common/enums/asset-type.enum';
 import { CreateUserDto } from './dto/createUser.dto';
 import { UpdateUserDto } from './dto/updateUser.dto';
 import * as bcrypt from 'bcrypt';
+import { OrganizationType } from 'src/common/enums/organizationType.enum';
 
 @Injectable()
 export class OrganizationsService {
@@ -91,12 +92,29 @@ export class OrganizationsService {
       throw new Error('Organización a autorizar no encontrada');
     }
 
-    await this.organizationRepository
-      .createQueryBuilder()
-      .relation(Organization, 'authorizedOrgs')
-      .of(requestingUser.organization.id)
-      .add(orgToAuthorize);
+    if (orgToAuthorize.type !== OrganizationType.TRADER) {
+      throw new Error('Solo se pueden autorizar organizaciones de tipo TRADER');
+    }
 
+    const requesterOrg = await this.organizationRepository.findOne({
+      where: { id: requestingUser.organization.id },
+    });
+
+    if (!requesterOrg) {
+      throw new Error('Organización del administrador no encontrada');
+    }
+
+    if (requesterOrg.type !== OrganizationType.PRODUCER) {
+      throw new Error(
+        'Solo las organizaciones de tipo PRODUCER pueden autorizar otras organizaciones',
+      );
+    }
+
+    requesterOrg.authorizedByOrgs = [
+      ...(requesterOrg.authorizedByOrgs || []),
+      orgToAuthorize,
+    ];
+    await this.organizationRepository.save(requesterOrg);
     return { message: 'Organización autorizada exitosamente' };
   }
 

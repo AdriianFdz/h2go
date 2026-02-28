@@ -37,7 +37,7 @@ export class AuthController {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      maxAge: parseInt(process.env.JWT_EXPIRATION ?? '86400000'), // Default 1 day
     });
 
     return { message: 'Logged in successfully' };

@@ -18,11 +18,12 @@ import { CreateOrgDto } from './dto/createOrg.dto';
 import { RedeemGDOsDto } from './dto/redeemGDOs.dto';
 import { OrganizationsService } from './organizations.service';
 import { IAuthenticatedUser } from '../auth/interfaces/authenticatedUser';
+import { CreateUserDto } from './dto/createUser.dto';
 
 @ApiTags('organizations')
 @Controller('organizations')
 export class OrganizationsController {
-  constructor(private organizationsService: OrganizationsService) {}
+  constructor(private organizationsService: OrganizationsService) { }
 
   @Post()
   @UseGuards(AuthGuard('jwt'))
@@ -42,20 +43,20 @@ export class OrganizationsController {
   @Post(':id/users')
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Add a user to an organization' })
+  @ApiOperation({ summary: 'Create a user for an organization' })
   @ApiResponse({
     status: 201,
-    description: 'User added to the organization successfully',
+    description: 'User created for the organization successfully',
   })
   @ApiResponse({ status: 400, description: 'Invalid data' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  addUserToOrganization(
+  createUserForOrganization(
     @Param('id') id: string,
-    @Param('userEmail') userEmail: string,
+    @Body() body: CreateUserDto,
     @Req() req,
   ) {
     const user = req.user as IAuthenticatedUser;
-    return this.organizationsService.addUserToOrganization(id, userEmail, user);
+    return this.organizationsService.createUserForOrganization(id, body, user);
   }
 
   @Post(':id/authorize')

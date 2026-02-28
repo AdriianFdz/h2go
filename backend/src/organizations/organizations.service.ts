@@ -8,6 +8,7 @@ import { IAuthenticatedUser } from 'src/auth/interfaces/authenticatedUser';
 import { ConnectionManager } from '../fabric/connectionManager';
 import { GdoBalanceDto } from './dto/gdoBalance.dto';
 import { AssetType } from 'src/common/enums/asset-type.enum';
+import { CreateUserDto } from './dto/createUser.dto';
 
 @Injectable()
 export class OrganizationsService {
@@ -18,7 +19,7 @@ export class OrganizationsService {
     private userRepository: Repository<User>,
     @Inject(ConnectionManager)
     private connectionManager: ConnectionManager,
-  ) {}
+  ) { }
   async createOrganization(
     createOrgDto: CreateOrgDto,
     user: IAuthenticatedUser,
@@ -37,17 +38,14 @@ export class OrganizationsService {
     };
   }
 
-  async addUserToOrganization(
+  async createUserForOrganization(
     id: string,
-    userEmail: string,
+    createUserDto: CreateUserDto,
     requestingUser: IAuthenticatedUser,
   ) {
-    if (
-      requestingUser.role !== Role.DEV &&
-      requestingUser.role !== Role.ADMIN
-    ) {
+    if (requestingUser.role !== Role.ADMIN) {
       throw new Error(
-        'Solo un desarrollador o administrador puede agregar usuarios a una organización',
+        'Solo un administrador puede agregar usuarios a una organización',
       );
     }
     if (
@@ -66,15 +64,11 @@ export class OrganizationsService {
     if (!organization) {
       throw new Error('Organización no encontrada');
     }
-    const user = await this.userRepository.findOne({
-      where: { email: userEmail },
-    });
-    if (!user) {
-      throw new Error('Usuario no encontrado');
-    }
+    const user = this.userRepository.create(createUserDto);
     user.organization = organization;
+
     await this.userRepository.save(user);
-    return { message: 'Usuario agregado a la organización exitosamente' };
+    return { message: 'Usuario agregado a la organización exitosamente', user };
   }
 
   async authorizeOrganization(id: string, requestingUser: IAuthenticatedUser) {

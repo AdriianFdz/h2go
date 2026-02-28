@@ -9,6 +9,8 @@ import { ConnectionManager } from '../fabric/connectionManager';
 import { GdoBalanceDto } from './dto/gdoBalance.dto';
 import { AssetType } from 'src/common/enums/asset-type.enum';
 import { CreateUserDto } from './dto/createUser.dto';
+import { UpdateUserDto } from './dto/updateUser.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class OrganizationsService {
@@ -19,7 +21,7 @@ export class OrganizationsService {
     private userRepository: Repository<User>,
     @Inject(ConnectionManager)
     private connectionManager: ConnectionManager,
-  ) { }
+  ) {}
   async createOrganization(
     createOrgDto: CreateOrgDto,
     user: IAuthenticatedUser,
@@ -261,5 +263,62 @@ export class OrganizationsService {
     } finally {
       this.connectionManager.disconnectGateway(gateway, client);
     }
+  }
+
+  async updateUserFromOrganization(
+    id: string,
+    userId: string,
+    updateUserDto: UpdateUserDto,
+    requestingUser: IAuthenticatedUser,
+  ) {
+    if (requestingUser.role !== Role.ADMIN && requestingUser.id !== userId) {
+      throw new Error('No tienes permisos para actualizar este usuario');
+    }
+
+    const organization = await this.organizationRepository.findOne({
+      where: { id },
+      relations: ['users'],
+    });
+    if (!organization) {
+      throw new Error('Organización no encontrada');
+    }
+
+    if (
+      requestingUser.id !== userId &&
+      organization.users.every((user) => user.id !== userId)
+    ) {
+      throw new Error('El usuario no pertenece a tu organización');
+    }
+    // Aqui hemos confirmado que el usuario es admin o el mismo
+
+    const userToUpdate = organization.users.find((user) => user.id === userId);
+    if (!userToUpdate) {
+      throw new Error('Usuario no encontrado en la organización');
+    }
+
+    if (updateUserDto.name != null) {
+      userToUpdate.name = updateUserDto.name;
+    }
+    if (
+      updateUserDto.email != null &&
+      !(await this.userRepository.exists({
+        where: { email: updateUserDto.email },
+      }))
+    ) {
+      userToUpdate.email = updateUserDto.email;
+    }
+    if (updateUserDto.role != null) {
+      userToUpdate.role = updateUserDto.role;
+    }
+    if (updateUserDto.avatar != null) {
+      userToUpdate.avatar = updateUserDto.avatar;
+    }
+    if (updateUserDto.password != null) {
+      const hashedPassword = await bcrypt.hash(updateUserDto.password, 10);
+      userToUpdate.password = hashedPassword;
+    }
+
+    await this.userRepository.save(userToUpdate);
+    return { message: 'Usuario actualizado exitosamente', user: userToUpdate };
   }
 }

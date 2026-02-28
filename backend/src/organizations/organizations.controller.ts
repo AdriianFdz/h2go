@@ -6,6 +6,7 @@ import {
   Req,
   Param,
   Get,
+  Patch,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
@@ -19,6 +20,7 @@ import { RedeemGDOsDto } from './dto/redeemGDOs.dto';
 import { OrganizationsService } from './organizations.service';
 import { IAuthenticatedUser } from '../auth/interfaces/authenticatedUser';
 import { CreateUserDto } from './dto/createUser.dto';
+import { UpdateUserDto } from './dto/updateUser.dto';
 
 @ApiTags('organizations')
 @Controller('organizations')
@@ -120,6 +122,31 @@ export class OrganizationsController {
       id,
       body.assetType,
       body.gdosToRedeem,
+      user,
+    );
+  }
+
+  @Patch(':id/users/:userId')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update a user for an organization' })
+  @ApiResponse({
+    status: 200,
+    description: 'User updated for the organization successfully',
+  })
+  @ApiResponse({ status: 400, description: 'Invalid data' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  updateUserFromOrganization(
+    @Param('id') id: string,
+    @Param('userId') userId: string,
+    @Body() body: UpdateUserDto,
+    @Req() req,
+  ) {
+    const user = req.user as IAuthenticatedUser;
+    return this.organizationsService.updateUserFromOrganization(
+      id,
+      userId,
+      body,
       user,
     );
   }

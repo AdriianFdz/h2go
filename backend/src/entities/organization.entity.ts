@@ -7,6 +7,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { User } from './user.entity';
+import { OrganizationType } from 'src/common/enums/organizationType.enum';
 
 @Entity('organizations')
 export class Organization {
@@ -26,9 +27,9 @@ export class Organization {
 
   @Column({
     type: 'enum',
-    enum: ['trader', 'producer', 'regulator', 'registry'],
+    enum: OrganizationType,
   })
-  type: string;
+  type: OrganizationType;
 
   @Column({ default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;

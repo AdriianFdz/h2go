@@ -26,7 +26,7 @@ export class Organization {
 
   @Column({
     type: 'enum',
-    enum: ['trader', 'producer', 'regulator', 'consumer'],
+    enum: ['trader', 'producer', 'regulator', 'registry'],
   })
   type: string;
 

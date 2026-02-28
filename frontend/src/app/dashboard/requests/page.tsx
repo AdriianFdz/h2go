@@ -32,6 +32,11 @@ export default function RequestsPage() {
   const [validationResult, setValidationResult] = useState<{
     canApprove: boolean;
   } | null>(null);
+  const [filterValue, setFilterValue] = useState("");
+
+  const filteredRequests = requests.filter((request) =>
+    request.requestId.toLowerCase().includes(filterValue.toLowerCase())
+  );
 
   useEffect(() => {
     if (!user) return;
@@ -193,7 +198,7 @@ export default function RequestsPage() {
         {isRegulator ? "All pending requests" : "Your organization requests"}
       </p>
 
-      <SearchField>
+      <SearchField onChange={(newValue) => setFilterValue(newValue)}>
         <Label className="text-lg">Search Requests</Label>
         <SearchField.Group className="h-13 bg-surface/50 border border-muted/30">
           <SearchField.Input placeholder="Insert request ID" />
@@ -204,7 +209,7 @@ export default function RequestsPage() {
         className="w-full rounded-2xl my-6 mb-16"
         variant="surface"
       >
-        {requests.map((request) => (
+        {filteredRequests.map((request) => (
           <Accordion.Item key={request.requestId}>
             <Accordion.Heading>
               <Accordion.Trigger className="group flex items-center gap-4 bg-linear-to-r from-surface to-background border border-muted/30 hover:border-muted/50 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 px-5 py-4 rounded-xl w-full shadow-md">

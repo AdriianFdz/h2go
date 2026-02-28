@@ -11,7 +11,6 @@ import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { LoginDto } from './dto/login.dto';
-import { RegisterDto } from './dto/register.dto';
 import { IAuthenticatedUser } from './interfaces/authenticatedUser';
 import type { Response } from 'express';
 
@@ -57,18 +56,6 @@ export class AuthController {
       user: req.user,
       authorizedByOrgs,
     };
-  }
-
-  @Post('register')
-  @ApiOperation({ summary: 'User registration' })
-  @ApiResponse({ status: 201, description: 'User registered successfully' })
-  @ApiResponse({ status: 400, description: 'Invalid data' })
-  register(
-    @Body() registerDto: RegisterDto,
-    @Req() req: { user: IAuthenticatedUser },
-  ) {
-    const user: IAuthenticatedUser = req.user;
-    return this.authService.register(registerDto, user);
   }
 
   @Post('logout')

@@ -365,6 +365,7 @@ export class OrganizationsService {
         .upload(updateUserDto.avatar, {
           overwrite: true,
           folder: 'avatars',
+          public_id: userToUpdate.id,
         })
         .then((result) => {
           console.log(result);

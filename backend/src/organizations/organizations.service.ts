@@ -12,6 +12,7 @@ import { CreateUserDto } from './dto/createUser.dto';
 import { UpdateUserDto } from './dto/updateUser.dto';
 import * as bcrypt from 'bcrypt';
 import { OrganizationType } from 'src/common/enums/organizationType.enum';
+import * as cloudinary from 'cloudinary';
 
 @Injectable()
 export class OrganizationsService {
@@ -23,6 +24,7 @@ export class OrganizationsService {
     @Inject(ConnectionManager)
     private connectionManager: ConnectionManager,
   ) {}
+
   async createOrganization(
     createOrgDto: CreateOrgDto,
     user: IAuthenticatedUser,
@@ -303,6 +305,10 @@ export class OrganizationsService {
       throw new Error('Organización no encontrada');
     }
 
+    requestingUser = organization.users.find(
+      (user) => user.id === requestingUser.id,
+    )!;
+
     if (
       requestingUser.id !== userId &&
       organization.users.every((user) => user.id !== userId)
@@ -314,6 +320,30 @@ export class OrganizationsService {
     const userToUpdate = organization.users.find((user) => user.id === userId);
     if (!userToUpdate) {
       throw new Error('Usuario no encontrado en la organización');
+    }
+    if (
+      requestingUser.role !== Role.ADMIN &&
+      updateUserDto.newPassword != null
+    ) {
+      let oldPasswordCorrect = false;
+      try {
+        oldPasswordCorrect = await bcrypt.compare(
+          updateUserDto.oldPassword,
+          userToUpdate.password,
+        );
+      } catch {
+        throw new Error('Error al verificar la contraseña antigua');
+      }
+      if (!oldPasswordCorrect) {
+        throw new Error('La contraseña antigua no es correcta');
+      }
+    }
+    if (
+      requestingUser.role !== Role.ADMIN &&
+      updateUserDto.role &&
+      updateUserDto.role !== userToUpdate.role
+    ) {
+      throw new Error('No tienes permisos para cambiar el rol');
     }
 
     if (updateUserDto.name != null) {
@@ -331,10 +361,21 @@ export class OrganizationsService {
       userToUpdate.role = updateUserDto.role;
     }
     if (updateUserDto.avatar != null) {
-      userToUpdate.avatar = updateUserDto.avatar;
+      await cloudinary.v2.uploader
+        .upload(updateUserDto.avatar, {
+          overwrite: true,
+          folder: 'avatars',
+        })
+        .then((result) => {
+          console.log(result);
+          userToUpdate.avatar = result.secure_url;
+        })
+        .catch(() => {
+          throw new Error('Error al subir la imagen de perfil');
+        });
     }
-    if (updateUserDto.password != null) {
-      const hashedPassword = await bcrypt.hash(updateUserDto.password, 10);
+    if (updateUserDto.newPassword != null) {
+      const hashedPassword = await bcrypt.hash(updateUserDto.newPassword, 10);
       userToUpdate.password = hashedPassword;
     }
 

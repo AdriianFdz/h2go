@@ -7,9 +7,9 @@ import { User } from '../entities/user.entity';
 import { ConnectionManager } from '../fabric/connectionManager';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Organization, User])],
-    controllers: [OrganizationsController],
-    providers: [OrganizationsService, ConnectionManager],
-    exports: [OrganizationsService],
+  imports: [TypeOrmModule.forFeature([Organization, User])],
+  controllers: [OrganizationsController],
+  providers: [OrganizationsService, ConnectionManager],
+  exports: [OrganizationsService],
 })
-export class OrganizationsModule { }
+export class OrganizationsModule {}

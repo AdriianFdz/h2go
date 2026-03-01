@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "../hooks/useAuth";
+import { useState } from "react";
 import {
   Spinner,
   Avatar,
@@ -12,11 +13,15 @@ import {
   DropdownMenu,
   DropdownItem,
   Label,
+  Modal,
+  toast,
 } from "@heroui/react";
 import { NavLogo } from "../components/nav-logo";
 import { useRouter } from "next/navigation";
-import { DownArrowIcon, LogoutIcon } from "../components/icons";
+import { DownArrowIcon, EditIcon, LogoutIcon } from "../components/icons";
 import { DashboardNav } from "../components/dashboard-nav";
+import { EditUserModalBody } from "../components/EditUserModalBody";
+import { Role } from "../types/user";
 
 export default function DashboardLayout({
   children,
@@ -25,6 +30,56 @@ export default function DashboardLayout({
 }) {
   const { isAuthenticated, isLoading, user } = useAuth();
   const router = useRouter();
+
+  const [isEditModalVisible, setEditModalVisible] = useState(false);
+
+  const [changePassword, setChangePassword] = useState(false);
+  const handleEditUser = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const name = formData.get("name") as string;
+    const email = formData.get("email") as string;
+    const role = formData.get("role") as Role;
+    const oldPassword = formData.get("oldPassword") as string | null;
+    const newPassword = formData.get("newPassword") as string | null;
+    const avatar = formData.get("avatar") as string | null;
+
+    fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/organizations/${user?.organization?.id}/users/${user?.id}`,
+      {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          email,
+          role,
+          oldPassword,
+          newPassword,
+          avatar,
+        }),
+      }
+    )
+      .then((res) => {
+        if (res.ok) {
+          res.json().then((data) => {
+            const updatedUser = data.user;
+            setEditModalVisible(false);
+            setChangePassword(false);
+            Object.assign(user!, updatedUser);
+            toast.success("User updated successfully", { timeout: 4000 });
+          });
+        } else {
+          toast.danger("Failed to update user", { timeout: 4000 });
+        }
+      })
+      .catch((err) => {
+        console.error("Error updating user:", err);
+        toast.danger("An error occurred while updating the user", {
+          timeout: 4000,
+        });
+      });
+  };
 
   const handleLogout = () => {
     fetch(`${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/auth/logout`, {
@@ -73,19 +128,46 @@ export default function DashboardLayout({
             <DropdownPopover>
               <DropdownMenu>
                 <DropdownItem
+                  textValue="Edit Profile"
+                  onAction={() => setEditModalVisible(true)}
+                >
+                  <EditIcon />
+                  <Label>Edit Profile</Label>
+                </DropdownItem>
+                <DropdownItem
                   textValue="Logout"
                   variant="danger"
                   onAction={handleLogout}
                 >
-                  <div className="flex items-center gap-2">
-                    <LogoutIcon className="text-danger" />
-                    <Label>Logout</Label>
-                  </div>
+                  <LogoutIcon className="text-danger" />
+                  <Label>Logout</Label>
                 </DropdownItem>
               </DropdownMenu>
             </DropdownPopover>
           </Dropdown>
         )}
+        <Modal
+          isOpen={isEditModalVisible}
+          onOpenChange={setEditModalVisible}
+        >
+          <Modal.Backdrop>
+            <Modal.Container>
+              <Modal.Dialog>
+                <Modal.Body>
+                  <EditUserModalBody
+                    {...user}
+                    handleDeleteUser={() => Promise.resolve()}
+                    handleEditUser={handleEditUser}
+                    changePassword={changePassword}
+                    setChangePassword={setChangePassword}
+                    canDeleteUser={false}
+                    requester={user || undefined}
+                  />
+                </Modal.Body>
+              </Modal.Dialog>
+            </Modal.Container>
+          </Modal.Backdrop>
+        </Modal>
       </header>
       <div className="flex flex-1 min-h-0 bg-background">
         <DashboardNav className="" />

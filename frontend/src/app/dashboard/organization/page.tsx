@@ -1,15 +1,10 @@
 "use client";
 
-import {
-  EditIcon,
-  KeyIcon,
-  PlusCircleIcon,
-  TrashIcon,
-} from "@/app/components/icons";
+import { EditUserModalBody } from "@/app/components/EditUserModalBody";
+import { EditIcon, PlusCircleIcon } from "@/app/components/icons";
 import { useAuth } from "@/app/hooks/useAuth";
 import { Role, User } from "@/app/types/user";
 import {
-  AlertDialog,
   Avatar,
   Button,
   Chip,
@@ -22,7 +17,6 @@ import {
   Spinner,
   TextField,
   Selection,
-  Select,
   toast,
 } from "@heroui/react";
 import { useRouter } from "next/navigation";
@@ -88,7 +82,9 @@ export default function OrganizationPage() {
     const name = formData.get("name") as string;
     const email = formData.get("email") as string;
     const role = formData.get("role") as Role;
-    const password = formData.get("password") as string | null;
+    const newPassword = formData.get("newPassword") as string | null;
+    const oldPassword = formData.get("oldPassword") as string | null;
+    const avatar = formData.get("avatar") as string | null;
 
     fetch(
       `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/organizations/${user?.organization?.id}/users/${selectedUserId}`,
@@ -96,7 +92,14 @@ export default function OrganizationPage() {
         method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, role, password }),
+        body: JSON.stringify({
+          name,
+          email,
+          role,
+          oldPassword,
+          newPassword,
+          avatar,
+        }),
       }
     )
       .then((res) => {
@@ -106,6 +109,11 @@ export default function OrganizationPage() {
             setOrgUsers((prev) =>
               prev.map((u) => (u.id === updatedUser.id ? updatedUser : u))
             );
+            if (user?.id === updatedUser.id) {
+              Object.assign(user!, updatedUser);
+            }
+            const userToModify = orgUsers.find((u) => u.id === updatedUser.id);
+            Object.assign(userToModify!, updatedUser);
             setIsEditUserModalOpen(false);
             setChangePassword(false);
             toast.success("User updated successfully", { timeout: 4000 });
@@ -383,211 +391,15 @@ export default function OrganizationPage() {
                     </Modal.Heading>
                   </Modal.Header>
                   <Modal.Body>
-                    {selectedUserData && (
-                      <div className="mx-1 mb-6 flex items-center space-x-4 p-4 bg-muted/10 rounded-4xl">
-                        <Avatar
-                          size="lg"
-                          className="border border-muted/20"
-                        >
-                          {selectedUserData.avatar ? (
-                            <Avatar.Image src={selectedUserData.avatar} />
-                          ) : (
-                            <Avatar.Fallback>
-                              {selectedUserData.name?.charAt(0).toUpperCase()}
-                            </Avatar.Fallback>
-                          )}
-                        </Avatar>
-                        <div>
-                          <p className="font-semibold text-lg">
-                            {selectedUserData.name}
-                          </p>
-                          <p className="text-muted">{selectedUserData.email}</p>
-                          <Chip
-                            color="accent"
-                            variant="soft"
-                            className="mt-1"
-                          >
-                            {selectedUserData.role}
-                          </Chip>
-                        </div>
-                        <AlertDialog>
-                          <Button
-                            variant="danger"
-                            size="lg"
-                            className="ml-auto"
-                          >
-                            <TrashIcon className="w-5 h-5" />
-                            Delete User
-                          </Button>
-
-                          <AlertDialog.Backdrop>
-                            <AlertDialog.Container>
-                              <AlertDialog.Dialog>
-                                <AlertDialog.CloseTrigger />
-                                <AlertDialog.Header>
-                                  <AlertDialog.Icon status="danger" />
-                                  <AlertDialog.Heading className="text-2xl font-bold">
-                                    Confirm Deletion
-                                  </AlertDialog.Heading>
-                                </AlertDialog.Header>
-                                <AlertDialog.Body>
-                                  Are you sure you want to delete the user{" "}
-                                  <span className="font-semibold text-lg">
-                                    {selectedUserData.name}
-                                  </span>{" "}
-                                  with ID{" "}
-                                  <span className="text-lg font-mono bg-background/50 px-1 rounded border border-muted/20">
-                                    {selectedUserData.id}
-                                  </span>
-                                  ? This action cannot be undone.
-                                </AlertDialog.Body>
-                                <AlertDialog.Footer>
-                                  <Button
-                                    slot="close"
-                                    variant="tertiary"
-                                  >
-                                    Cancel
-                                  </Button>
-                                  <Button
-                                    slot="close"
-                                    variant="danger"
-                                    onPress={() => handleDeleteUser()}
-                                  >
-                                    Delete User
-                                  </Button>
-                                </AlertDialog.Footer>
-                              </AlertDialog.Dialog>
-                            </AlertDialog.Container>
-                          </AlertDialog.Backdrop>
-                        </AlertDialog>
-                      </div>
-                    )}
-                    <Form
-                      onSubmit={handleEditUser}
-                      className="mx-1 space-y-4"
-                    >
-                      <TextField
-                        isRequired
-                        name="name"
-                        type="text"
-                        minLength={1}
-                        defaultValue={selectedUserData?.name}
-                      >
-                        <Label className="text-lg">Name</Label>
-                        <Input
-                          placeholder="Enter user name"
-                          variant="secondary"
-                          className="text-lg"
-                        />
-                        <FieldError />
-                      </TextField>
-                      <TextField
-                        isRequired
-                        name="email"
-                        type="email"
-                        defaultValue={selectedUserData?.email}
-                      >
-                        <Label className="text-lg">Email</Label>
-                        <Input
-                          placeholder="Enter user email"
-                          variant="secondary"
-                          className="text-lg"
-                        />
-                        <FieldError />
-                      </TextField>
-                      <Select
-                        name="role"
-                        isRequired
-                        defaultSelectedKey={selectedUserData?.role}
-                        variant="secondary"
-                      >
-                        <Label className="text-lg">Role</Label>
-                        <Select.Trigger>
-                          <Select.Value />
-                          <Select.Indicator />
-                        </Select.Trigger>
-                        <Select.Popover>
-                          <ListBox>
-                            <ListBox.Item
-                              id={Role.ADMIN}
-                              textValue="Admin"
-                            >
-                              <div className="flex items-center justify-between w-full">
-                                <span>Admin</span>
-                                <Chip
-                                  color="danger"
-                                  variant="soft"
-                                  size="sm"
-                                >
-                                  Full Access
-                                </Chip>
-                              </div>
-                            </ListBox.Item>
-                            <ListBox.Item
-                              id={Role.USER}
-                              textValue="User"
-                            >
-                              <div className="flex items-center justify-between w-full">
-                                <span>User</span>
-                                <Chip
-                                  color="accent"
-                                  variant="soft"
-                                  size="sm"
-                                >
-                                  Standard Access
-                                </Chip>
-                              </div>
-                            </ListBox.Item>
-                          </ListBox>
-                        </Select.Popover>
-                      </Select>
-                      <div className="space-y-3">
-                        <div className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            id="changePassword"
-                            checked={changePassword}
-                            onChange={(e) =>
-                              setChangePassword(e.target.checked)
-                            }
-                            className="w-4 h-4 accent-accent cursor-pointer"
-                          />
-                          <label
-                            htmlFor="changePassword"
-                            className="text-lg cursor-pointer flex items-center space-x-2"
-                          >
-                            <KeyIcon />
-                            <span>Change password</span>
-                          </label>
-                        </div>
-
-                        {changePassword && (
-                          <TextField
-                            isRequired
-                            name="password"
-                            type="password"
-                            minLength={6}
-                          >
-                            <Label className="text-lg">New Password</Label>
-                            <Input
-                              placeholder="Enter new password"
-                              variant="secondary"
-                              className="text-lg"
-                              minLength={6}
-                            />
-                            <FieldError />
-                          </TextField>
-                        )}
-                      </div>
-
-                      <Button
-                        type="submit"
-                        size="lg"
-                        className="mt-5 w-full text-xl font-bold"
-                      >
-                        Save changes
-                      </Button>
-                    </Form>
+                    <EditUserModalBody
+                      {...selectedUserData}
+                      handleDeleteUser={handleDeleteUser}
+                      handleEditUser={handleEditUser}
+                      changePassword={changePassword}
+                      setChangePassword={setChangePassword}
+                      canDeleteUser={true}
+                      requester={user}
+                    />
                   </Modal.Body>
                 </Modal.Dialog>
               </Modal.Container>

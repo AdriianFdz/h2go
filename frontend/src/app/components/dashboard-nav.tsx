@@ -2,12 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  DashboardIcon,
-  GDOIcon,
-  OrganizationIcon,
-  TextFileIcon,
-} from "./icons";
+import { GDOIcon, OrganizationIcon, TextFileIcon } from "./icons";
 import { useAuth } from "../hooks/useAuth";
 import { OrganizationType } from "../types/organization";
 import { Role } from "../types/user";
@@ -21,11 +16,6 @@ export const DashboardNav = ({ className }: { className?: string }) => {
   const isAdmin = user?.role === Role.ADMIN;
 
   const links = [
-    {
-      href: "/dashboard",
-      icon: <DashboardIcon />,
-      label: "Dashboard",
-    },
     ...(isRegulator
       ? [
           {

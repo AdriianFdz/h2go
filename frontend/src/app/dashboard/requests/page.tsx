@@ -14,7 +14,7 @@ import {
   HydrogenIcon,
 } from "@/app/components/icons";
 import { useAuth } from "@/app/hooks/useAuth";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Request } from "@/app/types/request";
 import { OrganizationType } from "@/app/types/organization";
@@ -25,9 +25,12 @@ export default function RequestsPage() {
   const router = useRouter();
   const [requests, setRequests] = useState<Request[]>([]);
   const [loadingRequests, setLoadingRequests] = useState(false);
+  const isInitialLoad = useRef(true);
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
   const [comment, setComment] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState<"approve" | "reject" | null>(
+    null
+  );
   const [validationLoading, setValidationLoading] = useState(false);
   const [validationResult, setValidationResult] = useState<{
     canApprove: boolean;
@@ -46,7 +49,9 @@ export default function RequestsPage() {
     if (!user) return;
 
     const fetchRequests = async () => {
-      setLoadingRequests(true);
+      if (isInitialLoad.current) {
+        setLoadingRequests(true);
+      }
       try {
         const isRegulator = user.organization?.type === "regulator";
         const requestsUrl = isRegulator
@@ -66,6 +71,7 @@ export default function RequestsPage() {
         console.error("Error fetching requests:", error);
       } finally {
         setLoadingRequests(false);
+        isInitialLoad.current = false;
       }
     };
 
@@ -104,7 +110,7 @@ export default function RequestsPage() {
   const handleApprove = async () => {
     if (!selectedRequest) return;
 
-    setIsSubmitting(true);
+    setIsSubmitting("approve");
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/requests/transformation/${selectedRequest.requestId}/approve`,
@@ -131,14 +137,14 @@ export default function RequestsPage() {
     } catch (error) {
       console.error("Error approving request:", error);
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(null);
     }
   };
 
   const handleReject = async () => {
     if (!selectedRequest) return;
 
-    setIsSubmitting(true);
+    setIsSubmitting("reject");
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/requests/transformation/${selectedRequest.requestId}/reject`,
@@ -165,7 +171,7 @@ export default function RequestsPage() {
     } catch (error) {
       console.error("Error rejecting request:", error);
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(null);
     }
   };
 
@@ -430,7 +436,7 @@ export default function RequestsPage() {
                                       placeholder="Add a comment about your decision... (required)"
                                       rows={5}
                                       className="w-full p-3 bg-transparent text-foreground resize-none focus:outline-none rounded-lg"
-                                      disabled={isSubmitting}
+                                      disabled={isSubmitting !== null}
                                     />
                                   </div>
                                   {comment.trim() === "" && (
@@ -452,11 +458,12 @@ export default function RequestsPage() {
                                   variant="danger"
                                   onClick={() => handleReject()}
                                   isDisabled={
-                                    isSubmitting || comment.trim() === ""
+                                    isSubmitting !== null ||
+                                    comment.trim() === ""
                                   }
                                   className="flex-1 h-12 font-bold bg-danger hover:bg-danger/90"
                                 >
-                                  {isSubmitting ? (
+                                  {isSubmitting === "reject" ? (
                                     <Spinner size="sm" />
                                   ) : (
                                     "Reject"
@@ -466,7 +473,7 @@ export default function RequestsPage() {
                                   variant="primary"
                                   onClick={() => handleApprove()}
                                   isDisabled={
-                                    isSubmitting ||
+                                    isSubmitting !== null ||
                                     comment.trim() === "" ||
                                     (validationResult
                                       ? !validationResult.canApprove
@@ -474,7 +481,7 @@ export default function RequestsPage() {
                                   }
                                   className="flex-1 h-12 font-bold bg-success hover:bg-success/90"
                                 >
-                                  {isSubmitting ? (
+                                  {isSubmitting === "approve" ? (
                                     <Spinner size="sm" />
                                   ) : (
                                     "Approve"

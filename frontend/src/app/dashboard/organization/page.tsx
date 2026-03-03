@@ -222,7 +222,9 @@ export default function OrganizationPage() {
       <h2 className="text-xl font-bold mb-5">Users</h2>
       <div className="mr-10">
         {isLoadingUsers ? (
-          <Spinner size="sm" />
+          <div className="flex items-center justify-center py-8">
+            <Spinner size="xl" />
+          </div>
         ) : (
           <div className="max-h-100 overflow-y-auto">
             <ListBox

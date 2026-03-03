@@ -171,7 +171,7 @@ export default function DashboardLayout({
       </header>
       <div className="flex flex-1 min-h-0 bg-background">
         <DashboardNav className="" />
-        <main className="flex-1 mt-10 ml-4 pr-0">{children}</main>
+        <main className="flex-1 mt-10 ml-10 pr-0">{children}</main>
       </div>
     </div>
   ) : null;

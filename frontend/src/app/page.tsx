@@ -102,23 +102,23 @@ export default function Home() {
   }
 
   return (
-    <>
-      <header>
-        <NavLogo />
+    <div className="flex flex-col h-screen">
+      <header className="shrink-0">
+        <NavLogo className="pl-10 py-10" />
       </header>
-      <div className="flex w-full h-screen">
-        <section className="w-1/2 px-20">
-          <h2 className="text-5xl font-black text-accent">Green Hydrogen</h2>
-          <h2 className="text-5xl font-black text-white">
-            Blockchain Solution
-          </h2>
-          <p className="text-xl text-muted mt-6">
-            <span className="font-black text-4xl">T</span>rust,{" "}
-            <span className="font-black text-4xl">T</span>ransparency, and{" "}
-            <span className="font-black text-4xl">T</span>
-            raceability for green hydrogen guarantees of origin.
-          </p>
-          <div className="grid grid-rows-2 grid-cols-2 gap-5 mt-10">
+      <div className="w-full ml-10">
+        <h2 className="text-5xl font-black text-accent">Green Hydrogen</h2>
+        <h2 className="text-5xl font-black text-white">Blockchain Solution</h2>
+        <p className="text-xl text-muted mt-6 mb-10">
+          <span className="font-black text-4xl">T</span>rust,{" "}
+          <span className="font-black text-4xl">T</span>ransparency, and{" "}
+          <span className="font-black text-4xl">T</span>
+          raceability for green hydrogen guarantees of origin.
+        </p>
+      </div>
+      <div className="flex flex-1 min-h-0">
+        <section className="w-1/2 px-10 flex flex-col">
+          <div className="grid grid-rows-2 grid-cols-2 gap-5">
             <FeatureCard
               icon={VerifyIcon}
               title="TRUST"
@@ -137,8 +137,8 @@ export default function Home() {
             />
           </div>
         </section>
-        <section className="w-1/2 px-20 ">
-          <div className="bg-black/30 backdrop-blur-md p-10 rounded-4xl border border-muted/15">
+        <section className="w-1/2 px-10">
+          <div className="w-full bg-black/30 backdrop-blur-md p-10 rounded-4xl border border-muted/15">
             <h3 className="text-3xl font-bold mb-2">Welcome Back</h3>
             <p className="text-lg text-muted mb-6">
               Login with your credentials
@@ -220,6 +220,6 @@ export default function Home() {
           </div>
         </section>
       </div>
-    </>
+    </div>
   );
 }

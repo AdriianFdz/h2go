@@ -17,6 +17,10 @@ export const metadata: Metadata = {
   title: "H2GO - Green Hydrogen Blockchain Solution",
   description:
     "Trust, Transparency, and Traceability for green hydrogen guarantees of origin.",
+  icons: {
+    icon: "/logo.svg",
+    shortcut: "/logo.svg",
+  },
 };
 
 export default function RootLayout({

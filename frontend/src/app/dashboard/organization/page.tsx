@@ -1,6 +1,6 @@
 "use client";
 
-import { EditUserModalBody } from "@/app/components/EditUserModalBody";
+import { EditUserModalBody } from "@/app/components/editUserModalBody";
 import { EditIcon, PlusCircleIcon } from "@/app/components/icons";
 import { useAuth } from "@/app/hooks/useAuth";
 import { Role, User } from "@/app/types/user";

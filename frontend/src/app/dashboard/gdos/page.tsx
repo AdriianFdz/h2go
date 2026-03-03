@@ -17,7 +17,7 @@ import { useEffect, useState } from "react";
 import { ElectricityIcon, HydrogenIcon } from "@/app/components/icons";
 import { OrganizationType } from "@/app/types/organization";
 import { AssetType } from "@/app/types/assetType";
-import { AssetTypeSelector } from "@/app/components/AssetTypeSelector";
+import { AssetTypeSelector } from "@/app/components/assetTypeSelector";
 
 interface OrganizationBalance {
   organizationId: string;

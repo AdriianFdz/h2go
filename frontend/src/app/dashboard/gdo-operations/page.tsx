@@ -34,7 +34,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AssetType } from "@/app/types/assetType";
 import { OrganizationType } from "@/app/types/organization";
-import { AssetTypeSelector } from "@/app/components/AssetTypeSelector";
+import { AssetTypeSelector } from "@/app/components/assetTypeSelector";
 import { TradeRequest } from "@/app/types/tradeRequest";
 import { GDO, GDOStatus } from "@/app/types/gdo";
 

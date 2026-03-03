@@ -20,7 +20,7 @@ import { NavLogo } from "../components/nav-logo";
 import { useRouter } from "next/navigation";
 import { DownArrowIcon, EditIcon, LogoutIcon } from "../components/icons";
 import { DashboardNav } from "../components/dashboard-nav";
-import { EditUserModalBody } from "../components/EditUserModalBody";
+import { EditUserModalBody } from "../components/editUserModalBody";
 import { Role } from "../types/user";
 
 export default function DashboardLayout({

@@ -13,6 +13,7 @@ import { UpdateUserDto } from './dto/updateUser.dto';
 import * as bcrypt from 'bcrypt';
 import { OrganizationType } from 'src/common/enums/organizationType.enum';
 import * as cloudinary from 'cloudinary';
+import { OrgAuthorizedDto } from './dto/orgAuthorized.dto';
 
 @Injectable()
 export class OrganizationsService {
@@ -112,8 +113,8 @@ export class OrganizationsService {
       );
     }
 
-    requesterOrg.authorizedByOrgs = [
-      ...(requesterOrg.authorizedByOrgs || []),
+    requesterOrg.authorizedOrgs = [
+      ...(requesterOrg.authorizedOrgs || []),
       orgToAuthorize,
     ];
     await this.organizationRepository.save(requesterOrg);
@@ -384,6 +385,48 @@ export class OrganizationsService {
     return { message: 'Usuario actualizado exitosamente', user: userToUpdate };
   }
 
+  async unauthorizeOrganization(
+    id: string,
+    requestingUser: IAuthenticatedUser,
+  ) {
+    if (requestingUser.role !== Role.ADMIN) {
+      throw new Error(
+        'Solo un administrador puede desautorizar organizaciones',
+      );
+    }
+
+    if (!requestingUser.organization) {
+      throw new Error('El administrador no pertenece a ninguna organización');
+    }
+
+    const requesterOrg = await this.organizationRepository.findOne({
+      where: { id: requestingUser.organization.id },
+      relations: ['authorizedOrgs'],
+    });
+
+    if (!requesterOrg) {
+      throw new Error('Organización del administrador no encontrada');
+    }
+
+    if (requesterOrg.type !== OrganizationType.PRODUCER) {
+      throw new Error(
+        'Solo las organizaciones de tipo PRODUCER pueden desautorizar otras organizaciones',
+      );
+    }
+    if (requesterOrg.id === id) {
+      throw new Error('No puedes desautorizar tu propia organización');
+    }
+
+    if (!requesterOrg.authorizedOrgs?.some((org) => org.id === id)) {
+      throw new Error('La organización no está autorizada');
+    }
+    requesterOrg.authorizedOrgs = requesterOrg.authorizedOrgs.filter(
+      (org) => org.id !== id,
+    );
+    await this.organizationRepository.save(requesterOrg);
+    return { message: 'Organización desautorizada exitosamente' };
+  }
+
   async deleteUserFromOrganization(
     id: string,
     userId: string,
@@ -408,5 +451,39 @@ export class OrganizationsService {
 
     await this.userRepository.remove(userToDelete);
     return { message: 'Usuario eliminado de la organización exitosamente' };
+  }
+
+  async getAuthorizationsOfOrganization(
+    id: string,
+    requestingUser: IAuthenticatedUser,
+  ) {
+    if (requestingUser.role !== Role.ADMIN) {
+      throw new Error('No tienes permisos para ver las autorizaciones');
+    }
+    if (requestingUser.organization.id !== id) {
+      throw new Error(
+        'Solo puedes ver las autorizaciones de tu propia organización',
+      );
+    }
+
+    const userOrg = await this.organizationRepository.findOne({
+      where: { id: requestingUser.organization.id },
+      relations: ['authorizedOrgs'],
+    });
+
+    if (!userOrg) {
+      throw new Error('Organización del usuario no encontrada');
+    }
+
+    const authorizedOrgs: OrgAuthorizedDto[] = userOrg.authorizedOrgs.map(
+      (org) => ({
+        id: org.id,
+        name: org.name,
+        type: org.type,
+        mspId: org.mspId,
+      }),
+    );
+
+    return authorizedOrgs;
   }
 }

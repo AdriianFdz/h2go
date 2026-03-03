@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { GDOIcon, OrganizationIcon, TextFileIcon } from "./icons";
+import { GDOIcon, KeyIcon, OrganizationIcon, TextFileIcon } from "./icons";
 import { useAuth } from "../hooks/useAuth";
 import { OrganizationType } from "../types/organization";
 import { Role } from "../types/user";
@@ -14,6 +14,7 @@ export const DashboardNav = ({ className }: { className?: string }) => {
   const isTrader = user?.organization?.type === OrganizationType.TRADER;
   const isRegulator = user?.organization?.type === OrganizationType.REGULATOR;
   const isAdmin = user?.role === Role.ADMIN;
+  const isProducer = user?.organization?.type === OrganizationType.PRODUCER;
 
   const links = [
     ...(isRegulator
@@ -51,6 +52,15 @@ export const DashboardNav = ({ className }: { className?: string }) => {
             href: "/dashboard/gdos",
             icon: <GDOIcon />,
             label: "GdOs",
+          },
+        ]
+      : []),
+    ...(isAdmin && isProducer
+      ? [
+          {
+            href: "/dashboard/authorizations",
+            icon: <KeyIcon />,
+            label: "Manage Authorizations",
           },
         ]
       : []),

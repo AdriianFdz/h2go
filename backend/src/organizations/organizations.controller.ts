@@ -62,7 +62,21 @@ export class OrganizationsController {
     return this.organizationsService.createUserForOrganization(id, body, user);
   }
 
-  @Post(':id/authorize')
+  @Get(':id/authorizations')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get authorizations for an organization' })
+  @ApiResponse({
+    status: 200,
+    description: 'Authorizations retrieved successfully',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  getAuthorizationsFromOrganization(@Param('id') id: string, @Req() req) {
+    const user = req.user as IAuthenticatedUser;
+    return this.organizationsService.getAuthorizationsOfOrganization(id, user);
+  }
+
+  @Post(':id/authorizations')
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Authorize an organization' })
@@ -75,6 +89,21 @@ export class OrganizationsController {
   authorizeOrganization(@Param('id') id: string, @Req() req) {
     const user = req.user as IAuthenticatedUser;
     return this.organizationsService.authorizeOrganization(id, user);
+  }
+
+  @Delete(':id/authorizations')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Unauthorize an organization' })
+  @ApiResponse({
+    status: 200,
+    description: 'Organization unauthorized successfully',
+  })
+  @ApiResponse({ status: 400, description: 'Invalid data' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  unauthorizeOrganization(@Param('id') id: string, @Req() req) {
+    const user = req.user as IAuthenticatedUser;
+    return this.organizationsService.unauthorizeOrganization(id, user);
   }
 
   @Get(':id')

@@ -5,19 +5,18 @@ import "fmt"
 type Unit string
 
 const (
-	Kwh Unit = "KWH"
-	Kg  Unit = "KG"
+	Mwh Unit = "MWH"
 )
 
 // ValidUnits returns all valid units
 func ValidUnits() []Unit {
-	return []Unit{Kwh, Kg}
+	return []Unit{Mwh}
 }
 
 // IsValid checks if the unit is valid
 func (u Unit) IsValid() bool {
 	switch u {
-	case Kwh, Kg:
+	case Mwh:
 		return true
 	}
 	return false
@@ -27,7 +26,7 @@ func (u Unit) IsValid() bool {
 func ParseUnit(s string) (Unit, error) {
 	u := Unit(s)
 	if !u.IsValid() {
-		return "", fmt.Errorf("invalid unit: %s. Valid units: KWH, KG", s)
+		return "", fmt.Errorf("invalid unit: %s. Valid unit: MWH", s)
 	}
 	return u, nil
 }

@@ -18,7 +18,6 @@ func (pc *ProductionContract) RegisterProduction(
 	producerID string,
 	assetType string,
 	amountAvailable int64,
-	unit string,
 	productionDate string) error {
 
 	assetTypeEnum, err := models.ParseAssetType(assetType)
@@ -26,10 +25,7 @@ func (pc *ProductionContract) RegisterProduction(
 		return err
 	}
 
-	unitEnum, err := models.ParseUnit(unit)
-	if err != nil {
-		return err
-	}
+	unitEnum := models.Mwh
 
 	prodDate, err := time.Parse(time.RFC3339, productionDate)
 	if err != nil {

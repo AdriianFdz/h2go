@@ -81,7 +81,9 @@ export default function GdosOperationsPage() {
     null
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmittingRequest, setIsSubmittingRequest] = useState<
+    "approve" | "reject" | null
+  >(null);
   const [validationLoading, setValidationLoading] = useState(false);
   const [validationResult, setValidationResult] = useState<{
     canApprove: boolean;
@@ -338,7 +340,7 @@ export default function GdosOperationsPage() {
       return;
     }
 
-    setIsSubmitting(true);
+    setIsSubmittingRequest("approve");
 
     try {
       const response = await fetch(
@@ -384,14 +386,14 @@ export default function GdosOperationsPage() {
         timeout: 4000,
       });
     } finally {
-      setIsSubmitting(false);
+      setIsSubmittingRequest(null);
     }
   };
 
   const handleReject = async () => {
     if (!selectedRequest) return;
 
-    setIsSubmitting(true);
+    setIsSubmittingRequest("reject");
 
     try {
       const response = await fetch(
@@ -431,7 +433,7 @@ export default function GdosOperationsPage() {
         timeout: 4000,
       });
     } finally {
-      setIsSubmitting(false);
+      setIsSubmittingRequest(null);
     }
   };
 
@@ -1107,7 +1109,8 @@ export default function GdosOperationsPage() {
                                                                   : "bg-background/30 border-muted/30 hover:border-accent/50"
                                                               }`}
                                                               onClick={() =>
-                                                                !isSubmitting &&
+                                                                isSubmittingRequest ===
+                                                                  null &&
                                                                 toggleGdoSelection(
                                                                   gdo.gdoId
                                                                 )
@@ -1119,7 +1122,8 @@ export default function GdosOperationsPage() {
                                                                 )}
                                                                 isReadOnly
                                                                 isDisabled={
-                                                                  isSubmitting
+                                                                  isSubmittingRequest !==
+                                                                  null
                                                                 }
                                                                 className="pointer-events-none shrink-0"
                                                               >
@@ -1188,10 +1192,13 @@ export default function GdosOperationsPage() {
                                               <Button
                                                 variant="danger"
                                                 onClick={() => handleReject()}
-                                                isDisabled={isSubmitting}
+                                                isDisabled={
+                                                  isSubmittingRequest !== null
+                                                }
                                                 className="flex-1 h-12 font-bold bg-danger hover:bg-danger/90"
                                               >
-                                                {isSubmitting ? (
+                                                {isSubmittingRequest ===
+                                                "reject" ? (
                                                   <Spinner size="sm" />
                                                 ) : (
                                                   "Reject"
@@ -1201,7 +1208,8 @@ export default function GdosOperationsPage() {
                                                 variant="primary"
                                                 onClick={() => handleApprove()}
                                                 isDisabled={
-                                                  isSubmitting ||
+                                                  isSubmittingRequest !==
+                                                    null ||
                                                   (validationResult
                                                     ? !validationResult.canApprove
                                                     : false) ||
@@ -1210,7 +1218,8 @@ export default function GdosOperationsPage() {
                                                 }
                                                 className="flex-1 h-12 font-bold bg-success hover:bg-success/90"
                                               >
-                                                {isSubmitting ? (
+                                                {isSubmittingRequest ===
+                                                "approve" ? (
                                                   <Spinner size="sm" />
                                                 ) : (
                                                   "Approve"

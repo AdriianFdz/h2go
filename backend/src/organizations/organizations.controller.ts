@@ -4,6 +4,7 @@ import {
   UseGuards,
   Body,
   Req,
+  Res,
   Param,
   Get,
   Patch,
@@ -19,14 +20,19 @@ import {
 import { CreateOrgDto } from './dto/createOrg.dto';
 import { RedeemGDOsDto } from './dto/redeemGDOs.dto';
 import { OrganizationsService } from './organizations.service';
+import { AuthService } from '../auth/auth.service';
 import { IAuthenticatedUser } from '../auth/interfaces/authenticatedUser';
 import { CreateUserDto } from './dto/createUser.dto';
 import { UpdateUserDto } from './dto/updateUser.dto';
+import type { Response } from 'express';
 
 @ApiTags('organizations')
 @Controller('organizations')
 export class OrganizationsController {
-  constructor(private organizationsService: OrganizationsService) {}
+  constructor(
+    private organizationsService: OrganizationsService,
+    private authService: AuthService,
+  ) {}
 
   @Post()
   @UseGuards(AuthGuard('jwt'))
@@ -166,19 +172,38 @@ export class OrganizationsController {
   })
   @ApiResponse({ status: 400, description: 'Invalid data' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  updateUserFromOrganization(
+  async updateUserFromOrganization(
     @Param('id') id: string,
     @Param('userId') userId: string,
     @Body() body: UpdateUserDto,
     @Req() req,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    const user = req.user as IAuthenticatedUser;
-    return this.organizationsService.updateUserFromOrganization(
+    const requestingUser = req.user as IAuthenticatedUser;
+    const result = await this.organizationsService.updateUserFromOrganization(
       id,
       userId,
       body,
-      user,
+      requestingUser,
     );
+
+    if (requestingUser.id === userId) {
+      const remainingMs = requestingUser.exp
+        ? requestingUser.exp * 1000 - Date.now()
+        : parseInt(process.env.JWT_EXPIRATION ?? '86400000');
+      const { access_token } = this.authService.login(
+        { ...result.user, organization: requestingUser.organization },
+        remainingMs,
+      );
+      res.cookie('token', access_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: remainingMs,
+      });
+    }
+
+    return result;
   }
 
   @Delete(':id/users/:userId')

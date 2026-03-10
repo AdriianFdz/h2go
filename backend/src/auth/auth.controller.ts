@@ -1,15 +1,7 @@
-import {
-  Controller,
-  Post,
-  Get,
-  UseGuards,
-  Body,
-  Req,
-  Res,
-} from '@nestjs/common';
+import { Controller, Post, Get, UseGuards, Req, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { LoginDto } from './dto/login.dto';
 import { IAuthenticatedUser } from './interfaces/authenticatedUser';
 import type { Response } from 'express';
@@ -24,11 +16,8 @@ export class AuthController {
   @ApiOperation({ summary: 'User login' })
   @ApiResponse({ status: 200, description: 'Logged in successfully' })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
-  login(
-    @Body() loginDto: LoginDto,
-    @Req() req,
-    @Res({ passthrough: true }) res: Response,
-  ) {
+  @ApiBody({ type: LoginDto })
+  login(@Req() req, @Res({ passthrough: true }) res: Response) {
     const { access_token } = this.authService.login(req.user);
 
     // HttpOnly cookie

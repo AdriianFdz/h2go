@@ -3,7 +3,7 @@ import { Organization } from '../entities/organization.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateOrgDto } from './dto/createOrg.dto';
-import { Role, User } from 'src/entities/user.entity';
+import { User } from 'src/entities/user.entity';
 import { IAuthenticatedUser } from 'src/auth/interfaces/authenticatedUser';
 import { ConnectionManager } from '../fabric/connectionManager';
 import { GdoBalanceDto } from './dto/gdoBalance.dto';
@@ -14,6 +14,7 @@ import * as bcrypt from 'bcrypt';
 import { OrganizationType } from 'src/common/enums/organizationType.enum';
 import * as cloudinary from 'cloudinary';
 import { OrgAuthorizedDto } from './dto/orgAuthorized.dto';
+import { Role } from 'src/common/enums/role';
 
 @Injectable()
 export class OrganizationsService {

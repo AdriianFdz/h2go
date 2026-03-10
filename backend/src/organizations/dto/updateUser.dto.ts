@@ -5,7 +5,7 @@ import {
   IsString,
   MinLength,
 } from 'class-validator';
-import { Role } from 'src/entities/user.entity';
+import { Role } from 'src/common/enums/role';
 
 export class UpdateUserDto {
   @IsOptional()

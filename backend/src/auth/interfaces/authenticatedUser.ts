@@ -1,4 +1,4 @@
-import { Role } from 'src/entities/user.entity';
+import { Role } from 'src/common/enums/role';
 import { Organization } from 'src/entities/organization.entity';
 
 export interface IAuthenticatedUser {

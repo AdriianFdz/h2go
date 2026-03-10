@@ -13,7 +13,7 @@ import {
   ElectricityIcon,
   HydrogenIcon,
 } from "@/app/components/icons";
-import { useAuth } from "@/app/hooks/useAuth";
+import { useAuth } from "@/app/context/AuthContext";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Request } from "@/app/types/request";

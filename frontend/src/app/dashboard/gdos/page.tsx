@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@/app/hooks/useAuth";
+import { useAuth } from "@/app/context/AuthContext";
 import { GdoBalance } from "@/app/types/gdoBalance";
 import { GDO, GDOStatus } from "@/app/types/gdo";
 import {

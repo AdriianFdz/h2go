@@ -29,7 +29,7 @@ import {
   PlusCircleIcon,
   TradeIcon,
 } from "@/app/components/icons";
-import { useAuth } from "@/app/hooks/useAuth";
+import { useAuth } from "@/app/context/AuthContext";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AssetType } from "@/app/types/assetType";

@@ -30,7 +30,7 @@ export class AuthService {
     return null;
   }
 
-  login(user: any) {
+  login(user: any, expiresIn?: number) {
     const payload = {
       sub: user.id,
       email: user.email,
@@ -49,7 +49,10 @@ export class AuthService {
         : null,
     };
     return {
-      access_token: this.jwtService.sign(payload),
+      access_token: this.jwtService.sign(
+        payload,
+        expiresIn != null ? { expiresIn: `${expiresIn}ms` } : undefined,
+      ),
     };
   }
 

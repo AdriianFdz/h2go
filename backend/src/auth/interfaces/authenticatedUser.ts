@@ -9,4 +9,5 @@ export interface IAuthenticatedUser {
   role: Role;
   avatar?: string;
   organization: Organization;
+  exp?: number;
 }

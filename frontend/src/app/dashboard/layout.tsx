@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "../hooks/useAuth";
+import { AuthProvider, useAuth } from "../context/AuthContext";
 import { useState } from "react";
 import {
   Spinner,
@@ -28,7 +28,19 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { isAuthenticated, isLoading, user } = useAuth();
+  return (
+    <AuthProvider>
+      <DashboardLayoutInner>{children}</DashboardLayoutInner>
+    </AuthProvider>
+  );
+}
+
+function DashboardLayoutInner({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { isAuthenticated, isLoading, user, updateUser } = useAuth();
   const router = useRouter();
 
   const [isEditModalVisible, setEditModalVisible] = useState(false);
@@ -66,7 +78,7 @@ export default function DashboardLayout({
             const updatedUser = data.user;
             setEditModalVisible(false);
             setChangePassword(false);
-            Object.assign(user!, updatedUser);
+            updateUser(updatedUser);
             toast.success("User updated successfully", { timeout: 4000 });
           });
         } else {

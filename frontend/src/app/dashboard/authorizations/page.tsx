@@ -1,7 +1,7 @@
 "use client";
 
 import { KeyIcon } from "@/app/components/icons";
-import { useAuth } from "@/app/hooks/useAuth";
+import { useAuth } from "@/app/context/AuthContext";
 import { AuthorizedOrg } from "@/app/types/authorizedOrg";
 import { OrganizationType } from "@/app/types/organization";
 import { Role } from "@/app/types/user";

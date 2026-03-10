@@ -2,7 +2,7 @@
 
 import { EditUserModalBody } from "@/app/components/editUserModalBody";
 import { EditIcon, PlusCircleIcon } from "@/app/components/icons";
-import { useAuth } from "@/app/hooks/useAuth";
+import { useAuth } from "@/app/context/AuthContext";
 import { Role, User } from "@/app/types/user";
 import {
   Avatar,
@@ -23,7 +23,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function OrganizationPage() {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, updateUser } = useAuth();
   const router = useRouter();
 
   const [orgUsers, setOrgUsers] = useState<User[]>([]);
@@ -110,10 +110,8 @@ export default function OrganizationPage() {
               prev.map((u) => (u.id === updatedUser.id ? updatedUser : u))
             );
             if (user?.id === updatedUser.id) {
-              Object.assign(user!, updatedUser);
+              updateUser(updatedUser);
             }
-            const userToModify = orgUsers.find((u) => u.id === updatedUser.id);
-            Object.assign(userToModify!, updatedUser);
             setIsEditUserModalOpen(false);
             setChangePassword(false);
             toast.success("User updated successfully", { timeout: 4000 });

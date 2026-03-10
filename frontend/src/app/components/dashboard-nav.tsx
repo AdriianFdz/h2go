@@ -2,7 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { GDOIcon, KeyIcon, OrganizationIcon, TextFileIcon } from "./icons";
+import {
+  GDOIcon,
+  KeyIcon,
+  OrganizationIcon,
+  TextFileIcon,
+  PlusCircleIcon,
+} from "./icons";
 import { useAuth } from "../hooks/useAuth";
 import { OrganizationType } from "../types/organization";
 import { Role } from "../types/user";
@@ -15,6 +21,7 @@ export const DashboardNav = ({ className }: { className?: string }) => {
   const isRegulator = user?.organization?.type === OrganizationType.REGULATOR;
   const isAdmin = user?.role === Role.ADMIN;
   const isProducer = user?.organization?.type === OrganizationType.PRODUCER;
+  const isRegistry = user?.organization?.type === OrganizationType.REGISTRY;
 
   const links = [
     ...(isRegulator
@@ -64,10 +71,19 @@ export const DashboardNav = ({ className }: { className?: string }) => {
           },
         ]
       : []),
+    ...(isRegistry
+      ? [
+          {
+            href: "/dashboard/register-production",
+            icon: <PlusCircleIcon />,
+            label: "Register Production",
+          },
+        ]
+      : []),
   ];
   return (
     <nav
-      className={`flex flex-col space-y-4 w-64 bg-surface p-4 border-r border-muted ${className}`}
+      className={`flex flex-col space-y-4 w-70 bg-surface p-4 border-r border-muted ${className}`}
     >
       {links.map((link) => {
         const selected = pathname === link.href;

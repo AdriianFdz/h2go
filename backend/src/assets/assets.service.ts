@@ -42,7 +42,6 @@ export class AssetsService {
         registerProductionDTO.producerId,
         registerProductionDTO.assetType,
         registerProductionDTO.amount.toString(),
-        registerProductionDTO.unit,
         registerProductionDTO.productionDate.toISOString(),
       );
       return result;

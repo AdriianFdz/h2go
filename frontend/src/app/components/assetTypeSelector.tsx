@@ -7,6 +7,7 @@ interface AssetTypeSelectorProps {
   onChange: (value: AssetType) => void;
   label?: string;
   isRequired?: boolean;
+  disabledTypes?: AssetType[];
 }
 
 export function AssetTypeSelector({
@@ -14,6 +15,7 @@ export function AssetTypeSelector({
   onChange,
   label = "Asset Type",
   isRequired = false,
+  disabledTypes = [],
 }: AssetTypeSelectorProps) {
   return (
     <div>
@@ -24,11 +26,14 @@ export function AssetTypeSelector({
       <div className="grid grid-cols-2 gap-4">
         <button
           type="button"
-          onClick={() => onChange(AssetType.H2)}
-          className={`flex items-center gap-4 p-5 rounded-4xl border-2 transition-all cursor-pointer ${
-            value === AssetType.H2
-              ? "border-accent bg-accent/10 shadow-md"
-              : "border-muted/30 bg-background/50 hover:border-accent/50"
+          disabled={disabledTypes.includes(AssetType.H2)}
+          onClick={() => !disabledTypes.includes(AssetType.H2) && onChange(AssetType.H2)}
+          className={`flex items-center gap-4 p-5 rounded-4xl border-2 transition-all ${
+            disabledTypes.includes(AssetType.H2)
+              ? "border-muted/20 bg-background/20 opacity-40 cursor-not-allowed"
+              : value === AssetType.H2
+                ? "border-accent bg-accent/10 shadow-md cursor-pointer"
+                : "border-muted/30 bg-background/50 hover:border-accent/50 cursor-pointer"
           }`}
         >
           <HydrogenIcon className="w-12 h-12" />
@@ -39,11 +44,14 @@ export function AssetTypeSelector({
         </button>
         <button
           type="button"
-          onClick={() => onChange(AssetType.ELECTRICITY)}
-          className={`flex items-center gap-4 p-5 rounded-4xl border-2 transition-all cursor-pointer ${
-            value === AssetType.ELECTRICITY
-              ? "border-yellow-500 bg-yellow-500/10 shadow-md"
-              : "border-muted/30 bg-background/50 hover:border-yellow-500/50"
+          disabled={disabledTypes.includes(AssetType.ELECTRICITY)}
+          onClick={() => !disabledTypes.includes(AssetType.ELECTRICITY) && onChange(AssetType.ELECTRICITY)}
+          className={`flex items-center gap-4 p-5 rounded-4xl border-2 transition-all ${
+            disabledTypes.includes(AssetType.ELECTRICITY)
+              ? "border-muted/20 bg-background/20 opacity-40 cursor-not-allowed"
+              : value === AssetType.ELECTRICITY
+                ? "border-yellow-500 bg-yellow-500/10 shadow-md cursor-pointer"
+                : "border-muted/30 bg-background/50 hover:border-yellow-500/50 cursor-pointer"
           }`}
         >
           <ElectricityIcon className="w-12 h-12" />

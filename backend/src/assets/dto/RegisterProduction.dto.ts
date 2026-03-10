@@ -7,7 +7,6 @@ import {
   Min,
 } from 'class-validator';
 import { AssetType } from '../../common/enums/asset-type.enum';
-import { Unit } from './enums/Unit';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
@@ -36,14 +35,6 @@ export class RegisterProductionDto {
   @IsInt()
   @Min(1)
   amount: number;
-
-  @ApiProperty({
-    example: 'KWH',
-    description: 'Unit of the asset produced',
-    enum: Unit,
-  })
-  @IsNotEmpty()
-  unit: Unit;
 
   @ApiProperty({
     example: '2026-01-26T19:50:00Z',

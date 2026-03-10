@@ -36,7 +36,7 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('H2GO API')
     .setDescription('API documentation for H2GO application')
-    .setVersion('3.0')
+    .setVersion('1.0')
     .addBearerAuth()
     .build();
   const documentFactory = SwaggerModule.createDocument(app, config);

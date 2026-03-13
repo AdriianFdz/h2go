@@ -35,11 +35,7 @@ export default function DashboardLayout({
   );
 }
 
-function DashboardLayoutInner({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading, user, updateUser } = useAuth();
   const router = useRouter();
 
@@ -130,7 +126,7 @@ function DashboardLayoutInner({
                   <p className="text-white text-xl font-semibold text-left">
                     {user.name}
                   </p>
-                  <p className="text-muted text-md">
+                  <p className="text-muted text-md text-left">
                     {user.organization?.name}
                   </p>
                 </div>

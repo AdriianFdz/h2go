@@ -14,7 +14,7 @@ import * as bcrypt from 'bcrypt';
 import { OrganizationType } from 'src/common/enums/organizationType.enum';
 import * as cloudinary from 'cloudinary';
 import { OrgAuthorizedDto } from './dto/orgAuthorized.dto';
-import { Role } from 'src/common/enums/role';
+import { Role } from 'src/common/enums/role.enum';
 
 @Injectable()
 export class OrganizationsService {

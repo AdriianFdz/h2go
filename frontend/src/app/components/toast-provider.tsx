@@ -19,7 +19,6 @@ const variantBorderColors = {
 
 export function ToastProvider() {
   return (
-    // @ts-expect-error - Toast.Provider exists but types are incorrect
     <Toast.Provider placement="top">
       {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
       {({ toast: toastItem }: any) => {
@@ -53,7 +52,6 @@ export function ToastProvider() {
           </Toast>
         );
       }}
-      {/* @ts-expect-error - Toast.Provider exists but types are incorrect */}
     </Toast.Provider>
   );
 }

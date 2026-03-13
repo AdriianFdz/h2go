@@ -4,24 +4,24 @@ import { OrganizationType } from 'src/common/enums/organizationType.enum';
 
 export class OrgAuthorizedDto {
   @ApiProperty({
-    example: 'org-12345',
     description: 'ID de la organización autorizada',
+    example: 'org-12345',
   })
   @IsString()
   @IsNotEmpty()
   id: string;
 
   @ApiProperty({
-    example: 'Organization Name',
     description: 'Nombre de la organización autorizada',
+    example: 'Organization Name',
   })
   @IsString()
   @IsNotEmpty()
   name: string;
 
   @ApiProperty({
-    example: 'PRODUCER',
     description: 'Tipo de organización autorizada',
+    example: 'Producer',
   })
   @IsEnum(OrganizationType)
   @IsNotEmpty()

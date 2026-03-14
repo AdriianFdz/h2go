@@ -142,9 +142,9 @@ export default function AuthorizationsPage() {
         .
       </p>
 
-      <div className="flex flex-col gap-6 max-w-xl">
+      <div className="flex flex-row gap-6 w-full mr-10">
         {/* Authorize */}
-        <div className="border border-muted/20 rounded-2xl p-6 bg-surface">
+        <div className="border border-muted/20 rounded-2xl p-6 bg-surface w-full">
           <div className="flex items-center gap-3 mb-1">
             <KeyIcon className="size-5 text-accent" />
             <h2 className="text-xl font-bold">Authorize Organization</h2>
@@ -183,7 +183,7 @@ export default function AuthorizationsPage() {
         </div>
 
         {/* Revoke */}
-        <div className="border border-danger-soft-hover rounded-2xl p-6 bg-surface">
+        <div className="border border-danger-soft-hover rounded-2xl p-6 bg-surface w-full">
           <div className="flex items-center gap-3 mb-1">
             <KeyIcon className="size-5 text-danger" />
             <h2 className="text-xl font-bold">Revoke Authorization</h2>

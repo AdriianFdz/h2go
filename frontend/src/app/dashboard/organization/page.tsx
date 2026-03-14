@@ -215,6 +215,14 @@ export default function OrganizationPage() {
   return (
     <div className="w-full">
       <h1 className="text-4xl font-bold mb-4">{user?.organization?.name}</h1>
+      <p className="mb-3 inline-flex h-8 items-stretch overflow-hidden rounded-full border border-muted/20 bg-muted/5 text-sm">
+        <span className="inline-flex h-full items-center border-r border-muted/20 bg-muted/10 px-3 text-xs font-semibold tracking-wider text-muted/80">
+          Organization ID
+        </span>
+        <span className="inline-flex h-full items-center px-3 font-mono text-foreground/80">
+          {user?.organization?.id}
+        </span>
+      </p>
       <p className="text-muted text-lg mb-8">Manage your organization.</p>
 
       <h2 className="text-xl font-bold mb-5">Users</h2>

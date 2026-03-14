@@ -158,21 +158,18 @@ export default function GdosOperationsPage() {
 
   const handleExpeditionSubmit = async () => {
     setIsSubmittingExpedition(true);
-    fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/requests/transformation`,
-      {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          producerId: expeditionProducerId,
-          assetType: expeditionAssetType,
-          amount: parseInt(expeditionAmount),
-        }),
-      }
-    )
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/requests/issuance`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        producerId: expeditionProducerId,
+        assetType: expeditionAssetType,
+        amount: parseInt(expeditionAmount),
+      }),
+    })
       .then((response) => {
         if (response.ok) {
           toast.success("Request submitted successfully!", { timeout: 4000 });

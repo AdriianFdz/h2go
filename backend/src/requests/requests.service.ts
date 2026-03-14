@@ -2,8 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ConnectionManager } from '../fabric/connectionManager';
 import { IAuthenticatedUser } from '../auth/interfaces/authenticatedUser';
 import { AssetType } from '../common/enums/asset-type.enum';
-import { PendingTransformationRequestDto } from './dto/pendingTransformationRequest.dto';
-import { CreateTransformationRequestDto } from './dto/createTransformationRequest.dto';
+import { PendingIssuanceRequestDto } from './dto/pendingIssuanceRequest.dto';
+import { CreateIssuanceRequestDto } from './dto/createIssuanceRequest.dto';
 import { CreateTradeRequestDto } from './dto/createTradeRequest.dto';
 import { PendingTradeRequestDto } from './dto/pendingTradeRequest.dto';
 @Injectable()
@@ -15,9 +15,9 @@ export class RequestsService {
     private userRepository,
   ) {}
 
-  async createTransformationRequest(
+  async createIssuanceRequest(
     user: IAuthenticatedUser,
-    createRequestDto: CreateTransformationRequestDto,
+    createRequestDto: CreateIssuanceRequestDto,
   ) {
     if (!user.organization) {
       throw new Error('User does not have an associated organization.');
@@ -55,7 +55,7 @@ export class RequestsService {
     }
   }
 
-  async getAllPendingTransformationRequests(user: IAuthenticatedUser) {
+  async getAllPendingIssuanceRequests(user: IAuthenticatedUser) {
     if (!user.organization) {
       throw new Error('User does not have an associated organization.');
     }
@@ -92,21 +92,19 @@ export class RequestsService {
         amount: item.amount,
         status: item.status,
         createdAt: item.createdAt,
-      })) as PendingTransformationRequestDto[];
+      })) as PendingIssuanceRequestDto[];
     } finally {
       this.connectionManager.disconnectGateway(gateway, client);
     }
   }
 
-  async approveTransformationRequest(
+  async approveIssuanceRequest(
     user: IAuthenticatedUser,
     requestId: string,
     reason: string,
   ) {
     if (!reason || reason.trim().length === 0) {
-      throw new Error(
-        'Reason is required to approve a transformation request.',
-      );
+      throw new Error('Reason is required to approve a issuance request.');
     }
     const { gateway, client } =
       await this.connectionManager.connectGateway(user);
@@ -124,7 +122,7 @@ export class RequestsService {
         throw new Error('Request not found.');
       }
       const data = JSON.parse(resultString);
-      const pendingRequest: PendingTransformationRequestDto = {
+      const pendingRequest: PendingIssuanceRequestDto = {
         docType: data.docType,
         requestId: data.requestId,
         producerId: data.producerId,
@@ -159,13 +157,13 @@ export class RequestsService {
     }
   }
 
-  async rejectTransformationRequest(
+  async rejectIssuanceRequest(
     user: IAuthenticatedUser,
     requestId: string,
     reason: string,
   ) {
     if (!reason || reason.trim().length === 0) {
-      throw new Error('Reason is required to reject a transformation request.');
+      throw new Error('Reason is required to reject a issuance request.');
     }
     const { gateway, client } =
       await this.connectionManager.connectGateway(user);
@@ -183,7 +181,7 @@ export class RequestsService {
         throw new Error('Request not found.');
       }
       const data = JSON.parse(resultString);
-      const pendingRequest: PendingTransformationRequestDto = {
+      const pendingRequest: PendingIssuanceRequestDto = {
         docType: data.docType,
         requestId: data.requestId,
         producerId: data.producerId,
@@ -218,17 +216,14 @@ export class RequestsService {
     }
   }
 
-  async validateTransformationRequest(
-    user: IAuthenticatedUser,
-    requestId: string,
-  ) {
+  async validateIssuanceRequest(user: IAuthenticatedUser, requestId: string) {
     const { gateway, client } =
       await this.connectionManager.connectGateway(user);
     try {
       const result = await this.connectionManager.queryTransaction(
         gateway,
         client,
-        'RequestContract:QuickValidateTransformationRequest',
+        'RequestContract:QuickValidateIssuanceRequest',
         requestId,
       );
       const resultString = Buffer.from(result).toString('utf8');

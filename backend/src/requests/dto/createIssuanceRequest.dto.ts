@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsInt, IsNotEmpty, IsString, Min } from 'class-validator';
 import { AssetType } from '../../common/enums/asset-type.enum';
 
-export class CreateTransformationRequestDto {
+export class CreateIssuanceRequestDto {
   @ApiProperty({
     example: 'producer-12345',
     description: 'ID del productor que hace la solicitud',

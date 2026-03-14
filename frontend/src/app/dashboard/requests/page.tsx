@@ -55,8 +55,8 @@ export default function RequestsPage() {
       try {
         const isRegulator = user.organization?.type === "regulator";
         const requestsUrl = isRegulator
-          ? `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/requests/transformation`
-          : `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/requests/transformation/${user.organization?.id}`;
+          ? `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/requests/issuance`
+          : `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/requests/issuance/${user.organization?.id}`;
 
         const response = await fetch(requestsUrl, {
           method: "GET",
@@ -113,7 +113,7 @@ export default function RequestsPage() {
     setIsSubmitting("approve");
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/requests/transformation/${selectedRequest.requestId}/approve`,
+        `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/requests/issuance/${selectedRequest.requestId}/approve`,
         {
           method: "POST",
           credentials: "include",
@@ -147,7 +147,7 @@ export default function RequestsPage() {
     setIsSubmitting("reject");
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/requests/transformation/${selectedRequest.requestId}/reject`,
+        `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/requests/issuance/${selectedRequest.requestId}/reject`,
         {
           method: "POST",
           credentials: "include",
@@ -180,7 +180,7 @@ export default function RequestsPage() {
     setValidationResult(null);
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/requests/transformation/${requestId}/validation`,
+        `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/requests/issuance/${requestId}/validation`,
         {
           method: "GET",
           credentials: "include",

@@ -123,7 +123,7 @@ func (rc *RequestContract) validateRequestBasics(
 	return &request, productorBalanceRecord, producerID, assetType, gdoToGrant, nil
 }
 
-func (rc *RequestContract) QuickValidateTransformationRequest(
+func (rc *RequestContract) QuickValidateIssuanceRequest(
 	ctx contractapi.TransactionContextInterface,
 	requestID string) (string, error) {
 

@@ -16,7 +16,7 @@ import {
 } from '@nestjs/swagger';
 import { RequestsService } from './requests.service';
 import { IAuthenticatedUser } from '../auth/interfaces/authenticatedUser';
-import { CreateTransformationRequestDto } from './dto/createTransformationRequest.dto';
+import { CreateIssuanceRequestDto } from './dto/createIssuanceRequest.dto';
 import { CreateTradeRequestDto } from './dto/createTradeRequest.dto';
 import { ApproveTradeRequestDto } from './dto/approveTradeRequest.dto';
 
@@ -25,42 +25,38 @@ import { ApproveTradeRequestDto } from './dto/approveTradeRequest.dto';
 export class RequestsController {
   constructor(private requestsService: RequestsService) {}
 
-  @Post('transformation')
+  @Post('issuance')
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Create a new transformation request' })
+  @ApiOperation({ summary: 'Create a new issuance request' })
   @ApiResponse({ status: 201, description: 'Request created successfully.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   createRequest(
     @Req() request,
-    @Body() createRequestDto: CreateTransformationRequestDto,
+    @Body() createRequestDto: CreateIssuanceRequestDto,
   ) {
     const user: IAuthenticatedUser = request.user;
-    return this.requestsService.createTransformationRequest(
-      user,
-      createRequestDto,
-    );
+    return this.requestsService.createIssuanceRequest(user, createRequestDto);
   }
 
-  @Get('transformation')
+  @Get('issuance')
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get all pending transformation requests' })
+  @ApiOperation({ summary: 'Get all pending issuance requests' })
   @ApiResponse({
     status: 200,
-    description:
-      'List of pending transformation requests retrieved successfully.',
+    description: 'List of pending issuance requests retrieved successfully.',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
-  getAllPendingTransformationRequests(@Req() request) {
+  getAllPendingIssuanceRequests(@Req() request) {
     const user: IAuthenticatedUser = request.user;
-    return this.requestsService.getAllPendingTransformationRequests(user);
+    return this.requestsService.getAllPendingIssuanceRequests(user);
   }
 
-  @Post('transformation/:id/approve')
+  @Post('issuance/:id/approve')
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Approve a pending transformation request' })
+  @ApiOperation({ summary: 'Approve a pending issuance request' })
   @ApiResponse({ status: 200, description: 'Request approved successfully.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   approveRequest(
@@ -69,13 +65,13 @@ export class RequestsController {
     @Body('comment') comment: string,
   ) {
     const user: IAuthenticatedUser = request.user;
-    return this.requestsService.approveTransformationRequest(user, id, comment);
+    return this.requestsService.approveIssuanceRequest(user, id, comment);
   }
 
-  @Post('transformation/:id/reject')
+  @Post('issuance/:id/reject')
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Reject a pending transformation request' })
+  @ApiOperation({ summary: 'Reject a pending issuance request' })
   @ApiResponse({ status: 200, description: 'Request rejected successfully.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   rejectRequest(
@@ -84,14 +80,14 @@ export class RequestsController {
     @Body('comment') comment: string,
   ) {
     const user: IAuthenticatedUser = request.user;
-    return this.requestsService.rejectTransformationRequest(user, id, comment);
+    return this.requestsService.rejectIssuanceRequest(user, id, comment);
   }
 
-  @Get('transformation/:id/validation')
+  @Get('issuance/:id/validation')
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Validate if a pending transformation request can be approved',
+    summary: 'Validate if a pending issuance request can be approved',
   })
   @ApiResponse({
     status: 200,
@@ -100,7 +96,7 @@ export class RequestsController {
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   validateRequest(@Req() request, @Param('id') id: string) {
     const user: IAuthenticatedUser = request.user;
-    return this.requestsService.validateTransformationRequest(user, id);
+    return this.requestsService.validateIssuanceRequest(user, id);
   }
 
   @Post('trades')

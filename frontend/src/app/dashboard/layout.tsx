@@ -177,7 +177,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
           </Modal.Backdrop>
         </Modal>
       </header>
-      <div className="flex flex-1 min-h-0 bg-background">
+      <div className="flex flex-1 bg-background">
         <DashboardNav className="" />
         <main className="flex-1 mt-10 ml-10 pr-0">{children}</main>
       </div>

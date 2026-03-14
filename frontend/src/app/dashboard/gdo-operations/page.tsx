@@ -456,7 +456,7 @@ export default function GdosOperationsPage() {
               className="flex-1 flex items-center justify-center gap-3 text-xl pb-3"
             >
               <PlusCircleIcon />
-              Request GdOs
+              Request GdOs Issuance
               <Tabs.Indicator />
             </Tabs.Tab>
             <Tabs.Tab
@@ -484,8 +484,10 @@ export default function GdosOperationsPage() {
             <div className="flex items-center gap-4 mb-6">
               <PlusCircleIcon className="w-18 h-18 p-4 text-accent bg-accent-soft rounded-2xl" />
               <div>
-                <h2 className="text-2xl font-bold">Request GdOs</h2>
-                <p className="text-muted">Create a new request for GdOs</p>
+                <h2 className="text-2xl font-bold">Request GdOs issuance</h2>
+                <p className="text-muted">
+                  Create a new issuance request for GdOs
+                </p>
               </div>
             </div>
 
@@ -830,9 +832,9 @@ export default function GdosOperationsPage() {
               <div className="flex items-center gap-4 mb-6">
                 <CircleCheckIcon className="w-18 h-18 p-4 text-accent bg-accent-soft rounded-2xl" />
                 <div>
-                  <h2 className="text-2xl font-bold">Pending Requests</h2>
+                  <h2 className="text-2xl font-bold">Pending Trade Requests</h2>
                   <p className="text-muted">
-                    Answer a pending request from other traders
+                    Answer a pending trade request from other traders
                   </p>
                 </div>
               </div>

@@ -49,11 +49,11 @@ export const EditUserModalBody = (props: EditUserModalBodyProps) => {
     <>
       {props && (
         <div className="mx-1 mb-6 flex flex-col space-y-4 p-4 bg-muted/10 rounded-4xl">
-          <div className="flex items-center space-x-4 justify-between">
-            <div className="flex items-center space-x-4">
+          <div className="flex flex-wrap items-center gap-3 justify-between">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
               <Avatar
                 size="lg"
-                className="border border-muted/20 cursor-pointer"
+                className="border border-muted/20 cursor-pointer shrink-0"
                 onClick={() => fileInputRef.current?.click()}
               >
                 {avatar ? (
@@ -72,17 +72,16 @@ export const EditUserModalBody = (props: EditUserModalBodyProps) => {
                 multiple={false}
                 onChange={handleImageChange}
               />
-              <div>
-                <p className="font-semibold text-lg">{props.name}</p>
-                <p className="text-muted">{props.email}</p>
+              <div className="min-w-0">
+                <p className="font-semibold text-lg truncate">{props.name}</p>
+                <p className="text-muted truncate">{props.email}</p>
               </div>
             </div>
-            <div>
+            <div className="shrink-0">
               {props.role === Role.ADMIN && (
                 <Chip
                   color="danger"
                   variant="soft"
-                  className="ml-auto"
                 >
                   {props.role}
                 </Chip>
@@ -91,7 +90,6 @@ export const EditUserModalBody = (props: EditUserModalBodyProps) => {
                 <Chip
                   color="accent"
                   variant="soft"
-                  className="ml-auto"
                 >
                   {props.role}
                 </Chip>
@@ -101,8 +99,8 @@ export const EditUserModalBody = (props: EditUserModalBodyProps) => {
               <AlertDialog>
                 <Button
                   variant="danger"
-                  size="lg"
-                  className="ml-auto"
+                  size="md"
+                  className="shrink-0"
                 >
                   <TrashIcon className="w-5 h-5" />
                   Delete User

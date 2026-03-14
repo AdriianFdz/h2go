@@ -102,7 +102,7 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen overflow-hidden">
       <header className="shrink-0">
         <NavLogo className="pl-10 py-10" />
       </header>

@@ -3,10 +3,10 @@ import { IsEnum, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { AssetType } from '../../common/enums/asset-type.enum';
 
-export class GDO {
+export class GdO {
   @ApiProperty({
     example: 'gdo-12345',
-    description: 'ID del GDO',
+    description: 'ID del GdO',
   })
   @IsString()
   @IsNotEmpty()
@@ -55,7 +55,7 @@ export class GDO {
 
   @ApiProperty({
     example: 'AVAILABLE',
-    description: 'Estado del GDO',
+    description: 'Estado del GdO',
   })
   @IsString()
   @IsNotEmpty()
@@ -64,26 +64,26 @@ export class GDO {
 
 export class GdosByStatus {
   @ApiProperty({
-    type: [GDO],
-    description: 'GDOs disponibles',
+    type: [GdO],
+    description: 'GdOs disponibles',
   })
   @ValidateNested({ each: true })
-  @Type(() => GDO)
-  available: GDO[];
+  @Type(() => GdO)
+  available: GdO[];
 
   @ApiProperty({
-    type: [GDO],
-    description: 'GDOs no disponibles',
+    type: [GdO],
+    description: 'GdOs no disponibles',
   })
   @ValidateNested({ each: true })
-  @Type(() => GDO)
-  unavailable: GDO[];
+  @Type(() => GdO)
+  unavailable: GdO[];
 }
 
 export class GdosByAssetType {
   @ApiProperty({
     type: GdosByStatus,
-    description: 'GDOs de electricidad',
+    description: 'GdOs de electricidad',
   })
   @ValidateNested()
   @Type(() => GdosByStatus)
@@ -91,7 +91,7 @@ export class GdosByAssetType {
 
   @ApiProperty({
     type: GdosByStatus,
-    description: 'GDOs de hidrógeno',
+    description: 'GdOs de hidrógeno',
   })
   @ValidateNested()
   @Type(() => GdosByStatus)
@@ -109,7 +109,7 @@ export class GdoBalanceDto {
 
   @ApiProperty({
     type: GdosByAssetType,
-    description: 'GDOs agrupados por tipo de activo',
+    description: 'GdOs agrupados por tipo de activo',
   })
   @ValidateNested()
   @Type(() => GdosByAssetType)

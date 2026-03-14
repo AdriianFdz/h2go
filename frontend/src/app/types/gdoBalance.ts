@@ -1,8 +1,8 @@
-import { GDO } from "./gdo";
+import { GdO } from "./gdo";
 
 export interface GdosByStatus {
-  available: GDO[];
-  unavailable: GDO[];
+  available: GdO[];
+  unavailable: GdO[];
 }
 
 export interface GdosByAssetType {

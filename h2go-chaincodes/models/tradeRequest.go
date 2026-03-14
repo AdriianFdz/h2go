@@ -11,7 +11,7 @@ type TradeRequest struct {
 	Amount      float64       `json:"amount"`
 	Status      RequestStatus `json:"status"`
 	ApproverID  string        `json:"approverId"`
-	GDOs        []GDO         `json:"gdos"`
+	GdOs        []GdO         `json:"gdos"`
 	CreatedAt   string        `json:"createdAt"`
 	ProcessedAt string        `json:"processedAt"`
 }
@@ -30,9 +30,9 @@ func (tr *TradeRequest) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	// Corregir GDOs si es nil
-	if tr.GDOs == nil {
-		tr.GDOs = []GDO{}
+	// Corregir GdOs si es nil
+	if tr.GdOs == nil {
+		tr.GdOs = []GdO{}
 	}
 
 	return nil

@@ -1,17 +1,17 @@
 package models
 
-type GDOsByStatus struct {
-	Available   []GDO `json:"available"`
-	Unavailable []GDO `json:"unavailable"`
+type GdOsByStatus struct {
+	Available   []GdO `json:"available"`
+	Unavailable []GdO `json:"unavailable"`
 }
 
-type GDOsByAssetType struct {
-	Electricity GDOsByStatus `json:"ELECTRICITY"`
-	H2          GDOsByStatus `json:"H2"`
+type GdOsByAssetType struct {
+	Electricity GdOsByStatus `json:"ELECTRICITY"`
+	H2          GdOsByStatus `json:"H2"`
 }
 
 type ProductorBalance struct {
 	TransactionType string          `json:"transactionType"`
 	ProducerID      string          `json:"producerId"`
-	GDOS            GDOsByAssetType `json:"gdos"`
+	GdOS            GdOsByAssetType `json:"gdos"`
 }

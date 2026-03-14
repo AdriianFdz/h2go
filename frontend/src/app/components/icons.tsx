@@ -274,7 +274,7 @@ export const HydrogenIcon = ({ className }: { className?: string }) => {
   );
 };
 
-export const GDOIcon = ({ className }: { className?: string }) => {
+export const GdOIcon = ({ className }: { className?: string }) => {
   return (
     <svg
       className={className}

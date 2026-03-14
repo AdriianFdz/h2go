@@ -1,15 +1,15 @@
-export enum GDOStatus {
-  ACTIVE = 'ACTIVE',
-  EXPIRED = 'EXPIRED',
-  USED = 'USED',
+export enum GdOStatus {
+  ACTIVE = "ACTIVE",
+  EXPIRED = "EXPIRED",
+  USED = "USED",
 }
 
-export interface GDO {
+export interface GdO {
   gdoId: string;
   requestId: string;
   assetType: string;
   issueDate: string;
   expiryDate: string;
   ownerId: string;
-  status: GDOStatus | string;
+  status: GdOStatus | string;
 }

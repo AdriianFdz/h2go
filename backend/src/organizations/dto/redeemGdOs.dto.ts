@@ -2,7 +2,7 @@ import { AssetType } from '../../common/enums/asset-type.enum';
 import { IsEnum, IsArray, ArrayNotEmpty } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class RedeemGDOsDto {
+export class RedeemGdOsDto {
   @ApiProperty({ enum: AssetType, example: AssetType.H2 })
   @IsEnum(AssetType)
   assetType: AssetType;

@@ -39,7 +39,7 @@ func (rc *RequestContract) CreateRequest(
 	createdAt := time.Unix(txTimestamp.Seconds, int64(txTimestamp.Nanos)).Format(time.RFC3339)
 
 	request := models.Request{
-		DocType:     "REQUEST_TO_TRANSFORM_GDOS",
+		DocType:     "REQUEST_TO_TRANSFORM_GdOS",
 		RequestID:   requestID,
 		ProducerID:  producerID,
 		AssetType:   assetTypeEnum,
@@ -47,7 +47,7 @@ func (rc *RequestContract) CreateRequest(
 		Status:      models.RequestPending,
 		ApproverID:  "",
 		Reason:      "",
-		GDOs:        make([]models.GDO, 0),
+		GdOs:        make([]models.GdO, 0),
 		CreatedAt:   createdAt,
 		ProcessedAt: "",
 	}
@@ -83,9 +83,9 @@ func (rc *RequestContract) validateRequestBasics(
 		return nil, models.ProductorBalance{}, "", "", 0, err
 	}
 
-	// Validate that it's a GDO request
-	if request.DocType != "REQUEST_TO_TRANSFORM_GDOS" {
-		return nil, models.ProductorBalance{}, "", "", 0, errors.New("document is not a GDO request, found docType: " + request.DocType)
+	// Validate that it's a GdO request
+	if request.DocType != "REQUEST_TO_TRANSFORM_GdOS" {
+		return nil, models.ProductorBalance{}, "", "", 0, errors.New("document is not a GdO request, found docType: " + request.DocType)
 	}
 
 	if request.Status != models.RequestPending {
@@ -101,7 +101,7 @@ func (rc *RequestContract) validateRequestBasics(
 		return nil, models.ProductorBalance{}, "", "", 0, err
 	}
 
-	// If asset type is H2, check if producer has enough electricity GDOs
+	// If asset type is H2, check if producer has enough electricity GdOs
 	var productorBalanceRecord models.ProductorBalance
 	if assetType == string(models.H2) {
 		actualProductorBalance, err := ctx.GetStub().GetState(producerID)
@@ -109,14 +109,14 @@ func (rc *RequestContract) validateRequestBasics(
 			return nil, models.ProductorBalance{}, "", "", 0, err
 		}
 		if actualProductorBalance == nil {
-			return nil, models.ProductorBalance{}, "", "", 0, errors.New("producer " + producerID + " electricity balance is empty to transform GDOs")
+			return nil, models.ProductorBalance{}, "", "", 0, errors.New("producer " + producerID + " electricity balance is empty to transform GdOs")
 		}
 		err = json.Unmarshal(actualProductorBalance, &productorBalanceRecord)
 		if err != nil {
 			return nil, models.ProductorBalance{}, "", "", 0, err
 		}
-		if int64(len(productorBalanceRecord.GDOS.Electricity.Available)) < gdoToGrant {
-			return nil, models.ProductorBalance{}, "", "", 0, errors.New("producer " + producerID + " does not have enough electricity GDOs to transform")
+		if int64(len(productorBalanceRecord.GdOS.Electricity.Available)) < gdoToGrant {
+			return nil, models.ProductorBalance{}, "", "", 0, errors.New("producer " + producerID + " does not have enough electricity GdOs to transform")
 		}
 	}
 
@@ -184,7 +184,7 @@ func (rc *RequestContract) validateRequestForApproval(
 		}
 	}
 	if totalAvailable < remainingGdoToGrant {
-		return nil, models.ProductorBalance{}, nil, errors.New("not enough available production to exchange for GDOs")
+		return nil, models.ProductorBalance{}, nil, errors.New("not enough available production to exchange for GdOs")
 	}
 
 	return request, productorBalanceRecord, availableBatches, nil
@@ -218,9 +218,9 @@ func (rc *RequestContract) ApproveRequest(
 	issueTime := time.Unix(txTimestamp.Seconds, int64(txTimestamp.Nanos))
 	issueDate := issueTime.Format(time.RFC3339)
 
-	gdos := make([]models.GDO, 0)
-	electricityGDOsToRedeem := make([]string, 0)
-	electricityGDOIndex := 0
+	gdos := make([]models.GdO, 0)
+	electricityGdOsToRedeem := make([]string, 0)
+	electricityGdOIndex := 0
 
 	for _, batch := range availableBatches {
 		availableInBatch := batch.AmountAvailable - batch.AmountUsed
@@ -236,23 +236,23 @@ func (rc *RequestContract) ApproveRequest(
 			amountUsed = availableInBatch
 		}
 
-		// if asset type is H2, collect electricity GDOs to redeem
+		// if asset type is H2, collect electricity GdOs to redeem
 		if assetType == string(models.H2) {
-			electricityGDOs := productorBalanceRecord.GDOS.Electricity.Available
+			electricityGdOs := productorBalanceRecord.GdOS.Electricity.Available
 			for i := int64(0); i < amountUsed; i++ {
-				// Find next available electricity GDO starting from last index
-				for electricityGDOIndex < len(electricityGDOs) {
-					if electricityGDOs[electricityGDOIndex].Status == models.GdoActive {
-						electricityGDOsToRedeem = append(electricityGDOsToRedeem, electricityGDOs[electricityGDOIndex].GdoID)
-						electricityGDOIndex++
+				// Find next available electricity GdO starting from last index
+				for electricityGdOIndex < len(electricityGdOs) {
+					if electricityGdOs[electricityGdOIndex].Status == models.GdoActive {
+						electricityGdOsToRedeem = append(electricityGdOsToRedeem, electricityGdOs[electricityGdOIndex].GdoID)
+						electricityGdOIndex++
 						break
 					}
-					electricityGDOIndex++
+					electricityGdOIndex++
 				}
 			}
 		}
 
-		// Generate deterministic GDO ID: requestID + batch ID + counter
+		// Generate deterministic GdO ID: requestID + batch ID + counter
 		for i := int64(0); i < amountUsed; i++ {
 			gdoID := requestID + "-gdo-" + batch.BatchId + "-" + strconv.FormatInt(i, 10)
 			assetTypeEnum, _ := models.ParseAssetType(assetType)
@@ -262,8 +262,8 @@ func (rc *RequestContract) ApproveRequest(
 			} else if assetTypeEnum == models.Electricity {
 				expiryDate = batch.ProductionDate.AddDate(0, 12, 0).Format(time.RFC3339)
 			}
-			gdo := models.GDO{
-				DocType:    "GDO",
+			gdo := models.GdO{
+				DocType:    "GdO",
 				GdoID:      gdoID,
 				RequestID:  requestID,
 				AssetType:  assetTypeEnum,
@@ -273,7 +273,7 @@ func (rc *RequestContract) ApproveRequest(
 				Status:     models.GdoActive,
 			}
 
-			// Store GDO individually in world state
+			// Store GdO individually in world state
 			gdoJSON, err := json.Marshal(gdo)
 			if err != nil {
 				return err
@@ -300,10 +300,10 @@ func (rc *RequestContract) ApproveRequest(
 		}
 	}
 
-	// Redeem collected electricity GDOs for H2 requests
-	if assetType == string(models.H2) && len(electricityGDOsToRedeem) > 0 {
+	// Redeem collected electricity GdOs for H2 requests
+	if assetType == string(models.H2) && len(electricityGdOsToRedeem) > 0 {
 		rdpContract := RedemptionContract{}
-		err = rdpContract.RedeemGDOs(ctx, producerID, string(models.Electricity), electricityGDOsToRedeem)
+		err = rdpContract.RedeemGdOs(ctx, producerID, string(models.Electricity), electricityGdOsToRedeem)
 		if err != nil {
 			return err
 		}
@@ -323,26 +323,26 @@ func (rc *RequestContract) ApproveRequest(
 		productorBalanceRecord = models.ProductorBalance{
 			TransactionType: "gdoBalance",
 			ProducerID:      producerID,
-			GDOS: models.GDOsByAssetType{
-				Electricity: models.GDOsByStatus{
-					Available:   make([]models.GDO, 0),
-					Unavailable: make([]models.GDO, 0),
+			GdOS: models.GdOsByAssetType{
+				Electricity: models.GdOsByStatus{
+					Available:   make([]models.GdO, 0),
+					Unavailable: make([]models.GdO, 0),
 				},
-				H2: models.GDOsByStatus{
-					Available:   make([]models.GDO, 0),
-					Unavailable: make([]models.GDO, 0),
+				H2: models.GdOsByStatus{
+					Available:   make([]models.GdO, 0),
+					Unavailable: make([]models.GdO, 0),
 				},
 			},
 		}
 	}
 
-	// Add GDOs to the correct list based on asset type and status
-	// New GDOs are always ACTIVE (available)
+	// Add GdOs to the correct list based on asset type and status
+	// New GdOs are always ACTIVE (available)
 	switch request.AssetType {
 	case models.Electricity:
-		productorBalanceRecord.GDOS.Electricity.Available = append(productorBalanceRecord.GDOS.Electricity.Available, gdos...)
+		productorBalanceRecord.GdOS.Electricity.Available = append(productorBalanceRecord.GdOS.Electricity.Available, gdos...)
 	case models.H2:
-		productorBalanceRecord.GDOS.H2.Available = append(productorBalanceRecord.GDOS.H2.Available, gdos...)
+		productorBalanceRecord.GdOS.H2.Available = append(productorBalanceRecord.GdOS.H2.Available, gdos...)
 	}
 
 	updatedBalanceJSON, err := json.Marshal(productorBalanceRecord)
@@ -355,7 +355,7 @@ func (rc *RequestContract) ApproveRequest(
 	}
 
 	// Update the related request
-	request.GDOs = gdos
+	request.GdOs = gdos
 	request.Status = models.RequestApproved
 	request.ApproverID = approverID
 	request.Reason = reason
@@ -396,8 +396,8 @@ func (rc *RequestContract) RejectRequest(
 		return err
 	}
 
-	if request.DocType != "REQUEST_TO_TRANSFORM_GDOS" {
-		return errors.New("document is not a GDO request, found docType: " + request.DocType)
+	if request.DocType != "REQUEST_TO_TRANSFORM_GdOS" {
+		return errors.New("document is not a GdO request, found docType: " + request.DocType)
 	}
 
 	if request.Status != models.RequestPending {
@@ -446,8 +446,8 @@ func (rc *RequestContract) GetRequest(
 		return nil, err
 	}
 
-	if request.DocType != "REQUEST_TO_TRANSFORM_GDOS" {
-		return nil, errors.New("document is not a GDO request, found docType: " + request.DocType)
+	if request.DocType != "REQUEST_TO_TRANSFORM_GdOS" {
+		return nil, errors.New("document is not a GdO request, found docType: " + request.DocType)
 	}
 
 	return &request, nil
@@ -475,7 +475,7 @@ func (rc *RequestContract) GetAllRequests(
 			continue
 		}
 
-		if request.DocType == "REQUEST_TO_TRANSFORM_GDOS" {
+		if request.DocType == "REQUEST_TO_TRANSFORM_GdOS" {
 			requests = append(requests, &request)
 		}
 	}

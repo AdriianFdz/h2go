@@ -11,7 +11,7 @@ type Request struct {
 	Status      RequestStatus `json:"status"`
 	ApproverID  string        `json:"approverId"`
 	Reason      string        `json:"reason"`
-	GDOs        []GDO         `json:"gdos"`
+	GdOs        []GdO         `json:"gdos"`
 	CreatedAt   string        `json:"createdAt"`
 	ProcessedAt string        `json:"processedAt"`
 }
@@ -30,9 +30,9 @@ func (r *Request) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	// Corregir GDOs si es nil
-	if r.GDOs == nil {
-		r.GDOs = []GDO{}
+	// Corregir GdOs si es nil
+	if r.GdOs == nil {
+		r.GdOs = []GdO{}
 	}
 
 	return nil

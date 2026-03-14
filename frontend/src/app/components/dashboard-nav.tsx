@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  GDOIcon,
+  GdOIcon,
   KeyIcon,
   OrganizationIcon,
   TextFileIcon,
@@ -39,7 +39,7 @@ export const DashboardNav = ({ className }: { className?: string }) => {
           {
             href: "/dashboard/gdo-operations",
             icon: <TextFileIcon />,
-            label: "GDO Operations",
+            label: "GdO Operations",
           },
         ]
       : []),
@@ -57,7 +57,7 @@ export const DashboardNav = ({ className }: { className?: string }) => {
       ? [
           {
             href: "/dashboard/gdos",
-            icon: <GDOIcon />,
+            icon: <GdOIcon />,
             label: "GdOs",
           },
         ]

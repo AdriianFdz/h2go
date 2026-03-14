@@ -10,7 +10,7 @@ const (
 	GdoUsed    GdoStatus = "USED"
 )
 
-// ValidGdoStatuses returns all valid GDO statuses
+// ValidGdoStatuses returns all valid GdO statuses
 func ValidGdoStatuses() []GdoStatus {
 	return []GdoStatus{GdoActive, GdoExpired, GdoUsed}
 }
@@ -28,7 +28,7 @@ func (s GdoStatus) IsValid() bool {
 func ParseGdoStatus(str string) (GdoStatus, error) {
 	s := GdoStatus(str)
 	if !s.IsValid() {
-		return "", fmt.Errorf("invalid GDO status: %s. Valid statuses: ACTIVE, EXPIRED, USED", str)
+		return "", fmt.Errorf("invalid GdO status: %s. Valid statuses: ACTIVE, EXPIRED, USED", str)
 	}
 	return s, nil
 }

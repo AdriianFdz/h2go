@@ -13,14 +13,14 @@ type RedemptionContract struct {
 	contractapi.Contract
 }
 
-func (rdpc *RedemptionContract) RedeemGDOs(
+func (rdpc *RedemptionContract) RedeemGdOs(
 	ctx contractapi.TransactionContextInterface,
 	ownerID string,
 	assetType string,
 	gdoIDs []string) error {
 
 	if len(gdoIDs) == 0 {
-		return errors.New("at least one GDO ID must be provided")
+		return errors.New("at least one GdO ID must be provided")
 	}
 
 	assetTypeEnum, err := models.ParseAssetType(assetType)
@@ -28,7 +28,7 @@ func (rdpc *RedemptionContract) RedeemGDOs(
 		return err
 	}
 
-	validatedGDOs := make(map[string]*models.GDO)
+	validatedGdOs := make(map[string]*models.GdO)
 
 	txTimestamp, err := ctx.GetStub().GetTxTimestamp()
 	if err != nil {
@@ -37,33 +37,33 @@ func (rdpc *RedemptionContract) RedeemGDOs(
 	currentTime := time.Unix(txTimestamp.Seconds, int64(txTimestamp.Nanos))
 
 	for _, gdoID := range gdoIDs {
-		gdo, err := rdpc.GetGDO(ctx, gdoID)
+		gdo, err := rdpc.GetGdO(ctx, gdoID)
 		if err != nil {
-			return errors.New("failed to get GDO " + gdoID + ": " + err.Error())
+			return errors.New("failed to get GdO " + gdoID + ": " + err.Error())
 		}
 
 		if gdo.OwnerID != ownerID {
-			return errors.New("GDO " + gdoID + " does not belong to owner " + ownerID + ", current owner is " + gdo.OwnerID)
+			return errors.New("GdO " + gdoID + " does not belong to owner " + ownerID + ", current owner is " + gdo.OwnerID)
 		}
 
 		if gdo.Status != models.GdoActive {
-			return errors.New("GDO " + gdoID + " is not available for redemption, current status: " + string(gdo.Status))
+			return errors.New("GdO " + gdoID + " is not available for redemption, current status: " + string(gdo.Status))
 		}
 
 		expiryTime, err := time.Parse(time.RFC3339, gdo.ExpiryDate)
 		if err != nil {
-			return errors.New("failed to parse expiry date for GDO " + gdoID + ": " + err.Error())
+			return errors.New("failed to parse expiry date for GdO " + gdoID + ": " + err.Error())
 		}
 
 		if currentTime.After(expiryTime) {
-			return errors.New("GDO " + gdoID + " has expired")
+			return errors.New("GdO " + gdoID + " has expired")
 		}
 
 		if gdo.AssetType != assetTypeEnum {
-			return errors.New("GDO " + gdoID + " has asset type " + string(gdo.AssetType) + " but expected " + assetType)
+			return errors.New("GdO " + gdoID + " has asset type " + string(gdo.AssetType) + " but expected " + assetType)
 		}
 
-		validatedGDOs[gdoID] = gdo
+		validatedGdOs[gdoID] = gdo
 	}
 
 	ownerBalance, err := ctx.GetStub().GetState(ownerID)
@@ -85,30 +85,30 @@ func (rdpc *RedemptionContract) RedeemGDOs(
 		gdoIDsSet[gdoID] = struct{}{}
 	}
 
-	var availableGDOs []models.GDO
-	var unavailableGDOs []models.GDO
+	var availableGdOs []models.GdO
+	var unavailableGdOs []models.GdO
 
 	if assetTypeEnum == models.Electricity {
-		availableGDOs = productorBalanceRecord.GDOS.Electricity.Available
-		unavailableGDOs = productorBalanceRecord.GDOS.Electricity.Unavailable
+		availableGdOs = productorBalanceRecord.GdOS.Electricity.Available
+		unavailableGdOs = productorBalanceRecord.GdOS.Electricity.Unavailable
 	} else if assetTypeEnum == models.H2 {
-		availableGDOs = productorBalanceRecord.GDOS.H2.Available
-		unavailableGDOs = productorBalanceRecord.GDOS.H2.Unavailable
+		availableGdOs = productorBalanceRecord.GdOS.H2.Available
+		unavailableGdOs = productorBalanceRecord.GdOS.H2.Unavailable
 	}
 
-	updatedAvailable := make([]models.GDO, 0)
-	for _, gdo := range availableGDOs {
+	updatedAvailable := make([]models.GdO, 0)
+	for _, gdo := range availableGdOs {
 		if _, shouldRedeem := gdoIDsSet[gdo.GdoID]; shouldRedeem {
-			validatedGDO := validatedGDOs[gdo.GdoID]
-			validatedGDO.Status = models.GdoUsed
+			validatedGdO := validatedGdOs[gdo.GdoID]
+			validatedGdO.Status = models.GdoUsed
 			
-			unavailableGDOs = append(unavailableGDOs, *validatedGDO)
+			unavailableGdOs = append(unavailableGdOs, *validatedGdO)
 
-			gdoJSON, err := json.Marshal(validatedGDO)
+			gdoJSON, err := json.Marshal(validatedGdO)
 			if err != nil {
 				return err
 			}
-			err = ctx.GetStub().PutState(validatedGDO.GdoID, gdoJSON)
+			err = ctx.GetStub().PutState(validatedGdO.GdoID, gdoJSON)
 			if err != nil {
 				return err
 			}
@@ -118,11 +118,11 @@ func (rdpc *RedemptionContract) RedeemGDOs(
 	}
 
 	if assetTypeEnum == models.Electricity {
-		productorBalanceRecord.GDOS.Electricity.Available = updatedAvailable
-		productorBalanceRecord.GDOS.Electricity.Unavailable = unavailableGDOs
+		productorBalanceRecord.GdOS.Electricity.Available = updatedAvailable
+		productorBalanceRecord.GdOS.Electricity.Unavailable = unavailableGdOs
 	} else if assetTypeEnum == models.H2 {
-		productorBalanceRecord.GDOS.H2.Available = updatedAvailable
-		productorBalanceRecord.GDOS.H2.Unavailable = unavailableGDOs
+		productorBalanceRecord.GdOS.H2.Available = updatedAvailable
+		productorBalanceRecord.GdOS.H2.Unavailable = unavailableGdOs
 	}
 
 	updatedOwnerBalanceBytes, err := json.Marshal(productorBalanceRecord)
@@ -138,16 +138,16 @@ func (rdpc *RedemptionContract) RedeemGDOs(
 	return nil
 }
 
-func (rdpc *RedemptionContract) GetGDO(ctx contractapi.TransactionContextInterface, gdoID string) (*models.GDO, error) {
+func (rdpc *RedemptionContract) GetGdO(ctx contractapi.TransactionContextInterface, gdoID string) (*models.GdO, error) {
 	gdoBytes, err := ctx.GetStub().GetState(gdoID)
 	if err != nil {
-		return nil, errors.New("failed to read GDO from world state")
+		return nil, errors.New("failed to read GdO from world state")
 	}
 	if gdoBytes == nil {
-		return nil, errors.New("GDO does not exist")
+		return nil, errors.New("GdO does not exist")
 	}
 
-	var gdoRecord models.GDO
+	var gdoRecord models.GdO
 	err = json.Unmarshal(gdoBytes, &gdoRecord)
 	if err != nil {
 		return nil, err
@@ -195,7 +195,7 @@ func (rdpc *RedemptionContract) CreateTradeRequest(
 	createdAt := time.Unix(txTimestamp.Seconds, int64(txTimestamp.Nanos)).Format(time.RFC3339)
 
 	request := models.TradeRequest{
-		DocType:    "REQUEST_TO_TRADE_GDOS",
+		DocType:    "REQUEST_TO_TRADE_GdOS",
 		TradeID:    requestID,
 		ProducerID: producerID,
 		TargetID:   targetProducerID,
@@ -240,7 +240,7 @@ func (rdpc *RedemptionContract) GetAllTradeRequests(
 			continue
 		}
 
-		if request.DocType == "REQUEST_TO_TRADE_GDOS" {
+		if request.DocType == "REQUEST_TO_TRADE_GdOS" {
 			tradeRequests = append(tradeRequests, &request)
 		}
 	}
@@ -376,24 +376,24 @@ func (rdpc *RedemptionContract) AcceptTradeRequest(
 	}
 
 	if len(gdosToExchange) != int(trade.Amount) {
-		return errors.New("number of GDOs to exchange must match the amount specified in the trade request")
+		return errors.New("number of GdOs to exchange must match the amount specified in the trade request")
 	}
 
-	// Validate all GDOs and create set to avoid nested loops
+	// Validate all GdOs and create set to avoid nested loops
 	gdoIDsSet := make(map[string]struct{}, len(gdosToExchange))
 	for _, gdoID := range gdosToExchange {
-		gdo, err := rdpc.GetGDO(ctx, gdoID)
+		gdo, err := rdpc.GetGdO(ctx, gdoID)
 		if err != nil {
 			return err
 		}
 		if gdo.OwnerID != producerID {
-			return errors.New("producer " + producerID + " does not own GDO " + gdoID)
+			return errors.New("producer " + producerID + " does not own GdO " + gdoID)
 		}
 		if gdo.AssetType != trade.AssetType {
-			return errors.New("GDO " + gdoID + " asset type does not match trade request asset type")
+			return errors.New("GdO " + gdoID + " asset type does not match trade request asset type")
 		}
 		if gdo.Status != models.GdoActive {
-			return errors.New("GDO " + gdoID + " is not available for trade")
+			return errors.New("GdO " + gdoID + " is not available for trade")
 		}
 		gdoIDsSet[gdoID] = struct{}{}
 	}
@@ -432,14 +432,14 @@ func (rdpc *RedemptionContract) AcceptTradeRequest(
 		producerBalance = models.ProductorBalance{
 			TransactionType: "gdoBalance",
 			ProducerID:      trade.ProducerID,
-			GDOS: models.GDOsByAssetType{
-				Electricity: models.GDOsByStatus{
-					Available:   make([]models.GDO, 0),
-					Unavailable: make([]models.GDO, 0),
+			GdOS: models.GdOsByAssetType{
+				Electricity: models.GdOsByStatus{
+					Available:   make([]models.GdO, 0),
+					Unavailable: make([]models.GdO, 0),
 				},
-				H2: models.GDOsByStatus{
-					Available:   make([]models.GDO, 0),
-					Unavailable: make([]models.GDO, 0),
+				H2: models.GdOsByStatus{
+					Available:   make([]models.GdO, 0),
+					Unavailable: make([]models.GdO, 0),
 				},
 			},
 		}
@@ -450,14 +450,14 @@ func (rdpc *RedemptionContract) AcceptTradeRequest(
 		}
 	}
 
-	gdosToTransfer := make([]models.GDO, 0)
-	var updatedTargetAvailable []models.GDO
+	gdosToTransfer := make([]models.GdO, 0)
+	var updatedTargetAvailable []models.GdO
 
-	var targetAvailable []models.GDO
+	var targetAvailable []models.GdO
 	if trade.AssetType == models.Electricity {
-		targetAvailable = targetBalance.GDOS.Electricity.Available
+		targetAvailable = targetBalance.GdOS.Electricity.Available
 	} else {
-		targetAvailable = targetBalance.GDOS.H2.Available
+		targetAvailable = targetBalance.GdOS.H2.Available
 	}
 
 	// Swap ownership
@@ -480,15 +480,15 @@ func (rdpc *RedemptionContract) AcceptTradeRequest(
 	}
 
 	if trade.AssetType == models.Electricity {
-		targetBalance.GDOS.Electricity.Available = updatedTargetAvailable
+		targetBalance.GdOS.Electricity.Available = updatedTargetAvailable
 	} else {
-		targetBalance.GDOS.H2.Available = updatedTargetAvailable
+		targetBalance.GdOS.H2.Available = updatedTargetAvailable
 	}
 
 	if trade.AssetType == models.Electricity {
-		producerBalance.GDOS.Electricity.Available = append(producerBalance.GDOS.Electricity.Available, gdosToTransfer...)
+		producerBalance.GdOS.Electricity.Available = append(producerBalance.GdOS.Electricity.Available, gdosToTransfer...)
 	} else {
-		producerBalance.GDOS.H2.Available = append(producerBalance.GDOS.H2.Available, gdosToTransfer...)
+		producerBalance.GdOS.H2.Available = append(producerBalance.GdOS.H2.Available, gdosToTransfer...)
 	}
 
 	// Save both balances
@@ -514,7 +514,7 @@ func (rdpc *RedemptionContract) AcceptTradeRequest(
 	trade.Status = models.RequestApproved
 	trade.ApproverID = approverID
 	trade.ProcessedAt = processedAt
-	trade.GDOs = gdosToTransfer
+	trade.GdOs = gdosToTransfer
 
 	tradeJSON, err := json.Marshal(trade)
 	if err != nil {

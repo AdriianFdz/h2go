@@ -235,7 +235,7 @@ export class OrganizationsService {
     }
   }
 
-  async redeemGDOs(
+  async redeemGdOs(
     id: string,
     assetType: AssetType,
     gdosToRedeem: string[],
@@ -256,7 +256,7 @@ export class OrganizationsService {
 
     if (!isOwnOrg && !isAuthorizedByOrg) {
       throw new Error(
-        'Solo los usuarios de la organización o autorizados pueden redimir GDOs',
+        'Solo los usuarios de la organización o autorizados pueden redimir GdOs',
       );
     }
 
@@ -274,16 +274,16 @@ export class OrganizationsService {
       const result = await this.connectionManager.executeTransaction(
         gateway,
         client,
-        'RedemptionContract:RedeemGDOs',
+        'RedemptionContract:RedeemGdOs',
         id,
         assetType.toString(),
         JSON.stringify(gdosToRedeem),
       );
       const resultString = Buffer.from(result).toString('utf8');
-      return { message: 'GDOs redimidos exitosamente', details: resultString };
+      return { message: 'GdOs redimidos exitosamente', details: resultString };
     } catch (error) {
       const errorMessage = error?.message || String(error);
-      throw new Error('Error al redimir GDOs: ' + errorMessage);
+      throw new Error('Error al redimir GdOs: ' + errorMessage);
     } finally {
       this.connectionManager.disconnectGateway(gateway, client);
     }

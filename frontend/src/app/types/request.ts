@@ -1,5 +1,5 @@
 import { AssetType } from "./assetType";
-import { GDO } from "./gdo";
+import { GdO } from "./gdo";
 import { RequestStatus } from "./requestStatus";
 
 export interface Request {
@@ -11,7 +11,7 @@ export interface Request {
   status: RequestStatus | string;
   approverId: string;
   reason: string;
-  gdos: GDO[];
+  gdos: GdO[];
   createdAt: string;
   processedAt: string;
 }

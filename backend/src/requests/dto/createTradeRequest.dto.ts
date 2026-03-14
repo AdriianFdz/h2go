@@ -4,7 +4,7 @@ import { AssetType } from 'src/common/enums/asset-type.enum';
 
 export class CreateTradeRequestDto {
   @ApiProperty({
-    description: 'The producer ID which will receive GDOs.',
+    description: 'The producer ID which will receive GdOs.',
     example: 'producer1',
   })
   @IsString()

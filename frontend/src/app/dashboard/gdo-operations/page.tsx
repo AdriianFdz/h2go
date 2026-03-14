@@ -36,7 +36,7 @@ import { AssetType } from "@/app/types/assetType";
 import { OrganizationType } from "@/app/types/organization";
 import { AssetTypeSelector } from "@/app/components/assetTypeSelector";
 import { TradeRequest } from "@/app/types/tradeRequest";
-import { GDO, GDOStatus } from "@/app/types/gdo";
+import { GdO, GdOStatus } from "@/app/types/gdo";
 
 interface ProducerInfo {
   id: string;
@@ -89,8 +89,8 @@ export default function GdosOperationsPage() {
     canApprove: boolean;
   } | null>(null);
 
-  // GDO selection states
-  const [availableGdos, setAvailableGdos] = useState<GDO[]>([]);
+  // GdO selection states
+  const [availableGdos, setAvailableGdos] = useState<GdO[]>([]);
   const [selectedGdoIds, setSelectedGdoIds] = useState<string[]>([]);
 
   useEffect(() => {
@@ -303,7 +303,7 @@ export default function GdosOperationsPage() {
         setValidationResult({ canApprove });
       } else {
         setValidationResult({ canApprove: false });
-        toast.danger("Failed to fetch producer GDOs.", { timeout: 4000 });
+        toast.danger("Failed to fetch producer GdOs.", { timeout: 4000 });
       }
     } catch (error) {
       console.error("Error validating request:", error);
@@ -334,7 +334,7 @@ export default function GdosOperationsPage() {
 
     if (selectedGdoIds.length !== selectedRequest.amount) {
       toast.danger(
-        `You must select exactly ${selectedRequest.amount} GDO(s).`,
+        `You must select exactly ${selectedRequest.amount} GdO(s).`,
         { timeout: 4000 }
       );
       return;
@@ -439,9 +439,9 @@ export default function GdosOperationsPage() {
 
   return (
     <div className="pb-32 pr-10">
-      <h1 className="text-4xl font-bold mb-4">GDO Operations</h1>
+      <h1 className="text-4xl font-bold mb-4">GdO Operations</h1>
       <p className="text-muted text-lg mb-8">
-        Request new GDOs or redeem existing ones from authorized producers.
+        Request new GdOs or redeem existing ones from authorized producers.
       </p>
 
       {/* Tabs */}
@@ -456,7 +456,7 @@ export default function GdosOperationsPage() {
               className="flex-1 flex items-center justify-center gap-3 text-xl pb-3"
             >
               <PlusCircleIcon />
-              Request GDOs
+              Request GdOs
               <Tabs.Indicator />
             </Tabs.Tab>
             <Tabs.Tab
@@ -464,7 +464,7 @@ export default function GdosOperationsPage() {
               className="flex-1 flex items-center justify-center gap-3 text-xl pb-3"
             >
               <TradeIcon />
-              Trade GDOs
+              Trade GdOs
               <Tabs.Indicator />
             </Tabs.Tab>
             <Tabs.Tab
@@ -484,8 +484,8 @@ export default function GdosOperationsPage() {
             <div className="flex items-center gap-4 mb-6">
               <PlusCircleIcon className="w-18 h-18 p-4 text-accent bg-accent-soft rounded-2xl" />
               <div>
-                <h2 className="text-2xl font-bold">Request GDOs</h2>
-                <p className="text-muted">Create a new request for GDOs</p>
+                <h2 className="text-2xl font-bold">Request GdOs</h2>
+                <p className="text-muted">Create a new request for GdOs</p>
               </div>
             </div>
 
@@ -497,7 +497,7 @@ export default function GdosOperationsPage() {
                 </p>
                 <p className="text-muted">
                   You need to be authorized by at least one producer to request
-                  GDOs.
+                  GdOs.
                 </p>
               </div>
             ) : (
@@ -606,7 +606,7 @@ export default function GdosOperationsPage() {
                     <NumberField.IncrementButton />
                   </NumberField.Group>
                   <Description className="text-sm text-muted mt-2">
-                    Number of GDOs to request
+                    Number of GdOs to request
                   </Description>
                   <FieldError />
                 </NumberField>
@@ -645,9 +645,9 @@ export default function GdosOperationsPage() {
             <div className="flex items-center gap-4 mb-6">
               <TradeIcon className="w-18 h-18 p-4 text-accent bg-accent-soft rounded-2xl" />
               <div>
-                <h2 className="text-2xl font-bold">Trade GDOs</h2>
+                <h2 className="text-2xl font-bold">Trade GdOs</h2>
                 <p className="text-muted">
-                  Request GDO transfer between producers
+                  Request GdO transfer between producers
                 </p>
               </div>
             </div>
@@ -660,7 +660,7 @@ export default function GdosOperationsPage() {
                 </p>
                 <p className="text-muted">
                   You need to be authorized by at least one producer to trade
-                  GDOs.
+                  GdOs.
                 </p>
               </div>
             ) : (
@@ -756,7 +756,7 @@ export default function GdosOperationsPage() {
                     />
                   </InputGroup>
                   <Description className="text-sm text-muted mt-2">
-                    The producer ID from which you want to receive GDOs.
+                    The producer ID from which you want to receive GdOs.
                   </Description>
                   <FieldError />
                 </TextField>
@@ -789,7 +789,7 @@ export default function GdosOperationsPage() {
                     <NumberField.IncrementButton />
                   </NumberField.Group>
                   <Description className="text-sm text-muted mt-2">
-                    Number of GDOs to request
+                    Number of GdOs to request
                   </Description>
                   <FieldError />
                 </NumberField>
@@ -845,7 +845,7 @@ export default function GdosOperationsPage() {
                   </p>
                   <p className="text-muted">
                     You need to be authorized by at least one producer to redeem
-                    GDOs.
+                    GdOs.
                   </p>
                 </div>
               ) : (
@@ -1047,39 +1047,39 @@ export default function GdosOperationsPage() {
                                                 <div className="flex items-center gap-2 mt-3">
                                                   <Spinner size="sm" />
                                                   <p className="text-sm text-muted">
-                                                    Loading GDOs...
+                                                    Loading GdOs...
                                                   </p>
                                                 </div>
                                               ) : validationResult ? (
                                                 validationResult.canApprove ? (
                                                   <div className="bg-success/10 border border-success/30 rounded-lg p-4 mt-3">
                                                     <p className="text-lg font-bold text-success">
-                                                      ✓ Producer has enough GDOs
+                                                      ✓ Producer has enough GdOs
                                                     </p>
                                                     <p className="text-sm text-muted mt-1">
                                                       Select exactly{" "}
                                                       {selectedRequest?.amount}{" "}
-                                                      GDO(s) to approve
+                                                      GdO(s) to approve
                                                     </p>
                                                   </div>
                                                 ) : (
                                                   <div className="bg-danger/10 border border-danger/30 rounded-lg p-4 mt-3">
                                                     <p className="text-lg font-bold text-danger">
                                                       ✗ Producer does not have
-                                                      enough GDOs
+                                                      enough GdOs
                                                     </p>
                                                   </div>
                                                 )
                                               ) : null}
                                             </Modal.Header>
                                             <Modal.Body className="p-6 space-y-4">
-                                              {/* GDO Selection */}
+                                              {/* GdO Selection */}
                                               {!validationLoading &&
                                                 validationResult?.canApprove && (
                                                   <div className="space-y-3">
                                                     <div className="flex items-center justify-between">
                                                       <Label className="text-base font-semibold">
-                                                        Select GDOs
+                                                        Select GdOs
                                                       </Label>
                                                       <p className="text-sm text-muted">
                                                         {selectedGdoIds.length}{" "}
@@ -1094,7 +1094,7 @@ export default function GdosOperationsPage() {
                                                       {availableGdos.length ===
                                                       0 ? (
                                                         <p className="text-center text-muted py-4">
-                                                          No GDOs available
+                                                          No GdOs available
                                                         </p>
                                                       ) : (
                                                         availableGdos.map(
@@ -1155,7 +1155,7 @@ export default function GdosOperationsPage() {
                                                               <div
                                                                 className={`px-2 py-1 rounded text-xs font-semibold ${
                                                                   gdo.status ===
-                                                                  GDOStatus.ACTIVE
+                                                                  GdOStatus.ACTIVE
                                                                     ? "bg-success-soft-hover text-success"
                                                                     : "bg-muted/20 text-muted"
                                                                 }`}
@@ -1175,7 +1175,7 @@ export default function GdosOperationsPage() {
                                                         {
                                                           selectedRequest?.amount
                                                         }{" "}
-                                                        GDO(s) to approve
+                                                        GdO(s) to approve
                                                       </p>
                                                     )}
                                                   </div>

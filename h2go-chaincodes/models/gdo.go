@@ -1,6 +1,6 @@
 package models
 
-type GDO struct {
+type GdO struct {
 	DocType    string    `json:"docType"`
 	GdoID      string    `json:"gdoId"`
 	RequestID  string    `json:"requestId"`

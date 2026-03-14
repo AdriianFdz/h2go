@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/app/context/AuthContext";
 import { GdoBalance } from "@/app/types/gdoBalance";
-import { GDO, GDOStatus } from "@/app/types/gdo";
+import { GdO, GdOStatus } from "@/app/types/gdo";
 import {
   Accordion,
   Button,
@@ -36,7 +36,7 @@ export default function GdOsPage() {
   const [selectedAssetType, setSelectedAssetType] = useState<AssetType>(
     AssetType.H2
   );
-  const [availableGdos, setAvailableGdos] = useState<GDO[]>([]);
+  const [availableGdos, setAvailableGdos] = useState<GdO[]>([]);
   const [selectedGdoIds, setSelectedGdoIds] = useState<string[]>([]);
   const [loadingGdos, setLoadingGdos] = useState(false);
   const [isSubmittingRedeem, setIsSubmittingRedeem] = useState(false);
@@ -120,12 +120,12 @@ export default function GdOsPage() {
           const gdos = data.gdos[assetTypeKey]?.available || [];
           setAvailableGdos(gdos);
         } else {
-          toast.danger("Failed to fetch GDOs.", { timeout: 4000 });
+          toast.danger("Failed to fetch GdOs.", { timeout: 4000 });
           setAvailableGdos([]);
         }
       } catch (error) {
-        console.error("Error fetching GDOs:", error);
-        toast.danger("An error occurred while fetching GDOs.", {
+        console.error("Error fetching GdOs:", error);
+        toast.danger("An error occurred while fetching GdOs.", {
           timeout: 4000,
         });
         setAvailableGdos([]);
@@ -154,7 +154,7 @@ export default function GdOsPage() {
     }
 
     if (selectedGdoIds.length === 0) {
-      toast.danger("Please select at least one GDO.", { timeout: 4000 });
+      toast.danger("Please select at least one GdO.", { timeout: 4000 });
       return;
     }
 
@@ -177,7 +177,7 @@ export default function GdOsPage() {
       );
 
       if (response.ok) {
-        toast.success("GDOs redeemed successfully!", { timeout: 4000 });
+        toast.success("GdOs redeemed successfully!", { timeout: 4000 });
         setSelectedGdoIds([]);
         setAvailableGdos([]);
         const fetchBalances = async () => {
@@ -235,11 +235,11 @@ export default function GdOsPage() {
         fetchBalances();
       } else {
         const errorText = await response.text();
-        toast.danger(`Failed to redeem GDOs: ${errorText}`, { timeout: 4000 });
+        toast.danger(`Failed to redeem GdOs: ${errorText}`, { timeout: 4000 });
       }
     } catch (error) {
-      console.error("Error redeeming GDOs:", error);
-      toast.danger("An error occurred while redeeming GDOs.", {
+      console.error("Error redeeming GdOs:", error);
+      toast.danger("An error occurred while redeeming GdOs.", {
         timeout: 4000,
       });
     } finally {
@@ -274,7 +274,7 @@ export default function GdOsPage() {
   }
   return (
     <div className="pb-32 pr-10">
-      <h1 className="text-4xl font-bold mb-4">GDOs Balance</h1>
+      <h1 className="text-4xl font-bold mb-4">GdOs Balance</h1>
       <p className="text-muted text-lg mb-8">
         {isTrader
           ? "Check the Guarantees of Origin balance for authorized organizations."
@@ -287,7 +287,7 @@ export default function GdOsPage() {
           <p className="text-sm text-muted mt-2">
             {isTrader
               ? "No organizations have authorized you yet."
-              : "Request new GDOs to see them here."}
+              : "Request new GdOs to see them here."}
           </p>
         </div>
       )}
@@ -313,7 +313,7 @@ export default function GdOsPage() {
                         (orgBalance.balance?.gdos?.H2?.available?.length || 0) +
                         (orgBalance.balance?.gdos?.H2?.unavailable?.length ||
                           0)}{" "}
-                      GDOs total
+                      GdOs total
                     </p>
                   </div>
                   <Accordion.Indicator className="text-muted w-6 h-6" />
@@ -354,16 +354,16 @@ export default function GdOsPage() {
             setAvailableGdos([]);
           }}
         >
-          Redeem GDOs
+          Redeem GdOs
         </Button>
         <Modal.Backdrop variant="blur">
           <Modal.Container>
             <Modal.Dialog className="bg-surface border border-muted/30 max-w-4xl">
               <Modal.CloseTrigger />
               <Modal.Header className="border-b border-muted/20 p-6">
-                <h2 className="text-2xl font-bold">Redeem GDOs</h2>
+                <h2 className="text-2xl font-bold">Redeem GdOs</h2>
                 <p className="text-sm text-muted mt-1">
-                  Select the GDOs you want to redeem
+                  Select the GdOs you want to redeem
                 </p>
               </Modal.Header>
               <Modal.Body className="p-6 space-y-4">
@@ -407,11 +407,11 @@ export default function GdOsPage() {
                   />
                 </div>
 
-                {/* GDO Selection */}
+                {/* GdO Selection */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <Label className="text-base font-semibold">
-                      Select GDOs to Redeem
+                      Select GdOs to Redeem
                     </Label>
                     <p className="text-sm text-muted">
                       {selectedGdoIds.length} selected
@@ -421,25 +421,25 @@ export default function GdOsPage() {
                   {loadingGdos ? (
                     <div className="flex items-center justify-center py-8">
                       <Spinner size="lg" />
-                      <p className="text-sm text-muted ml-3">Loading GDOs...</p>
+                      <p className="text-sm text-muted ml-3">Loading GdOs...</p>
                     </div>
                   ) : (
                     <div className="max-h-96 overflow-y-auto bg-background/50 border border-muted/30 rounded-lg p-3 space-y-2">
                       {availableGdos.length === 0 ? (
                         <div className="text-center py-12">
                           <p className="text-lg text-muted font-semibold">
-                            No GDOs available
+                            No GdOs available
                           </p>
                           <p className="text-sm text-muted mt-2">
                             No{" "}
                             {selectedAssetType === AssetType.H2
                               ? "hydrogen"
                               : "electricity"}{" "}
-                            GDOs available for redemption.
+                            GdOs available for redemption.
                           </p>
                         </div>
                       ) : (
-                        availableGdos.map((gdo: GDO) => (
+                        availableGdos.map((gdo: GdO) => (
                           <div
                             key={gdo.gdoId}
                             className={`flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer ${
@@ -490,7 +490,7 @@ export default function GdOsPage() {
                               )}
                               <div
                                 className={`px-2 py-1 rounded text-xs font-semibold ${
-                                  gdo.status === GDOStatus.ACTIVE
+                                  gdo.status === GdOStatus.ACTIVE
                                     ? "bg-success-soft-hover text-success"
                                     : "bg-muted/20 text-muted"
                                 }`}
@@ -508,7 +508,7 @@ export default function GdOsPage() {
                 {selectedGdoIds.length > 0 && (
                   <div className="bg-accent/10 border border-accent/30 rounded-lg p-4">
                     <p className="text-sm text-accent font-semibold">
-                      You have selected {selectedGdoIds.length} GDO
+                      You have selected {selectedGdoIds.length} GdO
                       {selectedGdoIds.length > 1 ? "s" : ""} to redeem.
                     </p>
                   </div>
@@ -516,7 +516,7 @@ export default function GdOsPage() {
 
                 <div className="bg-warning/10 border border-warning/30 rounded-lg p-4">
                   <p className="text-sm text-warning font-semibold">
-                    ⚠️ This action cannot be undone. Redeemed GDOs will be
+                    ⚠️ This action cannot be undone. Redeemed GdOs will be
                     marked as used.
                   </p>
                 </div>
@@ -555,7 +555,7 @@ export default function GdOsPage() {
   );
 }
 
-function groupGdosByRequest(gdos: GDO[]): [string, GDO[]][] {
+function groupGdosByRequest(gdos: GdO[]): [string, GdO[]][] {
   const grouped = gdos.reduce(
     (acc, gdo) => {
       const requestId = gdo.requestId;
@@ -565,7 +565,7 @@ function groupGdosByRequest(gdos: GDO[]): [string, GDO[]][] {
       acc[requestId].push(gdo);
       return acc;
     },
-    {} as Record<string, GDO[]>
+    {} as Record<string, GdO[]>
   );
 
   return Object.entries(grouped);
@@ -602,7 +602,7 @@ function OrganizationBalanceSection({
               <h3 className="text-2xl font-bold text-yellow-500">
                 Electricity
               </h3>
-              <p className="text-muted">Total GDOs: {totalElectricity}</p>
+              <p className="text-muted">Total GdOs: {totalElectricity}</p>
             </div>
           </div>
           <div className="flex gap-4 mt-4">
@@ -659,7 +659,7 @@ function OrganizationBalanceSection({
             </div>
             <div>
               <h3 className="text-2xl font-bold text-accent">Hydrogen (H2)</h3>
-              <p className="text-muted">Total GDOs: {totalH2}</p>
+              <p className="text-muted">Total GdOs: {totalH2}</p>
             </div>
           </div>
           <div className="flex gap-4 mt-4">
@@ -709,7 +709,7 @@ function OrganizationBalanceSection({
         </div>
       </div>
 
-      {/* Detailed GDOs List */}
+      {/* Detailed GdOs List */}
       <Accordion
         className="w-full rounded-2xl"
         variant="surface"
@@ -722,7 +722,7 @@ function OrganizationBalanceSection({
               <ElectricityIcon className="w-8 h-8 text-success" />
               <div className="flex-1 text-left flex items-center">
                 <span className="text-xl font-bold text-success">
-                  Electricity GDOs - Available
+                  Electricity GdOs - Available
                 </span>
                 <span className="ml-3 inline-flex items-center justify-center min-w-8 h-8 rounded-full bg-success-soft text-success font-semibold text-sm">
                   {electricityAvailable.length}
@@ -747,7 +747,7 @@ function OrganizationBalanceSection({
                               Request: {requestId}...
                             </span>
                             <p className="text-xs text-muted mt-1">
-                              {gdos.length} GDO{gdos.length > 1 ? "s" : ""}
+                              {gdos.length} GdO{gdos.length > 1 ? "s" : ""}
                             </p>
                           </div>
                           <Accordion.Indicator className="text-muted w-5 h-5" />
@@ -763,7 +763,7 @@ function OrganizationBalanceSection({
                               >
                                 <div className="flex items-start justify-between mb-3">
                                   <h4 className="font-bold text-lg">
-                                    GDO #{idx + 1}
+                                    GdO #{idx + 1}
                                   </h4>
                                   <span className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-success-soft text-success font-semibold text-xs">
                                     {gdo.status}
@@ -772,7 +772,7 @@ function OrganizationBalanceSection({
                                 <div className="grid grid-cols-2 gap-3 text-sm">
                                   <div>
                                     <p className="text-muted font-semibold mb-1">
-                                      GDO ID
+                                      GdO ID
                                     </p>
                                     <p className="font-mono text-xs break-all">
                                       {gdo.gdoId}
@@ -827,7 +827,7 @@ function OrganizationBalanceSection({
               <ElectricityIcon className="w-8 h-8 text-danger opacity-80" />
               <div className="flex-1 text-left flex items-center">
                 <span className="text-xl font-bold text-danger">
-                  Electricity GDOs - Used
+                  Electricity GdOs - Used
                 </span>
                 <span className="ml-3 inline-flex items-center justify-center min-w-8 h-8 rounded-full bg-danger-soft text-danger font-semibold text-sm">
                   {electricityUnavailable.length}
@@ -852,7 +852,7 @@ function OrganizationBalanceSection({
                               Request: {requestId}...
                             </span>
                             <p className="text-xs text-muted mt-1">
-                              {gdos.length} GDO{gdos.length > 1 ? "s" : ""}
+                              {gdos.length} GdO{gdos.length > 1 ? "s" : ""}
                             </p>
                           </div>
                           <Accordion.Indicator className="text-muted w-5 h-5" />
@@ -868,7 +868,7 @@ function OrganizationBalanceSection({
                               >
                                 <div className="flex items-start justify-between mb-3">
                                   <h4 className="font-bold text-lg">
-                                    GDO #{idx + 1}
+                                    GdO #{idx + 1}
                                   </h4>
                                   <span className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-danger-soft text-danger font-semibold text-xs">
                                     {gdo.status}
@@ -877,7 +877,7 @@ function OrganizationBalanceSection({
                                 <div className="grid grid-cols-2 gap-3 text-sm">
                                   <div>
                                     <p className="text-muted font-semibold mb-1">
-                                      GDO ID
+                                      GdO ID
                                     </p>
                                     <p className="font-mono text-xs break-all">
                                       {gdo.gdoId}
@@ -932,7 +932,7 @@ function OrganizationBalanceSection({
               <HydrogenIcon className="w-8 h-8 text-success" />
               <div className="flex-1 text-left flex items-center">
                 <span className="text-xl font-bold text-success">
-                  H2 GDOs - Available
+                  H2 GdOs - Available
                 </span>
                 <span className="ml-3 inline-flex items-center justify-center min-w-8 h-8 rounded-full bg-success-soft text-success font-semibold text-sm">
                   {h2Available.length}
@@ -956,7 +956,7 @@ function OrganizationBalanceSection({
                             Request: {requestId.slice(0, 8)}...
                           </span>
                           <p className="text-xs text-muted mt-1">
-                            {gdos.length} GDO{gdos.length > 1 ? "s" : ""}
+                            {gdos.length} GdO{gdos.length > 1 ? "s" : ""}
                           </p>
                         </div>
                         <Accordion.Indicator className="text-muted w-5 h-5" />
@@ -972,7 +972,7 @@ function OrganizationBalanceSection({
                             >
                               <div className="flex items-start justify-between mb-3">
                                 <h4 className="font-bold text-lg">
-                                  GDO #{idx + 1}
+                                  GdO #{idx + 1}
                                 </h4>
                                 <span className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-success-soft text-success font-semibold text-xs">
                                   {gdo.status}
@@ -981,7 +981,7 @@ function OrganizationBalanceSection({
                               <div className="grid grid-cols-2 gap-3 text-sm">
                                 <div>
                                   <p className="text-muted font-semibold mb-1">
-                                    GDO ID
+                                    GdO ID
                                   </p>
                                   <p className="font-mono text-xs break-all">
                                     {gdo.gdoId}
@@ -1035,7 +1035,7 @@ function OrganizationBalanceSection({
               <HydrogenIcon className="w-8 h-8 text-danger opacity-80" />
               <div className="flex-1 text-left flex items-center">
                 <span className="text-xl font-bold text-danger">
-                  H2 GDOs - Used
+                  H2 GdOs - Used
                 </span>
                 <span className="ml-3 inline-flex items-center justify-center min-w-8 h-8 rounded-full bg-danger-soft text-danger font-semibold text-sm">
                   {h2Unavailable.length}
@@ -1059,7 +1059,7 @@ function OrganizationBalanceSection({
                             Request: {requestId.slice(0, 8)}...
                           </span>
                           <p className="text-xs text-muted mt-1">
-                            {gdos.length} GDO{gdos.length > 1 ? "s" : ""}
+                            {gdos.length} GdO{gdos.length > 1 ? "s" : ""}
                           </p>
                         </div>
                         <Accordion.Indicator className="text-muted w-5 h-5" />
@@ -1075,7 +1075,7 @@ function OrganizationBalanceSection({
                             >
                               <div className="flex items-start justify-between mb-3">
                                 <h4 className="font-bold text-lg">
-                                  GDO #{idx + 1}
+                                  GdO #{idx + 1}
                                 </h4>
                                 <span className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-danger-soft text-danger font-semibold text-xs">
                                   {gdo.status}
@@ -1084,7 +1084,7 @@ function OrganizationBalanceSection({
                               <div className="grid grid-cols-2 gap-3 text-sm">
                                 <div>
                                   <p className="text-muted font-semibold mb-1">
-                                    GDO ID
+                                    GdO ID
                                   </p>
                                   <p className="font-mono text-xs break-all">
                                     {gdo.gdoId}

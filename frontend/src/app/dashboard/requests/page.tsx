@@ -330,7 +330,7 @@ export default function RequestsPage() {
                     {request.gdos && request.gdos.length > 0 && (
                       <div className="bg-background/50 rounded-lg p-4 border border-muted/20 shadow-sm">
                         <p className="text-xs uppercase font-bold text-muted mb-3 tracking-wider">
-                          GDOs ({request.gdos.length})
+                          GdOs ({request.gdos.length})
                         </p>
                         <div className="space-y-3">
                           {request.gdos.map((gdo, idx) => (
@@ -340,7 +340,7 @@ export default function RequestsPage() {
                             >
                               <p className="text-sm mb-1">
                                 <span className="font-bold text-muted">
-                                  GDO ID:
+                                  GdO ID:
                                 </span>{" "}
                                 <span className="font-mono font-semibold text-foreground">
                                   {gdo.gdoId}

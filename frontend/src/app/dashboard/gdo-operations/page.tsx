@@ -1071,7 +1071,7 @@ export default function GdosOperationsPage() {
                                                 )
                                               ) : null}
                                             </Modal.Header>
-                                            <Modal.Body className="p-6 space-y-4">
+                                            <Modal.Body className="p-6 space-y-4 overflow-y-hidden">
                                               {/* GdO Selection */}
                                               {!validationLoading &&
                                                 validationResult?.canApprove && (

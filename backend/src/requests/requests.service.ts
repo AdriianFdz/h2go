@@ -279,7 +279,7 @@ export class RequestsService {
     }
   }
 
-  async getAllPendingTradeRequests(
+  async getIncomingTradeRequests(
     user: IAuthenticatedUser,
     producerId: string,
   ) {
@@ -368,6 +368,139 @@ export class RequestsService {
         tradeId,
         gdoIdsJson,
       );
+    } finally {
+      this.connectionManager.disconnectGateway(gateway, client);
+    }
+  }
+
+  async getOngoingIssuanceRequests(
+    user: IAuthenticatedUser,
+    producerId: string,
+  ) {
+    if (!user.organization) {
+      throw new Error('User does not have an associated organization.');
+    }
+
+    const { gateway, client } =
+      await this.connectionManager.connectGateway(user);
+    try {
+      const result = await this.connectionManager.queryTransaction(
+        gateway,
+        client,
+        'RequestContract:GetRequestsByProducer',
+        producerId,
+      );
+      const resultString = Buffer.from(result).toString('utf8');
+
+      if (!resultString || resultString.trim() === '') {
+        return [];
+      }
+
+      const data = JSON.parse(resultString);
+      return data.map((item: any) => ({
+        docType: item.docType,
+        requestId: item.requestId,
+        producerId: item.producerId,
+        assetType: item.assetType,
+        amount: item.amount,
+        status: item.status,
+        approverId: item.approverId,
+        reason: item.reason,
+        gdos: item.gdos ?? [],
+        createdAt: item.createdAt,
+        processedAt: item.processedAt,
+      })) as PendingIssuanceRequestDto[];
+    } finally {
+      this.connectionManager.disconnectGateway(gateway, client);
+    }
+  }
+
+  async cancelIssuanceRequest(user: IAuthenticatedUser, requestId: string) {
+    if (!user.organization) {
+      throw new Error('User does not have an associated organization.');
+    }
+
+    const { gateway, client } =
+      await this.connectionManager.connectGateway(user);
+    try {
+      const result = await this.connectionManager.queryTransaction(
+        gateway,
+        client,
+        'RequestContract:GetRequest',
+        requestId,
+      );
+      const resultString = Buffer.from(result).toString('utf8');
+      if (!resultString || resultString.trim() === '') {
+        throw new Error('Request not found.');
+      }
+      const data = JSON.parse(resultString);
+
+      const organization = await this.userRepository.findOne({
+        where: { id: user.id },
+        relations: ['organization', 'organization.authorizedByOrgs'],
+      });
+
+      const isAuthorized =
+        organization?.organization?.authorizedByOrgs?.some(
+          (org: any) => org.id === data.producerId,
+        ) || false;
+
+      if (!isAuthorized) {
+        throw new Error(
+          'User is not authorized to cancel this request.',
+        );
+      }
+
+      if (data.status !== 'PENDING') {
+        throw new Error('Only PENDING requests can be cancelled.');
+      }
+
+      await this.connectionManager.executeTransaction(
+        gateway,
+        client,
+        'RequestContract:CancelRequest',
+        requestId,
+      );
+    } finally {
+      this.connectionManager.disconnectGateway(gateway, client);
+    }
+  }
+
+  async getOngoingTradeRequests(
+    user: IAuthenticatedUser,
+    producerId: string,
+  ) {
+    if (!user.organization) {
+      throw new Error('User does not have an associated organization.');
+    }
+
+    const { gateway, client } =
+      await this.connectionManager.connectGateway(user);
+    try {
+      const result = await this.connectionManager.queryTransaction(
+        gateway,
+        client,
+        'RedemptionContract:GetSentTradeRequestsByStatus',
+        producerId,
+        'PENDING',
+      );
+      const resultString = Buffer.from(result).toString('utf8');
+
+      if (!resultString || resultString.trim() === '') {
+        return [];
+      }
+
+      const data = JSON.parse(resultString);
+      return data.map((item: any) => ({
+        docType: item.docType,
+        tradeID: item.tradeID,
+        producerID: item.producerID,
+        targetID: item.targetID,
+        assetType: item.assetType,
+        amount: item.amount,
+        status: item.status,
+        createdAt: item.createdAt,
+      })) as PendingTradeRequestDto[];
     } finally {
       this.connectionManager.disconnectGateway(gateway, client);
     }

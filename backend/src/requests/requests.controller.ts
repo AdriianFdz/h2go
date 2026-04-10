@@ -39,10 +39,10 @@ export class RequestsController {
     return this.requestsService.createIssuanceRequest(user, createRequestDto);
   }
 
-  @Get('issuance')
+  @Get('issuance/incoming')
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get all pending issuance requests' })
+  @ApiOperation({ summary: 'Get all pending incoming issuance requests (only for regulators)' })
   @ApiResponse({
     status: 200,
     description: 'List of pending issuance requests retrieved successfully.',
@@ -51,6 +51,23 @@ export class RequestsController {
   getAllPendingIssuanceRequests(@Req() request) {
     const user: IAuthenticatedUser = request.user;
     return this.requestsService.getAllPendingIssuanceRequests(user);
+  }
+
+  @Get('issuance/ongoing/:producerId')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get ongoing issuance requests' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of issuance requests retrieved successfully.',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  getOngoingIssuanceRequests(
+    @Req() request,
+    @Param('producerId') producerId: string,
+  ) {
+    const user: IAuthenticatedUser = request.user;
+    return this.requestsService.getOngoingIssuanceRequests(user, producerId);
   }
 
   @Post('issuance/:id/approve')
@@ -83,6 +100,17 @@ export class RequestsController {
     return this.requestsService.rejectIssuanceRequest(user, id, comment);
   }
 
+  @Post('issuance/:id/cancel')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Cancel a pending issuance request' })
+  @ApiResponse({ status: 200, description: 'Request cancelled successfully.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  cancelRequest(@Req() request, @Param('id') id: string) {
+    const user: IAuthenticatedUser = request.user;
+    return this.requestsService.cancelIssuanceRequest(user, id);
+  }
+
   @Get('issuance/:id/validation')
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
@@ -113,21 +141,38 @@ export class RequestsController {
     return this.requestsService.createTradeRequest(user, createTradeRequestDto);
   }
 
-  @Get('trades/producer/:producerId')
+  @Get('trades/ongoing/:producerId')
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get all pending trade requests for a producer' })
+  @ApiOperation({ summary: 'Get ongoing trade requests' })
   @ApiResponse({
     status: 200,
-    description: 'List of pending trade requests retrieved successfully.',
+    description: 'List of sent trade requests retrieved successfully.',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
-  getAllPendingTradeRequests(
+  getOngoingTradeRequests(
     @Req() request,
     @Param('producerId') producerId: string,
   ) {
     const user: IAuthenticatedUser = request.user;
-    return this.requestsService.getAllPendingTradeRequests(user, producerId);
+    return this.requestsService.getOngoingTradeRequests(user, producerId);
+  }
+
+  @Get('trades/incoming/:producerId')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get incoming trade requests for a producer' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of incoming trade requests retrieved successfully.',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  getIncomingTradeRequests(
+    @Req() request,
+    @Param('producerId') producerId: string,
+  ) {
+    const user: IAuthenticatedUser = request.user;
+    return this.requestsService.getIncomingTradeRequests(user, producerId);
   }
 
   @Post('trades/:id/approve')
@@ -159,19 +204,4 @@ export class RequestsController {
     const user: IAuthenticatedUser = request.user;
     return this.requestsService.rejectTradeRequest(user, id);
   }
-
-  // @Get('trades/:id')
-  // @UseGuards(AuthGuard('jwt'))
-  // @ApiBearerAuth()
-  // @ApiOperation({ summary: 'Get a specific trade request by ID' })
-  // @ApiResponse({
-  //   status: 200,
-  //   description: 'Trade request retrieved successfully.',
-  // })
-  // @ApiResponse({ status: 401, description: 'Unauthorized.' })
-  // @ApiResponse({ status: 404, description: 'Trade request not found.' })
-  // getTradeRequestById(@Req() request, @Param('id') id: string) {
-  //   const user: IAuthenticatedUser = request.user;
-  //   return this.requestsService.getTradeRequestById(user, id);
-  // }
 }

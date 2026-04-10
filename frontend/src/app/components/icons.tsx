@@ -439,3 +439,34 @@ export const TrashIcon = ({ className }: { className?: string }) => (
     <path d="m18 9-.84 8.398c-.127 1.273-.19 1.909-.48 2.39a2.5 2.5 0 0 1-1.075.973C15.098 21 14.46 21 13.18 21h-2.36c-1.279 0-1.918 0-2.425-.24a2.5 2.5 0 0 1-1.076-.973c-.288-.48-.352-1.116-.48-2.389L6 9m7.5 6.5v-5m-3 5v-5m-6-4h4.615m0 0 .386-2.672c.112-.486.516-.828.98-.828h3.038c.464 0 .867.342.98.828l.386 2.672m-5.77 0h5.77m0 0H19.5" />
   </svg>
 );
+
+export const BigArrowLeftIcon = ({ className }: { className?: string }) => (
+  <svg
+    className={className}
+    width="24"
+    height="24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    viewBox="0 0 24 24"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M10.895 4.483c0-.43-.545-.645-.863-.34l-6.884 7.516a.467.467 0 0 0 0 .682l6.884 7.517c.318.304.863.088.863-.341V15.68c0-.267.227-.483.506-.483h9.093c.28 0 .506-.216.506-.482V9.284a.494.494 0 0 0-.506-.482h-9.093a.494.494 0 0 1-.506-.483z" />
+  </svg>
+);
+export const BigArrowRightIcon = ({ className }: { className?: string }) => (
+  <svg
+    className={className}
+    width="24"
+    height="24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    viewBox="0 0 24 24"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M13.105 4.483c0-.43.545-.645.863-.34l6.884 7.516a.466.466 0 0 1 0 .682l-6.884 7.517c-.318.304-.863.088-.863-.341V15.68a.495.495 0 0 0-.506-.483H3.506A.494.494 0 0 1 3 14.716V9.284c0-.266.226-.482.506-.482h9.093c.28 0 .506-.216.506-.483z" />
+  </svg>
+);

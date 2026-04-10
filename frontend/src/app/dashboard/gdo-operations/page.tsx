@@ -20,6 +20,8 @@ import {
   toast,
 } from "@heroui/react";
 import {
+  BigArrowLeftIcon,
+  BigArrowRightIcon,
   CircleCheckIcon,
   DangerTriangleIcon,
   DownArrowIcon,
@@ -36,6 +38,7 @@ import { AssetType } from "@/app/types/assetType";
 import { OrganizationType } from "@/app/types/organization";
 import { AssetTypeSelector } from "@/app/components/assetTypeSelector";
 import { TradeRequest } from "@/app/types/tradeRequest";
+import { Request as IssuanceRequest } from "@/app/types/request";
 import { GdO, GdOStatus } from "@/app/types/gdo";
 
 interface ProducerInfo {
@@ -51,13 +54,33 @@ export default function GdosOperationsPage() {
   const [producers, setProducers] = useState<ProducerInfo[]>([]);
   const [loadingProducers, setLoadingProducers] = useState(false);
 
-  // Trade requests state
+  // Incoming trade requests state
   const [tradeRequestsByProducer, setTradeRequestsByProducer] = useState<
     Record<string, TradeRequest[]>
   >({});
   const [loadingTradeRequests, setLoadingTradeRequests] = useState<
     Record<string, boolean>
   >({});
+
+  // Ongoing trade requests state
+  const [ongoingTradeRequestsByProducer, setOngoingTradeRequestsByProducer] =
+    useState<Record<string, TradeRequest[]>>({});
+  const [loadingOngoingTradeRequests, setLoadingOngoingTradeRequests] =
+    useState<Record<string, boolean>>({});
+  const [cancellingTradeId, setCancellingTradeId] = useState<string | null>(
+    null
+  );
+
+  // Ongoing issuance requests state
+  const [
+    ongoingIssuanceRequestsByProducer,
+    setOngoingIssuanceRequestsByProducer,
+  ] = useState<Record<string, IssuanceRequest[]>>({});
+  const [loadingOngoingIssuanceRequests, setLoadingOngoingIssuanceRequests] =
+    useState<Record<string, boolean>>({});
+  const [cancellingIssuanceId, setCancellingIssuanceId] = useState<
+    string | null
+  >(null);
 
   // Expedition form states
   const [expeditionProducerId, setExpeditionProducerId] = useState<string>("");
@@ -239,7 +262,7 @@ export default function GdosOperationsPage() {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/requests/trades/producer/${producerId}`,
+        `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/requests/trades/incoming/${producerId}`,
         {
           method: "GET",
           credentials: "include",
@@ -255,7 +278,7 @@ export default function GdosOperationsPage() {
       } else {
         const errorText = await response.text();
         console.error(
-          `Failed to fetch trade requests for producer ${producerId}:`,
+          `Failed to fetch incoming trade requests for producer ${producerId}:`,
           response.status,
           response.statusText,
           errorText
@@ -266,13 +289,205 @@ export default function GdosOperationsPage() {
         }));
       }
     } catch (error) {
-      console.error("Error fetching trade requests:", error);
+      console.error("Error fetching incoming trade requests:", error);
       setTradeRequestsByProducer((prev) => ({
         ...prev,
         [producerId]: [],
       }));
     } finally {
       setLoadingTradeRequests((prev) => ({ ...prev, [producerId]: false }));
+    }
+  };
+
+  const fetchOngoingTradeRequestsForProducer = async (producerId: string) => {
+    if (
+      loadingOngoingTradeRequests[producerId] ||
+      ongoingTradeRequestsByProducer[producerId]
+    ) {
+      return;
+    }
+
+    setLoadingOngoingTradeRequests((prev) => ({ ...prev, [producerId]: true }));
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/requests/trades/ongoing/${producerId}`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setOngoingTradeRequestsByProducer((prev) => ({
+          ...prev,
+          [producerId]: data,
+        }));
+      } else {
+        const errorText = await response.text();
+        console.error(
+          `Failed to fetch ongoing trade requests for producer ${producerId}:`,
+          response.status,
+          response.statusText,
+          errorText
+        );
+        setOngoingTradeRequestsByProducer((prev) => ({
+          ...prev,
+          [producerId]: [],
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching ongoing trade requests:", error);
+      setOngoingTradeRequestsByProducer((prev) => ({
+        ...prev,
+        [producerId]: [],
+      }));
+    } finally {
+      setLoadingOngoingTradeRequests((prev) => ({
+        ...prev,
+        [producerId]: false,
+      }));
+    }
+  };
+
+  const fetchOngoingIssuanceRequestsForProducer = async (
+    producerId: string
+  ) => {
+    if (
+      loadingOngoingIssuanceRequests[producerId] ||
+      ongoingIssuanceRequestsByProducer[producerId]
+    ) {
+      return;
+    }
+
+    setLoadingOngoingIssuanceRequests((prev) => ({
+      ...prev,
+      [producerId]: true,
+    }));
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/requests/issuance/ongoing/${producerId}`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        // Filter only PENDING requests that can be cancelled
+        const pendingRequests = data.filter(
+          (r: IssuanceRequest) => r.status === "PENDING"
+        );
+        setOngoingIssuanceRequestsByProducer((prev) => ({
+          ...prev,
+          [producerId]: pendingRequests,
+        }));
+      } else {
+        setOngoingIssuanceRequestsByProducer((prev) => ({
+          ...prev,
+          [producerId]: [],
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching ongoing issuance requests:", error);
+      setOngoingIssuanceRequestsByProducer((prev) => ({
+        ...prev,
+        [producerId]: [],
+      }));
+    } finally {
+      setLoadingOngoingIssuanceRequests((prev) => ({
+        ...prev,
+        [producerId]: false,
+      }));
+    }
+  };
+
+  const handleCancelTradeRequest = async (
+    producerId: string,
+    tradeId: string
+  ) => {
+    setCancellingTradeId(tradeId);
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/requests/trades/${tradeId}/reject`,
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
+
+      if (response.ok) {
+        toast.success("Trade request cancelled successfully!", {
+          timeout: 4000,
+        });
+        setOngoingTradeRequestsByProducer((prev) => {
+          const updated = { ...prev };
+          if (updated[producerId]) {
+            updated[producerId] = updated[producerId].filter(
+              (r) => r.tradeID !== tradeId
+            );
+          }
+          return updated;
+        });
+      } else {
+        const errorText = await response.text();
+        toast.danger(`Failed to cancel trade request: ${errorText}`, {
+          timeout: 4000,
+        });
+      }
+    } catch (error) {
+      console.error("Error cancelling trade request:", error);
+      toast.danger("An error occurred while cancelling the trade request.", {
+        timeout: 4000,
+      });
+    } finally {
+      setCancellingTradeId(null);
+    }
+  };
+
+  const handleCancelIssuanceRequest = async (
+    producerId: string,
+    requestId: string
+  ) => {
+    setCancellingIssuanceId(requestId);
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/requests/issuance/${requestId}/cancel`,
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
+
+      if (response.ok) {
+        toast.success("Issuance request cancelled successfully!", {
+          timeout: 4000,
+        });
+        setOngoingIssuanceRequestsByProducer((prev) => {
+          const updated = { ...prev };
+          if (updated[producerId]) {
+            updated[producerId] = updated[producerId].filter(
+              (r) => r.requestId !== requestId
+            );
+          }
+          return updated;
+        });
+      } else {
+        const errorText = await response.text();
+        toast.danger(`Failed to cancel issuance request: ${errorText}`, {
+          timeout: 4000,
+        });
+      }
+    } catch (error) {
+      console.error("Error cancelling issuance request:", error);
+      toast.danger("An error occurred while cancelling the issuance request.", {
+        timeout: 4000,
+      });
+    } finally {
+      setCancellingIssuanceId(null);
     }
   };
 
@@ -824,12 +1039,15 @@ export default function GdosOperationsPage() {
         </Tabs.Panel>
         {/* Pending Requests Tab Content */}
         <Tabs.Panel id="pending">
-          <div className="space-y-6">
+          <div className="space-y-8">
+            {/* Incoming Requests Section */}
             <div className="bg-surface border border-muted/30 rounded-2xl p-8 shadow-lg">
               <div className="flex items-center gap-4 mb-6">
-                <CircleCheckIcon className="w-18 h-18 p-4 text-accent bg-accent-soft rounded-2xl" />
+                <BigArrowLeftIcon className="w-18 h-18 p-4 text-accent bg-accent-soft rounded-2xl" />
                 <div>
-                  <h2 className="text-2xl font-bold">Pending Trade Requests</h2>
+                  <h2 className="text-2xl font-bold">
+                    Incoming Trade Requests
+                  </h2>
                   <p className="text-muted">
                     Answer a pending trade request from other traders
                   </p>
@@ -843,8 +1061,8 @@ export default function GdosOperationsPage() {
                     No Authorized Producers
                   </p>
                   <p className="text-muted">
-                    You need to be authorized by at least one producer to redeem
-                    GdOs.
+                    You need to be authorized by at least one producer to manage
+                    trade requests.
                   </p>
                 </div>
               ) : (
@@ -886,7 +1104,7 @@ export default function GdosOperationsPage() {
                                 className="text-muted"
                               />
                               <span className="ml-3 text-muted">
-                                Loading trade requests...
+                                Loading incoming trade requests...
                               </span>
                             </div>
                           ) : tradeRequestsByProducer[producer.id]?.length ===
@@ -894,11 +1112,11 @@ export default function GdosOperationsPage() {
                             <div className="text-center py-8 bg-background/50 rounded-xl border border-muted/20">
                               <TradeIcon className="w-12 h-12 mx-auto mb-3 text-muted" />
                               <p className="text-lg font-semibold mb-1">
-                                No Pending Requests
+                                No Incoming Requests
                               </p>
                               <p className="text-muted text-sm">
-                                There are no pending trade requests for this
-                                producer.
+                                There are no pending incoming trade requests for
+                                this producer.
                               </p>
                             </div>
                           ) : (
@@ -1239,6 +1457,443 @@ export default function GdosOperationsPage() {
                     </Accordion.Item>
                   ))}
                 </Accordion>
+              )}
+            </div>
+
+            {/* Ongoing Requests Section */}
+            <div className="bg-surface border border-muted/30 rounded-2xl p-8 shadow-lg">
+              <div className="flex items-center gap-4 mb-6">
+                <BigArrowRightIcon className="w-18 h-18 p-4 text-accent bg-accent-soft rounded-2xl" />
+                <div>
+                  <h2 className="text-2xl font-bold">Ongoing Requests</h2>
+                  <p className="text-muted">
+                    Requests you have sent that are still pending
+                  </p>
+                </div>
+              </div>
+
+              {authorizedByOrgs.length === 0 ? (
+                <div className="text-center py-12 bg-background/30 rounded-xl border border-muted/20">
+                  <DangerTriangleIcon className="w-16 h-16 mx-auto mb-4 text-muted" />
+                  <p className="text-xl font-bold mb-2">
+                    No Authorized Producers
+                  </p>
+                  <p className="text-muted">
+                    You need to be authorized by at least one producer to view
+                    ongoing requests.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Ongoing Trade Requests */}
+                  <div>
+                    <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
+                      <TradeIcon className="w-6 h-6 text-accent" />
+                      Trade
+                    </h3>
+                    <Accordion
+                      className="w-full"
+                      variant="surface"
+                    >
+                      {producers.map((producer) => (
+                        <Accordion.Item
+                          key={producer.id}
+                          onExpandedChange={(isExpanded) => {
+                            if (isExpanded) {
+                              fetchOngoingTradeRequestsForProducer(producer.id);
+                            }
+                          }}
+                        >
+                          <Accordion.Heading>
+                            <Accordion.Trigger className="group flex items-center gap-4 bg-background/50 border border-muted/30 hover:border-accent-hover px-5 py-4 rounded-xl w-full transition-all">
+                              <OrganizationIcon className="w-12 h-12 p-2 text-accent bg-accent-soft rounded-2xl" />
+                              <div className="flex-1 text-left">
+                                <span className="text-lg font-bold">
+                                  {producer.name}
+                                </span>
+                                <p className="text-sm text-muted mt-1 font-mono">
+                                  {producer.id}
+                                </p>
+                              </div>
+                              <Accordion.Indicator className="text-muted w-6 h-6">
+                                <DownArrowIcon />
+                              </Accordion.Indicator>
+                            </Accordion.Trigger>
+                          </Accordion.Heading>
+                          <Accordion.Panel className="mt-2">
+                            <Accordion.Body className="border border-muted/30 rounded-xl bg-background/30 p-6 space-y-6">
+                              {loadingOngoingTradeRequests[producer.id] ? (
+                                <div className="flex items-center justify-center py-8">
+                                  <Spinner
+                                    size="md"
+                                    className="text-muted"
+                                  />
+                                  <span className="ml-3 text-muted">
+                                    Loading ongoing trade requests...
+                                  </span>
+                                </div>
+                              ) : ongoingTradeRequestsByProducer[producer.id]
+                                  ?.length === 0 ? (
+                                <div className="text-center py-8 bg-background/50 rounded-xl border border-muted/20">
+                                  <TradeIcon className="w-12 h-12 mx-auto mb-3 text-muted" />
+                                  <p className="text-lg font-semibold mb-1">
+                                    No Ongoing Trade Requests
+                                  </p>
+                                  <p className="text-muted text-sm">
+                                    There are no ongoing trade requests for this
+                                    producer.
+                                  </p>
+                                </div>
+                              ) : (
+                                <div className="space-y-4">
+                                  {ongoingTradeRequestsByProducer[
+                                    producer.id
+                                  ]?.map((request) => (
+                                    <div
+                                      key={request.tradeID}
+                                      className="bg-background border border-muted/30 rounded-xl p-5 hover:border-accent/50 transition-colors"
+                                    >
+                                      <div className="flex items-start justify-between mb-4">
+                                        <div className="flex-1">
+                                          <div className="flex items-center gap-3 mb-2">
+                                            <TradeIcon className="w-8 h-8 p-1.5 text-accent bg-accent-soft rounded-lg" />
+                                            <div>
+                                              <h3 className="text-lg font-bold">
+                                                Trade Request
+                                              </h3>
+                                              <p className="text-xs text-muted font-mono">
+                                                {request.tradeID}
+                                              </p>
+                                            </div>
+                                          </div>
+                                        </div>
+                                        <span className="px-3 py-1 text-xs font-semibold bg-warning-soft-hover text-warning rounded-full">
+                                          {request.status}
+                                        </span>
+                                      </div>
+
+                                      <div className="grid grid-cols-2 gap-4 mb-4">
+                                        <div>
+                                          <p className="text-xs text-muted mb-1">
+                                            To Producer
+                                          </p>
+                                          <p className="text-sm font-mono bg-background/50 px-3 py-2 rounded border border-muted/20">
+                                            {request.targetID}
+                                          </p>
+                                        </div>
+                                        <div>
+                                          <p className="text-xs text-muted mb-1">
+                                            Asset Type
+                                          </p>
+                                          <div
+                                            className={`flex items-center gap-2 px-3 py-2 rounded ${
+                                              request.assetType ===
+                                              "ELECTRICITY"
+                                                ? "bg-yellow-500/10 border border-yellow-500/30"
+                                                : "bg-accent-soft border border-accent-soft"
+                                            }`}
+                                          >
+                                            {request.assetType ===
+                                            "ELECTRICITY" ? (
+                                              <ElectricityIcon className="w-5 h-5 text-yellow-500" />
+                                            ) : (
+                                              <HydrogenIcon className="w-5 h-5 text-accent" />
+                                            )}
+                                            <span
+                                              className={`text-sm font-semibold ${
+                                                request.assetType ===
+                                                "ELECTRICITY"
+                                                  ? "text-yellow-500"
+                                                  : "text-accent"
+                                              }`}
+                                            >
+                                              {request.assetType}
+                                            </span>
+                                          </div>
+                                        </div>
+                                      </div>
+
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex flex-col items-center">
+                                          <p className="text-xs text-muted mb-2">
+                                            Amount
+                                          </p>
+                                          <div
+                                            className={`min-w-10 min-h-10 aspect-square rounded-full flex items-center justify-center p-4 ${
+                                              request.assetType ===
+                                              "ELECTRICITY"
+                                                ? "bg-yellow-500/10 border-2 border-yellow-500/30"
+                                                : "bg-accent-soft border-2 border-accent/30"
+                                            }`}
+                                          >
+                                            <p
+                                              className={`text-xl font-bold ${
+                                                request.assetType ===
+                                                "ELECTRICITY"
+                                                  ? "text-yellow-500"
+                                                  : "text-accent"
+                                              }`}
+                                            >
+                                              {request.amount.toLocaleString()}
+                                            </p>
+                                          </div>
+                                        </div>
+                                        <div className="text-right">
+                                          <p className="text-xs text-muted mb-1">
+                                            Created At
+                                          </p>
+                                          <p className="text-sm">
+                                            {new Date(
+                                              request.createdAt
+                                            ).toLocaleDateString()}
+                                          </p>
+                                        </div>
+                                      </div>
+
+                                      <Button
+                                        fullWidth
+                                        variant="danger"
+                                        className="text-xl font-black h-13 mt-5 bg-danger hover:bg-danger/90"
+                                        isDisabled={
+                                          cancellingTradeId === request.tradeID
+                                        }
+                                        onClick={() =>
+                                          handleCancelTradeRequest(
+                                            producer.id,
+                                            request.tradeID
+                                          )
+                                        }
+                                      >
+                                        {cancellingTradeId ===
+                                        request.tradeID ? (
+                                          <div className="flex items-center gap-3">
+                                            <Spinner
+                                              size="md"
+                                              className="text-(--button-fg)"
+                                            />
+                                            <span>Cancelling...</span>
+                                          </div>
+                                        ) : (
+                                          "Cancel Request"
+                                        )}
+                                      </Button>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </Accordion.Body>
+                          </Accordion.Panel>
+                        </Accordion.Item>
+                      ))}
+                    </Accordion>
+                  </div>
+
+                  {/* Ongoing Issuance Requests */}
+                  <div>
+                    <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
+                      <PlusCircleIcon className="w-6 h-6 text-accent" />
+                      Issuance
+                    </h3>
+                    <Accordion
+                      className="w-full"
+                      variant="surface"
+                    >
+                      {producers.map((producer) => (
+                        <Accordion.Item
+                          key={producer.id}
+                          onExpandedChange={(isExpanded) => {
+                            if (isExpanded) {
+                              fetchOngoingIssuanceRequestsForProducer(
+                                producer.id
+                              );
+                            }
+                          }}
+                        >
+                          <Accordion.Heading>
+                            <Accordion.Trigger className="group flex items-center gap-4 bg-background/50 border border-muted/30 hover:border-accent-hover px-5 py-4 rounded-xl w-full transition-all">
+                              <OrganizationIcon className="w-12 h-12 p-2 text-accent bg-accent-soft rounded-2xl" />
+                              <div className="flex-1 text-left">
+                                <span className="text-lg font-bold">
+                                  {producer.name}
+                                </span>
+                                <p className="text-sm text-muted mt-1 font-mono">
+                                  {producer.id}
+                                </p>
+                              </div>
+                              <Accordion.Indicator className="text-muted w-6 h-6">
+                                <DownArrowIcon />
+                              </Accordion.Indicator>
+                            </Accordion.Trigger>
+                          </Accordion.Heading>
+                          <Accordion.Panel className="mt-2">
+                            <Accordion.Body className="border border-muted/30 rounded-xl bg-background/30 p-6 space-y-6">
+                              {loadingOngoingIssuanceRequests[producer.id] ? (
+                                <div className="flex items-center justify-center py-8">
+                                  <Spinner
+                                    size="md"
+                                    className="text-muted"
+                                  />
+                                  <span className="ml-3 text-muted">
+                                    Loading ongoing issuance requests...
+                                  </span>
+                                </div>
+                              ) : ongoingIssuanceRequestsByProducer[producer.id]
+                                  ?.length === 0 ? (
+                                <div className="text-center py-8 bg-background/50 rounded-xl border border-muted/20">
+                                  <PlusCircleIcon className="w-12 h-12 mx-auto mb-3 text-muted" />
+                                  <p className="text-lg font-semibold mb-1">
+                                    No Ongoing Issuance Requests
+                                  </p>
+                                  <p className="text-muted text-sm">
+                                    There are no pending issuance requests for
+                                    this producer.
+                                  </p>
+                                </div>
+                              ) : (
+                                <div className="space-y-4">
+                                  {ongoingIssuanceRequestsByProducer[
+                                    producer.id
+                                  ]?.map((request) => (
+                                    <div
+                                      key={request.requestId}
+                                      className="bg-background border border-muted/30 rounded-xl p-5 hover:border-accent/50 transition-colors"
+                                    >
+                                      <div className="flex items-start justify-between mb-4">
+                                        <div className="flex-1">
+                                          <div className="flex items-center gap-3 mb-2">
+                                            <PlusCircleIcon className="w-8 h-8 p-1.5 text-accent bg-accent-soft rounded-lg" />
+                                            <div>
+                                              <h3 className="text-lg font-bold">
+                                                Issuance Request
+                                              </h3>
+                                              <p className="text-xs text-muted font-mono">
+                                                {request.requestId}
+                                              </p>
+                                            </div>
+                                          </div>
+                                        </div>
+                                        <span className="px-3 py-1 text-xs font-semibold bg-warning-soft-hover text-warning rounded-full">
+                                          {request.status}
+                                        </span>
+                                      </div>
+
+                                      <div className="grid grid-cols-2 gap-4 mb-4">
+                                        <div>
+                                          <p className="text-xs text-muted mb-1">
+                                            Producer
+                                          </p>
+                                          <p className="text-sm font-mono bg-background/50 px-3 py-2 rounded border border-muted/20">
+                                            {request.producerId}
+                                          </p>
+                                        </div>
+                                        <div>
+                                          <p className="text-xs text-muted mb-1">
+                                            Asset Type
+                                          </p>
+                                          <div
+                                            className={`flex items-center gap-2 px-3 py-2 rounded ${
+                                              request.assetType ===
+                                              "ELECTRICITY"
+                                                ? "bg-yellow-500/10 border border-yellow-500/30"
+                                                : "bg-accent-soft border border-accent-soft"
+                                            }`}
+                                          >
+                                            {request.assetType ===
+                                            "ELECTRICITY" ? (
+                                              <ElectricityIcon className="w-5 h-5 text-yellow-500" />
+                                            ) : (
+                                              <HydrogenIcon className="w-5 h-5 text-accent" />
+                                            )}
+                                            <span
+                                              className={`text-sm font-semibold ${
+                                                request.assetType ===
+                                                "ELECTRICITY"
+                                                  ? "text-yellow-500"
+                                                  : "text-accent"
+                                              }`}
+                                            >
+                                              {request.assetType}
+                                            </span>
+                                          </div>
+                                        </div>
+                                      </div>
+
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex flex-col items-center">
+                                          <p className="text-xs text-muted mb-2">
+                                            Amount
+                                          </p>
+                                          <div
+                                            className={`min-w-10 min-h-10 aspect-square rounded-full flex items-center justify-center p-4 ${
+                                              request.assetType ===
+                                              "ELECTRICITY"
+                                                ? "bg-yellow-500/10 border-2 border-yellow-500/30"
+                                                : "bg-accent-soft border-2 border-accent/30"
+                                            }`}
+                                          >
+                                            <p
+                                              className={`text-xl font-bold ${
+                                                request.assetType ===
+                                                "ELECTRICITY"
+                                                  ? "text-yellow-500"
+                                                  : "text-accent"
+                                              }`}
+                                            >
+                                              {request.amount.toLocaleString()}
+                                            </p>
+                                          </div>
+                                        </div>
+                                        <div className="text-right">
+                                          <p className="text-xs text-muted mb-1">
+                                            Created At
+                                          </p>
+                                          <p className="text-sm">
+                                            {new Date(
+                                              request.createdAt
+                                            ).toLocaleDateString()}
+                                          </p>
+                                        </div>
+                                      </div>
+
+                                      <Button
+                                        fullWidth
+                                        variant="danger"
+                                        className="text-xl font-black h-13 mt-5 bg-danger hover:bg-danger/90"
+                                        isDisabled={
+                                          cancellingIssuanceId ===
+                                          request.requestId
+                                        }
+                                        onClick={() =>
+                                          handleCancelIssuanceRequest(
+                                            producer.id,
+                                            request.requestId
+                                          )
+                                        }
+                                      >
+                                        {cancellingIssuanceId ===
+                                        request.requestId ? (
+                                          <div className="flex items-center gap-3">
+                                            <Spinner
+                                              size="md"
+                                              className="text-(--button-fg)"
+                                            />
+                                            <span>Cancelling...</span>
+                                          </div>
+                                        ) : (
+                                          "Cancel Request"
+                                        )}
+                                      </Button>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </Accordion.Body>
+                          </Accordion.Panel>
+                        </Accordion.Item>
+                      ))}
+                    </Accordion>
+                  </div>
+                </div>
               )}
             </div>
           </div>

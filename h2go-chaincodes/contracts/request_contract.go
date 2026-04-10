@@ -428,6 +428,56 @@ func (rc *RequestContract) RejectRequest(
 
 	return nil
 }
+func (rc *RequestContract) CancelRequest(
+	ctx contractapi.TransactionContextInterface,
+	requestID string) error {
+
+	// Get the request
+	requestJSON, err := ctx.GetStub().GetState(requestID)
+	if err != nil {
+		return errors.New("failed to read request: " + err.Error())
+	}
+	if requestJSON == nil {
+		return errors.New("request " + requestID + " does not exist")
+	}
+
+	var request models.Request
+	err = json.Unmarshal(requestJSON, &request)
+	if err != nil {
+		return err
+	}
+
+	if request.DocType != "REQUEST_TO_TRANSFORM_GdOS" {
+		return errors.New("document is not a GdO request, found docType: " + request.DocType)
+	}
+
+	if request.Status != models.RequestPending {
+		return errors.New("request is not in PENDING status, current status: " + string(request.Status))
+	}
+
+	// Get deterministic timestamp from transaction
+	txTimestamp, err := ctx.GetStub().GetTxTimestamp()
+	if err != nil {
+		return err
+	}
+	cancelledAt := time.Unix(txTimestamp.Seconds, int64(txTimestamp.Nanos)).Format(time.RFC3339)
+
+	request.Status = models.RequestCancelled
+	request.ProcessedAt = cancelledAt
+
+	updatedRequestJSON, err := json.Marshal(request)
+	if err != nil {
+		return err
+	}
+
+	err = ctx.GetStub().PutState(requestID, updatedRequestJSON)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (rc *RequestContract) GetRequest(
 	ctx contractapi.TransactionContextInterface,
 	requestID string) (*models.Request, error) {

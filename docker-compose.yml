@@ -1,0 +1,57 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "3003:3003"
+    volumes:
+      - ./blockchain/resources:/app/blockchain/resources:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+      - "clientefinal1-ca.localho.st:host-gateway"
+      - "cnmc-ca.localho.st:host-gateway"
+      - "dev-ca.localho.st:host-gateway"
+      - "enagas-ca.localho.st:host-gateway"
+      - "enagasgts-ca.localho.st:host-gateway"
+      - "ord-ca.localho.st:host-gateway"
+      - "ree-ca.localho.st:host-gateway"
+      - "trader1-ca.localho.st:host-gateway"
+      - "trader2-ca.localho.st:host-gateway"
+      - "orderer0-ord.localho.st:host-gateway"
+      - "orderer1-ord.localho.st:host-gateway"
+      - "orderer2-ord.localho.st:host-gateway"
+      - "peer0-clientefinal1.localho.st:host-gateway"
+      - "peer0-cnmc.localho.st:host-gateway"
+      - "peer0-dev.localho.st:host-gateway"
+      - "peer0-enagas.localho.st:host-gateway"
+      - "peer0-enagasgts.localho.st:host-gateway"
+      - "peer0-ree.localho.st:host-gateway"
+      - "peer0-trader1.localho.st:host-gateway"
+      - "peer0-trader2.localho.st:host-gateway"
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - postgres
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./frontend/.env
+    depends_on:
+      - backend
+
+  postgres:
+    image: postgres:16
+    restart: no
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: h2go
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

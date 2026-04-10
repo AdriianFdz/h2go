@@ -53,10 +53,7 @@ export default function RequestsPage() {
         setLoadingRequests(true);
       }
       try {
-        const isRegulator = user.organization?.type === "regulator";
-        const requestsUrl = isRegulator
-          ? `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/requests/issuance`
-          : `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/requests/issuance/${user.organization?.id}`;
+        const requestsUrl = `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/requests/issuance/incoming`;
 
         const response = await fetch(requestsUrl, {
           method: "GET",

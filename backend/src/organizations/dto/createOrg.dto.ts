@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString, IsOptional, IsEnum } from 'class-validator';
-import { OrganizationType } from 'src/common/enums/organizationType.enum';
+import { OrganizationType } from '../../common/enums/organizationType.enum';
 
 export class CreateOrgDto {
   @ApiProperty({

@@ -7,7 +7,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { User } from './user.entity';
-import { OrganizationType } from 'src/common/enums/organizationType.enum';
+import { OrganizationType } from '../common/enums/organizationType.enum';
 
 @Entity('organizations')
 export class Organization {

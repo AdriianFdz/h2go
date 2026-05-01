@@ -7,7 +7,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { AssetsService } from './assets.service';
-import { IAuthenticatedUser } from 'src/auth/interfaces/authenticatedUser';
+import { IAuthenticatedUser } from '../auth/interfaces/authenticatedUser';
 import { RegisterProductionDto } from './dto/RegisterProduction.dto';
 
 @ApiTags('assets')

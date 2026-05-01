@@ -4,18 +4,18 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateOrgDto } from './dto/createOrg.dto';
 import { UpdateOrgDto } from './dto/updateOrg.dto';
-import { User } from 'src/entities/user.entity';
-import { IAuthenticatedUser } from 'src/auth/interfaces/authenticatedUser';
+import { User } from '../entities/user.entity';
+import { IAuthenticatedUser } from '../auth/interfaces/authenticatedUser';
 import { ConnectionManager } from '../fabric/connectionManager';
 import { GdoBalanceDto } from './dto/gdoBalance.dto';
-import { AssetType } from 'src/common/enums/asset-type.enum';
+import { AssetType } from '../common/enums/asset-type.enum';
 import { CreateUserDto } from './dto/createUser.dto';
 import { UpdateUserDto } from './dto/updateUser.dto';
 import * as bcrypt from 'bcrypt';
-import { OrganizationType } from 'src/common/enums/organizationType.enum';
+import { OrganizationType } from '../common/enums/organizationType.enum';
 import * as cloudinary from 'cloudinary';
 import { OrgAuthorizedDto } from './dto/orgAuthorized.dto';
-import { Role } from 'src/common/enums/role.enum';
+import { Role } from '../common/enums/role.enum';
 
 @Injectable()
 export class OrganizationsService {

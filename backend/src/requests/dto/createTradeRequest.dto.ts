@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsInt, IsNotEmpty, IsString, Min } from 'class-validator';
-import { AssetType } from 'src/common/enums/asset-type.enum';
+import { AssetType } from '../../common/enums/asset-type.enum';
 
 export class CreateTradeRequestDto {
   @ApiProperty({

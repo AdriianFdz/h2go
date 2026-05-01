@@ -33,14 +33,14 @@ export class OrganizationsService {
     user: IAuthenticatedUser,
   ) {
     if (user.role !== Role.DEV) {
-      throw new Error('Solo un desarrollador puede crear una organización');
+      throw new Error('Only a developer can create an organization');
     }
 
     const organization = this.organizationRepository.create(createOrgDto);
     await this.organizationRepository.save(organization);
 
     return {
-      message: 'Organización creada exitosamente',
+      message: 'Organization created successfully',
       organization: createOrgDto,
       createdBy: user,
     };
@@ -53,7 +53,7 @@ export class OrganizationsService {
   ) {
     if (requestingUser.role !== Role.ADMIN) {
       throw new Error(
-        'Solo un administrador puede agregar usuarios a una organización',
+        'Only an admin can add users to an organization',
       );
     }
     if (
@@ -61,7 +61,7 @@ export class OrganizationsService {
       requestingUser.organization.id !== id
     ) {
       throw new Error(
-        'Un administrador solo puede agregar usuarios a su propia organización',
+        'An admin can only add users to their own organization',
       );
     }
 
@@ -70,7 +70,7 @@ export class OrganizationsService {
       relations: ['users'],
     });
     if (!organization) {
-      throw new Error('Organización no encontrada');
+      throw new Error('Organization not found');
     }
     const user = this.userRepository.create(createUserDto);
     user.organization = organization;
@@ -78,27 +78,27 @@ export class OrganizationsService {
     user.password = hashedPassword;
 
     await this.userRepository.save(user);
-    return { message: 'Usuario agregado a la organización exitosamente', user };
+    return { message: 'User added to organization successfully', user };
   }
 
   async authorizeOrganization(id: string, requestingUser: IAuthenticatedUser) {
     if (requestingUser.role !== Role.ADMIN) {
-      throw new Error('Solo un administrador puede autorizar organizaciones');
+      throw new Error('Only an admin can authorize organizations');
     }
 
     if (!requestingUser.organization) {
-      throw new Error('El administrador no pertenece a ninguna organización');
+      throw new Error('The admin does not belong to any organization');
     }
 
     const orgToAuthorize = await this.organizationRepository.findOne({
       where: { id },
     });
     if (!orgToAuthorize) {
-      throw new Error('Organización a autorizar no encontrada');
+      throw new Error('Organization to authorize not found');
     }
 
     if (orgToAuthorize.type !== OrganizationType.TRADER) {
-      throw new Error('Solo se pueden autorizar organizaciones de tipo TRADER');
+      throw new Error('Only TRADER type organizations can be authorized');
     }
 
     const requesterOrg = await this.organizationRepository.findOne({
@@ -106,12 +106,12 @@ export class OrganizationsService {
     });
 
     if (!requesterOrg) {
-      throw new Error('Organización del administrador no encontrada');
+      throw new Error('Admin organization not found');
     }
 
     if (requesterOrg.type !== OrganizationType.PRODUCER) {
       throw new Error(
-        'Solo las organizaciones de tipo PRODUCER pueden autorizar otras organizaciones',
+        'Only PRODUCER type organizations can authorize other organizations',
       );
     }
 
@@ -120,7 +120,7 @@ export class OrganizationsService {
       orgToAuthorize,
     ];
     await this.organizationRepository.save(requesterOrg);
-    return { message: 'Organización autorizada exitosamente' };
+    return { message: 'Organization authorized successfully' };
   }
 
   async getOrganization(id: string, requestingUser: IAuthenticatedUser) {
@@ -130,7 +130,7 @@ export class OrganizationsService {
     });
 
     if (!userOrg) {
-      throw new Error('Organización del usuario no encontrada');
+      throw new Error('User organization not found');
     }
 
     const isOwnOrg = userOrg.id === id;
@@ -139,7 +139,7 @@ export class OrganizationsService {
 
     if (!isOwnOrg && !isAuthorizedByOrg) {
       throw new Error(
-        'Solo los usuarios de la organización o autorizados pueden consultar su información',
+        'Only users of the organization or authorized users can consult their information',
       );
     }
 
@@ -149,7 +149,7 @@ export class OrganizationsService {
     });
 
     if (!organization) {
-      throw new Error('Organización no encontrada');
+      throw new Error('Organization not found');
     }
 
     return {
@@ -171,7 +171,7 @@ export class OrganizationsService {
     });
 
     if (!userOrg) {
-      throw new Error('Organización del usuario no encontrada');
+      throw new Error('User organization not found');
     }
 
     const isOwnOrg = userOrg.id === id;
@@ -180,7 +180,7 @@ export class OrganizationsService {
 
     if (!isOwnOrg && !isAuthorizedByOrg) {
       throw new Error(
-        'Solo los usuarios de la organización o autorizados pueden consultar su balance',
+        'Only users of the organization or authorized users can consult their balance',
       );
     }
 
@@ -189,7 +189,7 @@ export class OrganizationsService {
     });
 
     if (!organization) {
-      throw new Error('Organización no encontrada');
+      throw new Error('Organization not found');
     }
 
     const { gateway, client } =
@@ -230,7 +230,7 @@ export class OrganizationsService {
           },
         };
       }
-      throw new Error('Error al consultar el balance: ' + errorMessage);
+      throw new Error('Error while consulting the balance: ' + errorMessage);
     } finally {
       this.connectionManager.disconnectGateway(gateway, client);
     }
@@ -248,7 +248,7 @@ export class OrganizationsService {
     });
 
     if (!userOrg) {
-      throw new Error('Organización del usuario no encontrada');
+      throw new Error('User organization not found');
     }
 
     const isOwnOrg = userOrg.id === id;
@@ -257,7 +257,7 @@ export class OrganizationsService {
 
     if (!isOwnOrg && !isAuthorizedByOrg) {
       throw new Error(
-        'Solo los usuarios de la organización o autorizados pueden redimir GdOs',
+        'Only users of the organization or authorized users can redeem GdOs',
       );
     }
 
@@ -266,7 +266,7 @@ export class OrganizationsService {
     });
 
     if (!organization) {
-      throw new Error('Organización no encontrada');
+      throw new Error('Organization not found');
     }
 
     const { gateway, client } =
@@ -281,10 +281,10 @@ export class OrganizationsService {
         JSON.stringify(gdosToRedeem),
       );
       const resultString = Buffer.from(result).toString('utf8');
-      return { message: 'GdOs redimidos exitosamente', details: resultString };
+      return { message: 'GdOs redeemed successfully', details: resultString };
     } catch (error) {
       const errorMessage = error?.message || String(error);
-      throw new Error('Error al redimir GdOs: ' + errorMessage);
+      throw new Error('Error while redeeming GdOs: ' + errorMessage);
     } finally {
       this.connectionManager.disconnectGateway(gateway, client);
     }
@@ -297,7 +297,7 @@ export class OrganizationsService {
     requestingUser: IAuthenticatedUser,
   ) {
     if (requestingUser.role !== Role.ADMIN && requestingUser.id !== userId) {
-      throw new Error('No tienes permisos para actualizar este usuario');
+      throw new Error('You do not have permission to update this user');
     }
 
     const organization = await this.organizationRepository.findOne({
@@ -305,7 +305,7 @@ export class OrganizationsService {
       relations: ['users'],
     });
     if (!organization) {
-      throw new Error('Organización no encontrada');
+      throw new Error('Organization not found');
     }
 
     requestingUser = organization.users.find(
@@ -316,13 +316,12 @@ export class OrganizationsService {
       requestingUser.id !== userId &&
       organization.users.every((user) => user.id !== userId)
     ) {
-      throw new Error('El usuario no pertenece a tu organización');
+      throw new Error('The user does not belong to your organization');
     }
-    // Aqui hemos confirmado que el usuario es admin o el mismo
 
     const userToUpdate = organization.users.find((user) => user.id === userId);
     if (!userToUpdate) {
-      throw new Error('Usuario no encontrado en la organización');
+      throw new Error('User not found in the organization');
     }
     if (
       requestingUser.role !== Role.ADMIN &&
@@ -335,10 +334,10 @@ export class OrganizationsService {
           userToUpdate.password,
         );
       } catch {
-        throw new Error('Error al verificar la contraseña antigua');
+        throw new Error('Error while verifying the old password');
       }
       if (!oldPasswordCorrect) {
-        throw new Error('La contraseña antigua no es correcta');
+        throw new Error('The old password is not correct');
       }
     }
     if (
@@ -346,7 +345,7 @@ export class OrganizationsService {
       updateUserDto.role &&
       updateUserDto.role !== userToUpdate.role
     ) {
-      throw new Error('No tienes permisos para cambiar el rol');
+      throw new Error('You do not have permission to change the role');
     }
 
     if (updateUserDto.name != null) {
@@ -375,7 +374,7 @@ export class OrganizationsService {
           userToUpdate.avatar = result.secure_url;
         })
         .catch(() => {
-          throw new Error('Error al subir la imagen de perfil');
+          throw new Error('Error while uploading the profile image');
         });
     }
     if (updateUserDto.newPassword != null) {
@@ -384,7 +383,7 @@ export class OrganizationsService {
     }
 
     await this.userRepository.save(userToUpdate);
-    return { message: 'Usuario actualizado exitosamente', user: userToUpdate };
+    return { message: 'User updated successfully', user: userToUpdate };
   }
 
   async unauthorizeOrganization(
@@ -393,12 +392,12 @@ export class OrganizationsService {
   ) {
     if (requestingUser.role !== Role.ADMIN) {
       throw new Error(
-        'Solo un administrador puede desautorizar organizaciones',
+        'Only an admin can unauthorize organizations',
       );
     }
 
     if (!requestingUser.organization) {
-      throw new Error('El administrador no pertenece a ninguna organización');
+      throw new Error('The admin does not belong to any organization');
     }
 
     const requesterOrg = await this.organizationRepository.findOne({
@@ -407,26 +406,26 @@ export class OrganizationsService {
     });
 
     if (!requesterOrg) {
-      throw new Error('Organización del administrador no encontrada');
+      throw new Error('Admin organization not found');
     }
 
     if (requesterOrg.type !== OrganizationType.PRODUCER) {
       throw new Error(
-        'Solo las organizaciones de tipo PRODUCER pueden desautorizar otras organizaciones',
+        'Only PRODUCER type organizations can unauthorize other organizations',
       );
     }
     if (requesterOrg.id === id) {
-      throw new Error('No puedes desautorizar tu propia organización');
+      throw new Error('You cannot unauthorize your own organization');
     }
 
     if (!requesterOrg.authorizedOrgs?.some((org) => org.id === id)) {
-      throw new Error('La organización no está autorizada');
+      throw new Error('The organization is not authorized');
     }
     requesterOrg.authorizedOrgs = requesterOrg.authorizedOrgs.filter(
       (org) => org.id !== id,
     );
     await this.organizationRepository.save(requesterOrg);
-    return { message: 'Organización desautorizada exitosamente' };
+    return { message: 'Organization unauthorized successfully' };
   }
 
   async deleteUserFromOrganization(
@@ -435,7 +434,7 @@ export class OrganizationsService {
     requestingUser: IAuthenticatedUser,
   ) {
     if (requestingUser.role !== Role.ADMIN) {
-      throw new Error('No tienes permisos para eliminar este usuario');
+      throw new Error('You do not have permission to delete this user');
     }
 
     const organization = await this.organizationRepository.findOne({
@@ -443,16 +442,16 @@ export class OrganizationsService {
       relations: ['users'],
     });
     if (!organization) {
-      throw new Error('Organización no encontrada');
+      throw new Error('Organization not found');
     }
 
     const userToDelete = organization.users.find((user) => user.id === userId);
     if (!userToDelete) {
-      throw new Error('Usuario no encontrado en la organización');
+      throw new Error('User not found in the organization');
     }
 
     await this.userRepository.remove(userToDelete);
-    return { message: 'Usuario eliminado de la organización exitosamente' };
+    return { message: 'User deleted from the organization successfully' };
   }
 
   async getAuthorizationsOfOrganization(
@@ -460,11 +459,11 @@ export class OrganizationsService {
     requestingUser: IAuthenticatedUser,
   ) {
     if (requestingUser.role !== Role.ADMIN) {
-      throw new Error('No tienes permisos para ver las autorizaciones');
+      throw new Error('You do not have permission to view authorizations');
     }
     if (requestingUser.organization.id !== id) {
       throw new Error(
-        'Solo puedes ver las autorizaciones de tu propia organización',
+        'You can only view the authorizations of your own organization',
       );
     }
 
@@ -474,7 +473,7 @@ export class OrganizationsService {
     });
 
     if (!userOrg) {
-      throw new Error('Organización del usuario no encontrada');
+      throw new Error('User organization not found');
     }
 
     const authorizedOrgs: OrgAuthorizedDto[] = userOrg.authorizedOrgs.map(
@@ -492,7 +491,7 @@ export class OrganizationsService {
   async getAllOrganizations(user: IAuthenticatedUser) {
     if (user.role !== Role.DEV) {
       throw new Error(
-        'Solo un desarrollador puede listar todas las organizaciones',
+        'Only a developer can list all organizations',
       );
     }
 
@@ -519,7 +518,7 @@ export class OrganizationsService {
   ) {
     if (user.role !== Role.DEV) {
       throw new Error(
-        'Solo un desarrollador puede actualizar una organización',
+        'Only a developer can update an organization',
       );
     }
 
@@ -528,14 +527,14 @@ export class OrganizationsService {
     });
 
     if (!organization) {
-      throw new Error('Organización no encontrada');
+      throw new Error('Organization not found');
     }
 
     Object.assign(organization, updateOrgDto);
     await this.organizationRepository.save(organization);
 
     return {
-      message: 'Organización actualizada exitosamente',
+      message: 'Organization updated successfully',
       organization,
     };
   }

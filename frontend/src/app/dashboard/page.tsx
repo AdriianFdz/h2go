@@ -15,8 +15,11 @@ export default function DashboardPage() {
 
     const orgType = user.organization?.type;
     const isAdmin = user.role === Role.ADMIN;
+    const isDev = user.role === Role.DEV;
 
-    if (orgType === OrganizationType.REGULATOR) {
+    if (isDev) {
+      router.replace("/dashboard/developer");
+    } else if (orgType === OrganizationType.REGULATOR) {
       router.replace("/dashboard/requests");
     } else if (isAdmin) {
       router.replace("/dashboard/organization");

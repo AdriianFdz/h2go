@@ -8,6 +8,7 @@ import {
   OrganizationIcon,
   TextFileIcon,
   PlusCircleIcon,
+  DevToolsIcon,
 } from "./icons";
 import { useAuth } from "../context/AuthContext";
 import { OrganizationType } from "../types/organization";
@@ -20,6 +21,7 @@ export const DashboardNav = ({ className }: { className?: string }) => {
   const isTrader = user?.organization?.type === OrganizationType.TRADER;
   const isRegulator = user?.organization?.type === OrganizationType.REGULATOR;
   const isAdmin = user?.role === Role.ADMIN;
+  const isDev = user?.role === Role.DEV;
   const isProducer = user?.organization?.type === OrganizationType.PRODUCER;
   const isRegistry = user?.organization?.type === OrganizationType.REGISTRY;
 
@@ -77,6 +79,15 @@ export const DashboardNav = ({ className }: { className?: string }) => {
             href: "/dashboard/register-production",
             icon: <PlusCircleIcon />,
             label: "Register Production",
+          },
+        ]
+      : []),
+    ...(isDev
+      ? [
+          {
+            href: "/dashboard/developer",
+            icon: <DevToolsIcon />,
+            label: "Developer Panel",
           },
         ]
       : []),

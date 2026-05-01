@@ -18,6 +18,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { CreateOrgDto } from './dto/createOrg.dto';
+import { UpdateOrgDto } from './dto/updateOrg.dto';
 import { RedeemGdOsDto } from './dto/redeemGdOs.dto';
 import { OrganizationsService } from './organizations.service';
 import { AuthService } from '../auth/auth.service';
@@ -32,7 +33,7 @@ export class OrganizationsController {
   constructor(
     private organizationsService: OrganizationsService,
     private authService: AuthService,
-  ) {}
+  ) { }
 
   @Post()
   @UseGuards(AuthGuard('jwt'))
@@ -47,6 +48,39 @@ export class OrganizationsController {
   createOrganization(@Body() createOrgDto: CreateOrgDto, @Req() req) {
     const user = req.user as IAuthenticatedUser;
     return this.organizationsService.createOrganization(createOrgDto, user);
+  }
+
+  @Get()
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get all organizations (DEV only)' })
+  @ApiResponse({
+    status: 200,
+    description: 'All organizations retrieved successfully',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  getAllOrganizations(@Req() req) {
+    const user = req.user as IAuthenticatedUser;
+    return this.organizationsService.getAllOrganizations(user);
+  }
+
+  @Patch(':id')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update an organization (DEV only)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Organization updated successfully',
+  })
+  @ApiResponse({ status: 400, description: 'Invalid data' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  updateOrganization(
+    @Param('id') id: string,
+    @Body() updateOrgDto: UpdateOrgDto,
+    @Req() req,
+  ) {
+    const user = req.user as IAuthenticatedUser;
+    return this.organizationsService.updateOrganization(id, updateOrgDto, user);
   }
 
   @Post(':id/users')

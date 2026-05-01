@@ -3,6 +3,7 @@ import { Organization } from '../entities/organization.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateOrgDto } from './dto/createOrg.dto';
+import { UpdateOrgDto } from './dto/updateOrg.dto';
 import { User } from 'src/entities/user.entity';
 import { IAuthenticatedUser } from 'src/auth/interfaces/authenticatedUser';
 import { ConnectionManager } from '../fabric/connectionManager';
@@ -25,7 +26,7 @@ export class OrganizationsService {
     private userRepository: Repository<User>,
     @Inject(ConnectionManager)
     private connectionManager: ConnectionManager,
-  ) {}
+  ) { }
 
   async createOrganization(
     createOrgDto: CreateOrgDto,
@@ -486,5 +487,56 @@ export class OrganizationsService {
     );
 
     return authorizedOrgs;
+  }
+
+  async getAllOrganizations(user: IAuthenticatedUser) {
+    if (user.role !== Role.DEV) {
+      throw new Error(
+        'Solo un desarrollador puede listar todas las organizaciones',
+      );
+    }
+
+    const organizations = await this.organizationRepository.find({
+      relations: ['users'],
+      order: { createdAt: 'DESC' },
+    });
+
+    return organizations.map((org) => ({
+      id: org.id,
+      name: org.name,
+      type: org.type,
+      mspId: org.mspId,
+      peerEndpoint: org.peerEndpoint,
+      createdAt: org.createdAt,
+      users: org.users,
+    }));
+  }
+
+  async updateOrganization(
+    id: string,
+    updateOrgDto: UpdateOrgDto,
+    user: IAuthenticatedUser,
+  ) {
+    if (user.role !== Role.DEV) {
+      throw new Error(
+        'Solo un desarrollador puede actualizar una organización',
+      );
+    }
+
+    const organization = await this.organizationRepository.findOne({
+      where: { id },
+    });
+
+    if (!organization) {
+      throw new Error('Organización no encontrada');
+    }
+
+    Object.assign(organization, updateOrgDto);
+    await this.organizationRepository.save(organization);
+
+    return {
+      message: 'Organización actualizada exitosamente',
+      organization,
+    };
   }
 }

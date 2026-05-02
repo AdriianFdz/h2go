@@ -44,7 +44,7 @@ export class ConnectionManager {
 
     if (!peerConfig || !peerConfig.tlsCACerts?.pem) {
       throw new Error(
-        `No se encontró el certificado TLS CA para el peer ${peerName}`,
+        `TLS CA not found for peer ${peerName}`,
       );
     }
 

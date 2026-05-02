@@ -17,14 +17,14 @@ import {
   ApiResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { CreateOrgDto } from './dto/createOrg.dto';
-import { UpdateOrgDto } from './dto/updateOrg.dto';
-import { RedeemGdOsDto } from './dto/redeemGdOs.dto';
+import { CreateOrgDto } from '../assets/dto/createOrg.dto';
+import { UpdateOrgDto } from '../assets/dto/updateOrg.dto';
+import { RedeemGdOsDto } from '../assets/dto/redeemGdOs.dto';
 import { OrganizationsService } from './organizations.service';
 import { AuthService } from '../auth/auth.service';
 import { IAuthenticatedUser } from '../auth/interfaces/authenticatedUser';
-import { CreateUserDto } from './dto/createUser.dto';
-import { UpdateUserDto } from './dto/updateUser.dto';
+import { CreateUserDto } from '../assets/dto/createUser.dto';
+import { UpdateUserDto } from '../assets/dto/updateUser.dto';
 import type { Response } from 'express';
 
 @ApiTags('organizations')

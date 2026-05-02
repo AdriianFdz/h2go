@@ -2,19 +2,19 @@ import { Injectable, Inject } from '@nestjs/common';
 import { Organization } from '../entities/organization.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreateOrgDto } from './dto/createOrg.dto';
-import { UpdateOrgDto } from './dto/updateOrg.dto';
+import { CreateOrgDto } from '../assets/dto/createOrg.dto';
+import { UpdateOrgDto } from '../assets/dto/updateOrg.dto';
 import { User } from '../entities/user.entity';
 import { IAuthenticatedUser } from '../auth/interfaces/authenticatedUser';
 import { ConnectionManager } from '../fabric/connectionManager';
-import { GdoBalanceDto } from './dto/gdoBalance.dto';
+import { GdoBalanceDto } from '../assets/dto/gdoBalance.dto';
 import { AssetType } from '../common/enums/asset-type.enum';
-import { CreateUserDto } from './dto/createUser.dto';
-import { UpdateUserDto } from './dto/updateUser.dto';
+import { CreateUserDto } from '../assets/dto/createUser.dto';
+import { UpdateUserDto } from '../assets/dto/updateUser.dto';
 import * as bcrypt from 'bcrypt';
 import { OrganizationType } from '../common/enums/organizationType.enum';
 import * as cloudinary from 'cloudinary';
-import { OrgAuthorizedDto } from './dto/orgAuthorized.dto';
+import { OrgAuthorizedDto } from '../assets/dto/orgAuthorized.dto';
 import { Role } from '../common/enums/role.enum';
 
 @Injectable()

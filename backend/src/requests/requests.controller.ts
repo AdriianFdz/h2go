@@ -19,6 +19,8 @@ import { IAuthenticatedUser } from '../auth/interfaces/authenticatedUser';
 import { CreateIssuanceRequestDto } from './dto/createIssuanceRequest.dto';
 import { CreateTradeRequestDto } from './dto/createTradeRequest.dto';
 import { ApproveTradeRequestDto } from './dto/approveTradeRequest.dto';
+import { PendingIssuanceRequestDto } from './dto/pendingIssuanceRequest.dto';
+import { PendingTradeRequestDto } from './dto/pendingTradeRequest.dto';
 
 @ApiTags('requests')
 @Controller('requests')
@@ -46,6 +48,7 @@ export class RequestsController {
   @ApiResponse({
     status: 200,
     description: 'List of pending issuance requests retrieved successfully.',
+    type: [PendingIssuanceRequestDto],
   })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   getAllPendingIssuanceRequests(@Req() request) {
@@ -60,6 +63,7 @@ export class RequestsController {
   @ApiResponse({
     status: 200,
     description: 'List of issuance requests retrieved successfully.',
+    type: [PendingIssuanceRequestDto],
   })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   getOngoingIssuanceRequests(
@@ -148,6 +152,7 @@ export class RequestsController {
   @ApiResponse({
     status: 200,
     description: 'List of sent trade requests retrieved successfully.',
+    type: [PendingTradeRequestDto],
   })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   getOngoingTradeRequests(
@@ -165,6 +170,7 @@ export class RequestsController {
   @ApiResponse({
     status: 200,
     description: 'List of incoming trade requests retrieved successfully.',
+    type: [PendingTradeRequestDto],
   })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   getIncomingTradeRequests(

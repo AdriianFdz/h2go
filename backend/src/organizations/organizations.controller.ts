@@ -20,6 +20,8 @@ import {
 import { CreateOrgDto } from '../assets/dto/createOrg.dto';
 import { UpdateOrgDto } from '../assets/dto/updateOrg.dto';
 import { RedeemGdOsDto } from '../assets/dto/redeemGdOs.dto';
+import { OrgAuthorizedDto } from '../assets/dto/orgAuthorized.dto';
+import { GdoBalanceDto } from '../assets/dto/gdoBalance.dto';
 import { OrganizationsService } from './organizations.service';
 import { AuthService } from '../auth/auth.service';
 import { IAuthenticatedUser } from '../auth/interfaces/authenticatedUser';
@@ -109,6 +111,7 @@ export class OrganizationsController {
   @ApiResponse({
     status: 200,
     description: 'Authorizations retrieved successfully',
+    type: [OrgAuthorizedDto],
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   getAuthorizationsFromOrganization(@Param('id') id: string, @Req() req) {
@@ -168,6 +171,7 @@ export class OrganizationsController {
   @ApiResponse({
     status: 200,
     description: 'Organization balance retrieved successfully',
+    type: GdoBalanceDto,
   })
   @ApiResponse({ status: 400, description: 'Invalid data' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })

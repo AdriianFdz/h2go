@@ -128,7 +128,6 @@ export class ConnectionManager {
 
   executeTransaction(
     gateway: Gateway,
-    client: grpc.Client,
     functionName: string,
     ...args: string[]
   ): Promise<Uint8Array> {

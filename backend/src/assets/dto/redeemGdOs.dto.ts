@@ -1,4 +1,4 @@
-import { AssetType } from '../../common/enums/asset-type.enum';
+import { AssetType } from '../../common/enums/assetType.enum';
 import { IsEnum, IsArray, ArrayNotEmpty } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 

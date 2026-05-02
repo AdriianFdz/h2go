@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator';
-import { AssetType } from '../../common/enums/asset-type.enum';
+import { AssetType } from '../../common/enums/assetType.enum';
 
 export class PendingTradeRequestDto {
   @ApiProperty({

@@ -8,7 +8,7 @@ import { User } from '../entities/user.entity';
 import { IAuthenticatedUser } from '../auth/interfaces/authenticatedUser';
 import { ConnectionManager } from '../fabric/connectionManager';
 import { GdoBalanceDto } from '../assets/dto/gdoBalance.dto';
-import { AssetType } from '../common/enums/asset-type.enum';
+import { AssetType } from '../common/enums/assetType.enum';
 import { CreateUserDto } from '../assets/dto/createUser.dto';
 import { UpdateUserDto } from '../assets/dto/updateUser.dto';
 import * as bcrypt from 'bcrypt';
@@ -197,7 +197,6 @@ export class OrganizationsService {
     try {
       const result = await this.connectionManager.queryTransaction(
         gateway,
-        client,
         'RedemptionContract:GetProducerBalance',
         id,
       );
@@ -274,7 +273,6 @@ export class OrganizationsService {
     try {
       const result = await this.connectionManager.executeTransaction(
         gateway,
-        client,
         'RedemptionContract:RedeemGdOs',
         id,
         assetType.toString(),

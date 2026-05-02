@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AssetsService } from '../../src/assets/assets.service';
 import { ConnectionManager } from '../../src/fabric/connectionManager';
 import { ForbiddenException } from '@nestjs/common';
-import { AssetType } from '../../src/common/enums/asset-type.enum';
+import { AssetType } from '../../src/common/enums/assetType.enum';
 import { IAuthenticatedUser } from 'src/auth/interfaces/authenticatedUser';
 
 describe('AssetsService', () => {
@@ -53,7 +53,7 @@ describe('AssetsService', () => {
       const result = await service.registerProduction(mockUser, dto);
 
       expect(connectionManager.executeTransaction).toHaveBeenCalledWith(
-        'gw', 'cl', 'ProductionContract:RegisterProduction',
+        'gw', 'ProductionContract:RegisterProduction',
         'p1', 'ELECTRICITY', '100', expect.any(String),
       );
       expect(connectionManager.disconnectGateway).toHaveBeenCalled();

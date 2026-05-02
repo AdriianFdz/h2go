@@ -8,7 +8,7 @@ import {
 } from '@nestjs/swagger';
 import { AssetsService } from './assets.service';
 import { IAuthenticatedUser } from '../auth/interfaces/authenticatedUser';
-import { RegisterProductionDto } from './dto/RegisterProduction.dto';
+import { RegisterProductionDto } from './dto/registerProduction.dto';
 
 @ApiTags('assets')
 @Controller('assets')

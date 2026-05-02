@@ -6,7 +6,7 @@ import { User } from '../../src/entities/user.entity';
 import { ConnectionManager } from '../../src/fabric/connectionManager';
 import { Role } from '../../src/common/enums/role.enum';
 import { OrganizationType } from '../../src/common/enums/organizationType.enum';
-import { AssetType } from '../../src/common/enums/asset-type.enum';
+import { AssetType } from '../../src/common/enums/assetType.enum';
 import { IAuthenticatedUser } from '../../src/auth/interfaces/authenticatedUser';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';

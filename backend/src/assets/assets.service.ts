@@ -1,9 +1,9 @@
 import { IAuthenticatedUser } from '../auth/interfaces/authenticatedUser';
-import { RegisterProductionDto } from './dto/RegisterProduction.dto';
-import { AssetType } from './dto/enums/AssetType';
+import { RegisterProductionDto } from './dto/registerProduction.dto';
+import { AssetType } from '../common/enums/assetType.enum';
 import { ForbiddenException, Inject } from '@nestjs/common';
 import { ConnectionManager } from '../fabric/connectionManager';
-import { ProductionBatch } from './dto/ProductionBatch.interface';
+import { ProductionBatch } from './dto/productionBatch.interface';
 
 export class AssetsService {
   constructor(
@@ -37,7 +37,6 @@ export class AssetsService {
     try {
       const result = await this.connectionManager.executeTransaction(
         gateway,
-        client,
         'ProductionContract:RegisterProduction',
         registerProductionDTO.producerId,
         registerProductionDTO.assetType,
@@ -58,7 +57,6 @@ export class AssetsService {
     try {
       const result = await this.connectionManager.queryTransaction(
         gateway,
-        client,
         'ProductionContract:GetAllProductionBatches',
       );
 

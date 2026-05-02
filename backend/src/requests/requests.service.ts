@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ConnectionManager } from '../fabric/connectionManager';
 import { IAuthenticatedUser } from '../auth/interfaces/authenticatedUser';
-import { AssetType } from '../common/enums/asset-type.enum';
+import { AssetType } from '../common/enums/assetType.enum';
 import { PendingIssuanceRequestDto } from './dto/pendingIssuanceRequest.dto';
 import { CreateIssuanceRequestDto } from './dto/createIssuanceRequest.dto';
 import { CreateTradeRequestDto } from './dto/createTradeRequest.dto';
@@ -44,7 +44,6 @@ export class RequestsService {
     try {
       await this.connectionManager.executeTransaction(
         gateway,
-        client,
         'RequestContract:CreateRequest',
         createRequestDto.producerId,
         createRequestDto.assetType,
@@ -72,7 +71,6 @@ export class RequestsService {
     try {
       const result = await this.connectionManager.queryTransaction(
         gateway,
-        client,
         'RequestContract:GetRequestsByStatusAndAssetType',
         'PENDING',
         assetType,
@@ -111,7 +109,6 @@ export class RequestsService {
     try {
       const result = await this.connectionManager.queryTransaction(
         gateway,
-        client,
         'RequestContract:GetRequest',
         requestId,
       );
@@ -147,7 +144,6 @@ export class RequestsService {
 
       await this.connectionManager.executeTransaction(
         gateway,
-        client,
         'RequestContract:ApproveRequest',
         requestId,
         reason,
@@ -170,7 +166,6 @@ export class RequestsService {
     try {
       const result = await this.connectionManager.queryTransaction(
         gateway,
-        client,
         'RequestContract:GetRequest',
         requestId,
       );
@@ -206,7 +201,6 @@ export class RequestsService {
 
       await this.connectionManager.executeTransaction(
         gateway,
-        client,
         'RequestContract:RejectRequest',
         requestId,
         reason,
@@ -222,7 +216,6 @@ export class RequestsService {
     try {
       const result = await this.connectionManager.queryTransaction(
         gateway,
-        client,
         'RequestContract:QuickValidateIssuanceRequest',
         requestId,
       );
@@ -267,7 +260,6 @@ export class RequestsService {
     try {
       await this.connectionManager.executeTransaction(
         gateway,
-        client,
         'RedemptionContract:CreateTradeRequest',
         createTradeRequestDto.sourceProducerID,
         createTradeRequestDto.targetProducerID,
@@ -292,7 +284,6 @@ export class RequestsService {
     try {
       const result = await this.connectionManager.queryTransaction(
         gateway,
-        client,
         'RedemptionContract:GetReceivedTradeRequestsByStatus',
         producerId,
         'PENDING',
@@ -338,7 +329,6 @@ export class RequestsService {
     try {
       const tradeResult = await this.connectionManager.queryTransaction(
         gateway,
-        client,
         'RedemptionContract:GetTradeRequest',
         tradeId,
       );
@@ -362,7 +352,6 @@ export class RequestsService {
       const gdoIdsJson = JSON.stringify(gdoIds);
       await this.connectionManager.executeTransaction(
         gateway,
-        client,
         'RedemptionContract:AcceptTradeRequest',
         tradeRequest.targetID,
         tradeId,
@@ -386,7 +375,6 @@ export class RequestsService {
     try {
       const result = await this.connectionManager.queryTransaction(
         gateway,
-        client,
         'RequestContract:GetRequestsByProducer',
         producerId,
       );
@@ -425,7 +413,6 @@ export class RequestsService {
     try {
       const result = await this.connectionManager.queryTransaction(
         gateway,
-        client,
         'RequestContract:GetRequest',
         requestId,
       );
@@ -457,7 +444,6 @@ export class RequestsService {
 
       await this.connectionManager.executeTransaction(
         gateway,
-        client,
         'RequestContract:CancelRequest',
         requestId,
       );
@@ -479,7 +465,6 @@ export class RequestsService {
     try {
       const result = await this.connectionManager.queryTransaction(
         gateway,
-        client,
         'RedemptionContract:GetSentTradeRequestsByStatus',
         producerId,
         'PENDING',
@@ -521,7 +506,6 @@ export class RequestsService {
     try {
       const tradeResult = await this.connectionManager.queryTransaction(
         gateway,
-        client,
         'RedemptionContract:GetTradeRequest',
         tradeId,
       );
@@ -544,7 +528,6 @@ export class RequestsService {
 
       await this.connectionManager.executeTransaction(
         gateway,
-        client,
         'RedemptionContract:RejectTradeRequest',
         tradeRequest.targetID,
         tradeId,
@@ -553,31 +536,4 @@ export class RequestsService {
       this.connectionManager.disconnectGateway(gateway, client);
     }
   }
-
-  // async getTradeRequestById(user: IAuthenticatedUser, tradeId: string) {
-  //   if (!user.organization) {
-  //     throw new Error('User does not have an associated organization.');
-  //   }
-
-  //   const { gateway, client } =
-  //     await this.connectionManager.connectGateway(user);
-  //   try {
-  //     const result = await this.connectionManager.queryTransaction(
-  //       gateway,
-  //       client,
-  //       'RedemptionContract:GetTradeRequest',
-  //       tradeId,
-  //     );
-  //     const resultString = Buffer.from(result).toString('utf8');
-
-  //     if (!resultString || resultString.trim() === '') {
-  //       return null;
-  //     }
-
-  //     const data = JSON.parse(resultString);
-  //     return data;
-  //   } finally {
-  //     this.connectionManager.disconnectGateway(gateway, client);
-  //   }
-  // }
 }

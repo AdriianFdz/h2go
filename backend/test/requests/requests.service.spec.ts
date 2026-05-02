@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RequestsService } from '../../src/requests/requests.service';
 import { ConnectionManager } from '../../src/fabric/connectionManager';
-import { AssetType } from '../../src/common/enums/asset-type.enum';
+import { AssetType } from '../../src/common/enums/assetType.enum';
 import { Role } from '../../src/common/enums/role.enum';
 import { OrganizationType } from '../../src/common/enums/organizationType.enum';
 import { IAuthenticatedUser } from '../../src/auth/interfaces/authenticatedUser';
@@ -103,7 +103,7 @@ describe('RequestsService', () => {
       await service.createIssuanceRequest(mockUser, dto as CreateIssuanceRequestDto);
 
       expect(connectionManager.executeTransaction).toHaveBeenCalledWith(
-        'gw', 'cl', 'RequestContract:CreateRequest', 'prod-1', 'ELECTRICITY', '100',
+        'gw', 'RequestContract:CreateRequest', 'prod-1', 'ELECTRICITY', '100',
       );
       expect(connectionManager.disconnectGateway).toHaveBeenCalled();
     });
@@ -139,7 +139,7 @@ describe('RequestsService', () => {
 
       expect(result).toHaveLength(1);
       expect(connectionManager.queryTransaction).toHaveBeenCalledWith(
-        'gw', 'cl', 'RequestContract:GetRequestsByStatusAndAssetType', 'PENDING', AssetType.ELECTRICITY,
+        'gw', 'RequestContract:GetRequestsByStatusAndAssetType', 'PENDING', AssetType.ELECTRICITY,
       );
     });
 
@@ -151,7 +151,7 @@ describe('RequestsService', () => {
       await service.getAllPendingIssuanceRequests(enagasUser);
 
       expect(connectionManager.queryTransaction).toHaveBeenCalledWith(
-        'gw', 'cl', 'RequestContract:GetRequestsByStatusAndAssetType', 'PENDING', AssetType.H2,
+        'gw', 'RequestContract:GetRequestsByStatusAndAssetType', 'PENDING', AssetType.H2,
       );
     });
 
@@ -189,7 +189,7 @@ describe('RequestsService', () => {
       await service.approveIssuanceRequest(cnmcUser, 'req-1', 'Approved');
 
       expect(connectionManager.executeTransaction).toHaveBeenCalledWith(
-        'gw', 'cl', 'RequestContract:ApproveRequest', 'req-1', 'Approved',
+        'gw', 'RequestContract:ApproveRequest', 'req-1', 'Approved',
       );
     });
 
@@ -261,7 +261,7 @@ describe('RequestsService', () => {
       await service.rejectIssuanceRequest(cnmcUser, 'req-1', 'Rejected');
 
       expect(connectionManager.executeTransaction).toHaveBeenCalledWith(
-        'gw', 'cl', 'RequestContract:RejectRequest', 'req-1', 'Rejected',
+        'gw', 'RequestContract:RejectRequest', 'req-1', 'Rejected',
       );
     });
 
@@ -354,7 +354,7 @@ describe('RequestsService', () => {
       await service.cancelIssuanceRequest(mockUser, 'req-1');
 
       expect(connectionManager.executeTransaction).toHaveBeenCalledWith(
-        'gw', 'cl', 'RequestContract:CancelRequest', 'req-1',
+        'gw', 'RequestContract:CancelRequest', 'req-1',
       );
     });
 
@@ -419,7 +419,7 @@ describe('RequestsService', () => {
       await service.createTradeRequest(mockUser, dto as CreateTradeRequestDto);
 
       expect(connectionManager.executeTransaction).toHaveBeenCalledWith(
-        'gw', 'cl', 'RedemptionContract:CreateTradeRequest', 'prod-1', 'prod-2', 'H2', '50',
+        'gw', 'RedemptionContract:CreateTradeRequest', 'prod-1', 'prod-2', 'H2', '50',
       );
     });
 
@@ -515,7 +515,7 @@ describe('RequestsService', () => {
       await service.approveTradeRequest(mockUser, 't1', ['gdo-1', 'gdo-2']);
 
       expect(connectionManager.executeTransaction).toHaveBeenCalledWith(
-        'gw', 'cl', 'RedemptionContract:AcceptTradeRequest', 'prod-2', 't1', '["gdo-1","gdo-2"]',
+        'gw', 'RedemptionContract:AcceptTradeRequest', 'prod-2', 't1', '["gdo-1","gdo-2"]',
       );
     });
 
@@ -570,7 +570,7 @@ describe('RequestsService', () => {
       await service.rejectTradeRequest(mockUser, 't1');
 
       expect(connectionManager.executeTransaction).toHaveBeenCalledWith(
-        'gw', 'cl', 'RedemptionContract:RejectTradeRequest', 'prod-2', 't1',
+        'gw', 'RedemptionContract:RejectTradeRequest', 'prod-2', 't1',
       );
     });
 

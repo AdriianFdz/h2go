@@ -178,9 +178,8 @@ describe('ConnectionManager', () => {
       const gateway = {
         getNetwork: gatewayGetNetworkMock,
       } as unknown as fabricGateway.Gateway;
-      const client = {} as unknown as grpc.Client;
 
-      const result = await manager.queryTransaction(gateway, client, 'MyFunc', 'arg1', 'arg2');
+      const result = await manager.queryTransaction(gateway, 'MyFunc', 'arg1', 'arg2');
 
       expect(gatewayGetNetworkMock).toHaveBeenCalledWith('mychannel');
       expect(mockNetwork.getContract).toHaveBeenCalledWith('mychaincode');

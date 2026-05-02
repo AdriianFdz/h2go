@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { AssetType } from '../../common/enums/asset-type.enum';
+import { AssetType } from '../../common/enums/assetType.enum';
 
 export class GdO {
   @ApiProperty({

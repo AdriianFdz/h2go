@@ -4,7 +4,7 @@ import { OrganizationsService } from '../../src/organizations/organizations.serv
 import { AuthService } from '../../src/auth/auth.service';
 import { Role } from '../../src/common/enums/role.enum';
 import { OrganizationType } from '../../src/common/enums/organizationType.enum';
-import { AssetType } from '../../src/common/enums/asset-type.enum';
+import { AssetType } from '../../src/common/enums/assetType.enum';
 import { IAuthenticatedUser } from '../../src/auth/interfaces/authenticatedUser';
 import { Organization } from '../../src/entities/organization.entity';
 import { CreateOrgDto } from '../../src/assets/dto/createOrg.dto';

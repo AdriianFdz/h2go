@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { RequestsController } from '../../src/requests/requests.controller';
 import { RequestsService } from '../../src/requests/requests.service';
 import { Role } from '../../src/common/enums/role.enum';
-import { AssetType } from '../../src/common/enums/asset-type.enum';
+import { AssetType } from '../../src/common/enums/assetType.enum';
 import { OrganizationType } from '../../src/common/enums/organizationType.enum';
 
 import { IAuthenticatedUser } from '../../src/auth/interfaces/authenticatedUser';

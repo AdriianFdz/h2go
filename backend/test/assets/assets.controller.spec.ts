@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AssetsController } from '../../src/assets/assets.controller';
 import { AssetsService } from '../../src/assets/assets.service';
-import { AssetType } from '../../src/common/enums/asset-type.enum';
+import { AssetType } from '../../src/common/enums/assetType.enum';
 import { GdO } from '../../src/assets/dto/gdoBalance.dto';
 
 describe('AssetsController', () => {

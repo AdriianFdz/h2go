@@ -42,13 +42,14 @@ export class RequestsService {
     const { gateway, client } =
       await this.connectionManager.connectGateway(user);
     try {
-      await this.connectionManager.executeTransaction(
+      const result = await this.connectionManager.executeTransaction(
         gateway,
         'RequestContract:CreateRequest',
         createRequestDto.producerId,
         createRequestDto.assetType,
         createRequestDto.amount.toString(),
       );
+      return { requestId: Buffer.from(result).toString('utf8') };
     } finally {
       this.connectionManager.disconnectGateway(gateway, client);
     }

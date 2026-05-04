@@ -39,8 +39,21 @@ export class OrganizationsService {
     const organization = this.organizationRepository.create(createOrgDto);
     await this.organizationRepository.save(organization);
 
+    const createUserDTO = {
+      email: organization.name.toLowerCase().replace(/\s+/g, '') + '@example.com',
+      name: organization.name,
+      password: await bcrypt.hash("123456", 10),
+    } as CreateUserDto;
+
+    const newUser = this.userRepository.create(createUserDTO);
+    newUser.organization = organization;
+    newUser.role = Role.ADMIN;
+
+    await this.userRepository.save(newUser);
+
+    
     return {
-      message: 'Organization created successfully',
+      message: 'Organization and admin user created successfully',
       organization: createOrgDto,
       createdBy: user,
     };
@@ -535,5 +548,46 @@ export class OrganizationsService {
       message: 'Organization updated successfully',
       organization,
     };
+  }
+
+  async deleteOrganization(id: string, user: IAuthenticatedUser) {
+    if (user.role !== Role.DEV) {
+      throw new Error(
+        'Only a developer can delete an organization',
+      );
+    }
+
+    const organization = await this.organizationRepository.findOne({
+      where: { id },
+    });
+
+    if (!organization) {
+      throw new Error('Organization not found');
+    }
+
+    const users = await this.userRepository.find({
+      where: { organization: { id } },
+    });
+    await this.userRepository.remove(users);
+
+    const orgWithAuths = await this.organizationRepository.findOne({
+      where: { id },
+      relations: ['authorizedByOrgs', 'authorizedOrgs'],
+    });
+
+    if (orgWithAuths) {
+      for (const authByOrg of orgWithAuths.authorizedByOrgs) {
+        authByOrg.authorizedOrgs = authByOrg.authorizedOrgs.filter(
+          (org) => org.id !== id,
+        );
+        await this.organizationRepository.save(authByOrg);
+      }
+
+      orgWithAuths.authorizedOrgs = [];
+      await this.organizationRepository.save(orgWithAuths);
+    }
+
+    await this.organizationRepository.remove(organization);
+    return { message: 'Organization deleted successfully' };
   }
 }

@@ -102,7 +102,7 @@ describe('OrganizationsService', () => {
 
       expect(orgRepo.create).toHaveBeenCalledWith(dto);
       expect(orgRepo.save).toHaveBeenCalled();
-      expect(result.message).toBe('Organization created successfully');
+      expect(result.message).toBe('Organization and admin user created successfully');
     });
 
     it('should throw when user is not DEV', async () => {

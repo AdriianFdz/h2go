@@ -266,4 +266,19 @@ export class OrganizationsController {
       user,
     );
   }
+
+  @Delete(':id')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete an organization (DEV only)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Organization deleted successfully',
+  })
+  @ApiResponse({ status: 400, description: 'Invalid data' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  deleteOrganization(@Param('id') id: string, @Req() req) {
+    const user = req.user as IAuthenticatedUser;
+    return this.organizationsService.deleteOrganization(id, user);
+  }
 }

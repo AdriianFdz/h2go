@@ -33,7 +33,9 @@ export class ConnectionManager {
     // Leer el network.yaml que contiene los certificados TLS CA de los peers
     const networkYamlPath = path.join(
       process.env.FABRIC_RESOURCES_PATH!,
-      'network.yaml',
+      process.env.NODE_ENV === 'test'
+        ? 'test-network.yaml'
+        : 'network.yaml',
     );
     const fileContent = await fs.readFile(networkYamlPath, 'utf8');
     const networkConfig: any = yaml.load(fileContent);

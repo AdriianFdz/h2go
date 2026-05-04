@@ -28,9 +28,9 @@ services:
       - "peer0-trader1.localho.st:host-gateway"
       - "peer0-trader2.localho.st:host-gateway"
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=test
     env_file:
-      - ./backend/.env
+      - ./backend/.env.test
     depends_on:
       - postgres
 

@@ -1,98 +1,186 @@
+# H2GO — Backend
+
 <p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
+  <img src="https://img.shields.io/badge/NestJS-11-E0234E?style=flat-square&logo=nestjs&logoColor=white" alt="NestJS" />
+  <img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/PostgreSQL-16-4169E1?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/Fabric%20Gateway-1.10-2F3134?style=flat-square&logo=hyperledger&logoColor=white" alt="Fabric" />
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+The backend is a **NestJS** REST API that bridges the web frontend and the **Hyperledger Fabric** blockchain network. It handles authentication, organization management, and blockchain transaction submissions via the Fabric Gateway SDK.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
+## Table of Contents
+
+- [Architecture](#architecture)
+- [Module Overview](#module-overview)
+- [Project Structure](#project-structure)
+- [Environment Variables](#environment-variables)
+- [Getting Started](#getting-started)
+- [API Documentation](#api-documentation)
+- [Testing](#testing)
+- [Docker](#docker)
+
+## Architecture
+
+![H2GO Main Modules](../docs/Main_module_architecture.png)
+
+## Module Overview
+
+| Module | Path | Description |
+|---|---|---|
+| **Auth** | `src/auth/` | JWT authentication via Passport.js. Login, registration, HTTP-only cookie tokens. |
+| **Organizations** | `src/organizations/` | Org CRUD + blockchain operations: production registration, GO issuance, balance queries. |
+| **Requests** | `src/requests/` | Multi-party GO request workflows (transfer, redemption). |
+| **Assets** | `src/assets/` | Image management via Cloudinary (upload/retrieval). |
+| **Fabric** | `src/fabric/` | Singleton gRPC connection manager for Fabric peers using `@hyperledger/fabric-gateway`. |
+| **Entities** | `src/entities/` | TypeORM entities: `User`, `Organization`. |
+| **Common** | `src/common/` | Shared guards, decorators, and utilities. |
+
+## Project Structure
+
+```
+backend/
+├── src/
+│   ├── app.module.ts              # Root module
+│   ├── main.ts                    # Entrypoint (CORS, Swagger, Cloudinary)
+│   ├── auth/                      # Authentication module
+│   │   ├── dto/                   # LoginDto, RegisterDto
+│   │   ├── interfaces/            # JWT payload
+│   │   └── strategies/            # Passport JWT & Local strategies
+│   ├── organizations/             # Organization module
+│   ├── requests/                  # Request workflow module
+│   │   └── dto/
+│   ├── assets/                    # Asset upload module
+│   │   └── dto/
+│   ├── fabric/
+│   │   └── connectionManager.ts   # Fabric Gateway connection pool
+│   ├── entities/
+│   │   ├── user.entity.ts
+│   │   └── organization.entity.ts
+│   └── common/
+├── test/                          # Jest test suites
+├── Dockerfile
+├── package.json
+├── tsconfig.json
+└── nest-cli.json
+```
+
+## Environment Variables
+
+Create a `.env` file in the `backend/` directory:
+
+```ini
+# == Server ==
+PORT=3003
+
+# == Hyperledger Fabric Configuration ==
+FABRIC_CHANNEL_NAME=main # For Deployments
+#FABRIC_CHANNEL_NAME=test # For Tests
+FABRIC_CHAINCODE_NAME=h2go-cc
+NETWORK_CONFIG_PATH=/app/blockchain/resources/network-config.yaml # Docker Compose
+NETWORK_CONFIG_PATH_HOST=/app/blockchain/resources/network-config.yaml # Local
+
+# == JWT Configuration ==
+JWT_SECRET=your-jwt-secret
+JWT_EXPIRATION=86400000 # 1 day in milliseconds
+
+# == Database Configuration ==
+DB_HOST=postgres # Docker Compose
+#DB_HOST=localhost # Local
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+DB_DATABASE=h2go
+
+# == Paths ==
+FABRIC_RESOURCES_PATH=/app/blockchain/resources # Docker Compose
+#FABRIC_RESOURCES_PATH=../blockchain/resources # Local
+
+
+# == Cloudinary ==
+CLOUDINARY_CLOUD_NAME=your-cloud-name
+CLOUDINARY_API_KEY=your-api-key
+CLOUDINARY_API_SECRET=your-api-secret
+```
+
+For testing, create `.env.test` with the same structure pointing to a test database and blockchain channel.
+
+## Getting Started
+
+### Docker Compose (from project root)
+
+```bash
+docker compose up --build
+```
+
+### Local Development
+
+```bash
+# Install dependencies
+pnpm install
+
+# Start PostgreSQL
+cd ../postgresql && docker compose up -d && cd ../backend
+
+# Run in watch mode
+pnpm run start:dev
+```
+
+### Available Scripts
+
+| Script | Description |
+|---|---|
+| `pnpm run start` | Start the application |
+| `pnpm run start:dev` | Watch mode (auto-reload) |
+| `pnpm run start:debug` | Debug mode with inspector |
+| `pnpm run start:prod` | Production build |
+| `pnpm run build` | Compile TypeScript |
+| `pnpm run test` | Run unit tests |
+| `pnpm run test:cov` | Coverage report |
+| `pnpm run lint` | Lint & auto-fix |
+| `pnpm run format` | Prettier formatting |
+
+## API Documentation
+
+Interactive **Swagger UI** available at: **http://localhost:3003/docs**
+
+### Key Endpoints
+
+| Method | Endpoint | Description | Auth |
+|---|---|---|---|
+| `POST` | `/auth/register` | Register a new user | ❌ |
+| `POST` | `/auth/login` | Login (JWT cookie) | ❌ |
+| `GET` | `/organizations` | List organizations | ✅ |
+| `POST` | `/organizations/production` | Register production | ✅ |
+| `GET` | `/organizations/gdos` | Query GOs | ✅ |
+| `POST` | `/requests` | Create GO request | ✅ |
+| `PATCH` | `/requests/:id` | Update request | ✅ |
+| `POST` | `/assets/upload` | Upload image | ✅ |
+
+> Authentication uses JWT tokens in HTTP-only cookies, automatically sent after login.
+
+## Testing
+
+```bash
+pnpm run test          # Unit tests
+pnpm run test:watch    # Watch mode
+pnpm run test:cov      # Coverage report
+```
+
+Tests use **Jest** + **ts-jest**. Test files: `test/**/*.spec.ts`.
+
+## Docker
+
+```bash
+# Build
+docker build -t h2go-backend .
+
+# Run
+docker run -p 3003:3003 --env-file .env h2go-backend
+```
+
+> The Docker container expects blockchain resources mounted at `/app/blockchain/resources`. See [docker-compose.yml](../docker-compose.yml).
+
+<p align="center">
+  <a href="../README.md">⬅ Back to Root</a> · <a href="../frontend/README.md">Frontend ➡</a>
 </p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
-
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
-
-```bash
-$ pnpm install
-```
-
-## Compile and run the project
-
-```bash
-# development
-$ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
-```
-
-## Run tests
-
-```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).

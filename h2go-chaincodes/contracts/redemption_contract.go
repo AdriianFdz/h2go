@@ -572,3 +572,140 @@ func (rdpc *RedemptionContract) RejectTradeRequest(
 
 	return nil
 }
+
+func (rdpc *RedemptionContract) GetExpiredGdOs(ctx contractapi.TransactionContextInterface) ([]string, error) {
+	txTimestamp, err := ctx.GetStub().GetTxTimestamp()
+	if err != nil {
+		return nil, err
+	}
+	currentTime := time.Unix(txTimestamp.Seconds, int64(txTimestamp.Nanos))
+
+	resultsIterator, err := ctx.GetStub().GetStateByRange("", "")
+	if err != nil {
+		return nil, err
+	}
+	defer resultsIterator.Close()
+
+	var expiredGdoIDs []string
+	for resultsIterator.HasNext() {
+		queryResponse, err := resultsIterator.Next()
+		if err != nil {
+			return nil, err
+		}
+
+		var gdo models.GdO
+		err = json.Unmarshal(queryResponse.Value, &gdo)
+		if err != nil {
+			continue
+		}
+
+		if gdo.DocType != "GdO" || gdo.Status != models.GdoActive {
+			continue
+		}
+
+		expiryTime, err := time.Parse(time.RFC3339, gdo.ExpiryDate)
+		if err != nil {
+			continue
+		}
+
+		if currentTime.After(expiryTime) {
+			expiredGdoIDs = append(expiredGdoIDs, gdo.GdoID)
+		}
+	}
+
+	return expiredGdoIDs, nil
+}
+
+func (rdpc *RedemptionContract) SetGdoAsExpired(ctx contractapi.TransactionContextInterface, gdoID string) error {
+	gdo, err := rdpc.GetGdO(ctx, gdoID)
+	if err != nil {
+		return err
+	}
+
+	if gdo.Status != models.GdoActive {
+		return nil
+	}
+
+	// Get deterministic timestamp from transaction
+	txTimestamp, err := ctx.GetStub().GetTxTimestamp()
+	if err != nil {
+		return err
+	}
+	currentTime := time.Unix(txTimestamp.Seconds, int64(txTimestamp.Nanos))
+
+	expiryTime, err := time.Parse(time.RFC3339, gdo.ExpiryDate)
+	if err != nil {
+		return errors.New("failed to parse expiry date for GdO " + gdoID + ": " + err.Error())
+	}
+
+	if !currentTime.After(expiryTime) {
+		return errors.New("GdO " + gdoID + " has not yet expired")
+	}
+
+	// The current owner is always gdo.OwnerID
+	// (updated during trades in AcceptTradeRequest)
+	ownerID := gdo.OwnerID
+
+	// 1. Update the GdO status in world state
+	gdo.Status = models.GdoExpired
+	gdoJSON, err := json.Marshal(gdo)
+	if err != nil {
+		return err
+	}
+	err = ctx.GetStub().PutState(gdo.GdoID, gdoJSON)
+	if err != nil {
+		return err
+	}
+
+	// 2. Update the ProductorBalance: move GdO from Available to Unavailable
+	ownerBalanceBytes, err := ctx.GetStub().GetState(ownerID)
+	if err != nil {
+		return errors.New("failed to read owner balance: " + err.Error())
+	}
+	if ownerBalanceBytes == nil {
+		return errors.New("owner balance does not exist for " + ownerID)
+	}
+
+	var balance models.ProductorBalance
+	err = json.Unmarshal(ownerBalanceBytes, &balance)
+	if err != nil {
+		return err
+	}
+
+	var availableGdOs *[]models.GdO
+	var unavailableGdOs *[]models.GdO
+
+	if gdo.AssetType == models.Electricity {
+		availableGdOs = &balance.GdOS.Electricity.Available
+		unavailableGdOs = &balance.GdOS.Electricity.Unavailable
+	} else if gdo.AssetType == models.H2 {
+		availableGdOs = &balance.GdOS.H2.Available
+		unavailableGdOs = &balance.GdOS.H2.Unavailable
+	} else {
+		return errors.New("unknown asset type: " + string(gdo.AssetType))
+	}
+
+	// Remove from Available, add to Unavailable with EXPIRED status
+	updatedAvailable := make([]models.GdO, 0, len(*availableGdOs))
+	found := false
+	for _, g := range *availableGdOs {
+		if g.GdoID == gdoID {
+			found = true
+			g.Status = models.GdoExpired
+			*unavailableGdOs = append(*unavailableGdOs, g)
+		} else {
+			updatedAvailable = append(updatedAvailable, g)
+		}
+	}
+	*availableGdOs = updatedAvailable
+
+	if !found {
+		return errors.New("GdO " + gdoID + " not found in owner's available balance")
+	}
+
+	updatedBalanceJSON, err := json.Marshal(balance)
+	if err != nil {
+		return err
+	}
+	return ctx.GetStub().PutState(ownerID, updatedBalanceJSON)
+}

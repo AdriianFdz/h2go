@@ -177,4 +177,4 @@ The project uses **GitHub Actions** for continuous integration:
 
 ## License
 
-This project is private and not licensed for public distribution.
+This project is proprietary software. All rights reserved. See [LICENSE](./LICENSE) for details.
